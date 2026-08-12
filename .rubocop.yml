@@ -1,0 +1,45 @@
+# Omakase Ruby styling for Rails
+inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+
+# O omakase traz rubocop-rails e rubocop-performance como plugins, mas desliga
+# os departamentos inteiros. Aqui a formatação dele fica intacta e voltamos a
+# ligar só o que caça bug de verdade.
+plugins:
+  - rubocop-minitest
+
+inherit_mode:
+  merge:
+    - Exclude
+
+AllCops:
+  NewCops: enable
+  Exclude:
+    - "bin/**/*"
+    - "db/schema.rb"
+    - "node_modules/**/*"
+    - "storage/**/*"
+    - "tmp/**/*"
+    - "vendor/**/*"
+
+# Erros reais: variáveis não usadas, comparações que nunca batem, rescue vazio.
+Lint:
+  Enabled: true
+
+# Idiomas de Rails: `find_by` em vez de `where.first`, `pluck`, validações etc.
+Rails:
+  Enabled: true
+
+# Padrões custosos em loop e alocação desnecessária.
+Performance:
+  Enabled: true
+
+# Asserções de Minitest mais precisas: `assert_empty` em vez de `assert x.empty?`.
+Minitest:
+  Enabled: true
+
+# --- Ajustes de casa -------------------------------------------------------
+# Adicione aqui exceções conforme forem aparecendo, ex.:
+#
+# Rails/SkipsModelValidations:
+#   Exclude:
+#     - "db/migrate/**/*"

@@ -1,0 +1,19 @@
+{
+  "[ruby]": {
+    "editor.defaultFormatter": "rubocop.vscode-rubocop",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+
+  // O rubocop está no Gemfile deste projeto, então a extensão roda via bundler.
+  "rubocop.mode": "enableViaGemfile",
+
+  // Autocorrige ao salvar, mas só as correções seguras — as "unsafe" podem
+  // mudar semântica e não devem rodar sem alguém olhando.
+  "rubocop.autocorrect": true,
+  "rubocop.safeAutocorrect": true,
+
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
+}
