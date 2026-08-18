@@ -1,0 +1,32 @@
+<h1>Agendamentos</h1>
+
+<%= link_to "Novo agendamento", new_appointment_path %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Barbeiro</th>
+      <th>Cliente</th>
+      <th>Serviço</th>
+      <th>Início</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @appointments.each do |appointment| %>
+      <tr>
+        <td><%= appointment.barber.name %></td>
+        <td><%= appointment.client.name %></td>
+        <td><%= appointment.service.name %></td>
+        <td><%= l(appointment.start_at, format: :short) %></td>
+        <td><%= appointment.status.humanize %></td>
+        <td>
+          <%= link_to "Ver", appointment %>
+          <%= link_to "Editar", edit_appointment_path(appointment) %>
+          <%= link_to "Excluir", appointment, data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

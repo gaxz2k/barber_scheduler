@@ -1,0 +1,13 @@
+<h1>Barbeiros</h1>
+
+<% if current_user&.admin? %>
+  <%= link_to "Novo barbeiro", new_barber_path %>
+<% end %>
+
+<ul>
+  <% @barbers.each do |barber| %>
+    <li>
+      <%= link_to barber.name, barber %>
+    </li>
+  <% end %>
+</ul>

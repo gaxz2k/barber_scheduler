@@ -1,0 +1,8 @@
+<h1><%= @barber.name %></h1>
+
+<% if current_user&.admin? %>
+  <%= link_to "Editar", edit_barber_path(@barber) %>
+  <%= link_to "Excluir", @barber, data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" } %>
+<% end %>
+
+<%= link_to "Voltar", barbers_path %>

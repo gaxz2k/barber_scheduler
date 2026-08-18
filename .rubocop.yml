@@ -5,7 +5,7 @@ inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 # os departamentos inteiros. Aqui a formatação dele fica intacta e voltamos a
 # ligar só o que caça bug de verdade.
 plugins:
-  - rubocop-minitest
+  - rubocop-rspec
 
 inherit_mode:
   merge:
@@ -33,8 +33,8 @@ Rails:
 Performance:
   Enabled: true
 
-# Asserções de Minitest mais precisas: `assert_empty` em vez de `assert x.empty?`.
-Minitest:
+# Boas práticas de spec: `let` em vez de instância crua, `described_class`, etc.
+RSpec:
   Enabled: true
 
 # --- Ajustes de casa -------------------------------------------------------
