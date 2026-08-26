@@ -1,0 +1,24 @@
+<h1 class="mb-3">Painel administrativo</h1>
+<p class="text-muted">Bem-vindo(a), <%= current_user.email %>.</p>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Barbeiros</h5>
+        <p class="card-text">Gerencie os barbeiros da barbearia.</p>
+        <%= link_to "Gerenciar barbeiros", admin_barbers_path, class: "btn btn-primary" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Serviços</h5>
+        <p class="card-text">Gerencie os serviços oferecidos.</p>
+        <%= link_to "Gerenciar serviços", admin_services_path, class: "btn btn-primary" %>
+      </div>
+    </div>
+  </div>
+</div>

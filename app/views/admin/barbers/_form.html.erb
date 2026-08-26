@@ -1,0 +1,21 @@
+<%= form_with model: [:admin, barber] do |form| %>
+  <% if barber.errors.any? %>
+    <div class="alert alert-danger" id="error_explanation">
+      <h5><%= pluralize(barber.errors.count, "erro") %> impediram este barbeiro de ser salvo:</h5>
+      <ul class="mb-0">
+        <% barber.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :name, "Nome", class: "form-label" %>
+    <%= form.text_field :name, class: "form-control" %>
+  </div>
+
+  <div>
+    <%= form.submit barber.new_record? ? "Criar barbeiro" : "Salvar alterações", class: "btn btn-primary" %>
+  </div>
+<% end %>

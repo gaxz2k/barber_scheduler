@@ -1,0 +1,26 @@
+<%= form_with model: [:admin, service] do |form| %>
+  <% if service.errors.any? %>
+    <div class="alert alert-danger" id="error_explanation">
+      <h5><%= pluralize(service.errors.count, "erro") %> impediram este serviço de ser salvo:</h5>
+      <ul class="mb-0">
+        <% service.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :name, "Nome", class: "form-label" %>
+    <%= form.text_field :name, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :duration_minutes, "Duração (minutos)", class: "form-label" %>
+    <%= form.number_field :duration_minutes, class: "form-control" %>
+  </div>
+
+  <div>
+    <%= form.submit service.new_record? ? "Criar serviço" : "Salvar alterações", class: "btn btn-primary" %>
+  </div>
+<% end %>

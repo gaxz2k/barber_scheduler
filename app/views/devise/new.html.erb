@@ -1,0 +1,24 @@
+<h1>Entrar</h1>
+
+<%= form_with url: session_path(resource_name), method: :post do |form| %>
+  <div>
+    <%= form.label :email, "E-mail" %>
+    <%= form.email_field :email, autofocus: true, autocomplete: "email" %>
+  </div>
+
+  <div>
+    <%= form.label :password, "Senha" %>
+    <%= form.password_field :password, autocomplete: "current-password" %>
+  </div>
+
+  <% if devise_mapping.rememberable? %>
+    <div>
+      <%= form.check_box :remember_me %>
+      <%= form.label :remember_me, "Lembrar de mim" %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.submit "Entrar" %>
+  </div>
+<% end %>
