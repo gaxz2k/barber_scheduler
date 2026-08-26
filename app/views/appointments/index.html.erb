@@ -23,8 +23,6 @@
         <td><%= appointment.status.humanize %></td>
         <td>
           <%= link_to "Ver", appointment %>
-          <%= link_to "Editar", edit_appointment_path(appointment) %>
-          <%= link_to "Excluir", appointment, data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" } %>
         </td>
       </tr>
     <% end %>

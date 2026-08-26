@@ -1,0 +1,41 @@
+<%= form_with model: [:admin, appointment] do |form| %>
+  <% if appointment.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(appointment.errors.count, "erro") %> impediram este agendamento de ser salvo:</h2>
+      <ul>
+        <% appointment.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :barber_id, "Barbeiro" %>
+    <%= form.collection_select :barber_id, Barber.order(:name), :id, :name, prompt: "Selecione um barbeiro" %>
+  </div>
+
+  <div>
+    <%= form.label :client_id, "Cliente" %>
+    <%= form.collection_select :client_id, Client.order(:name), :id, :name, prompt: "Selecione um cliente" %>
+  </div>
+
+  <div>
+    <%= form.label :service_id, "Serviço" %>
+    <%= form.collection_select :service_id, Service.order(:name), :id, :name, prompt: "Selecione um serviço" %>
+  </div>
+
+  <div>
+    <%= form.label :start_at, "Início" %>
+    <%= form.datetime_field :start_at %>
+  </div>
+
+  <div>
+    <%= form.label :end_at, "Fim" %>
+    <%= form.datetime_field :end_at %>
+  </div>
+
+  <div>
+    <%= form.submit appointment.new_record? ? "Criar agendamento" : "Salvar alterações" %>
+  </div>
+<% end %>
