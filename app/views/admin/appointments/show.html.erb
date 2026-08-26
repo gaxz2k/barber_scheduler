@@ -1,0 +1,8 @@
+<h1><%= @appointment.client.name %></h1>
+
+<% if current_user&.admin? %>
+  <%= link_to "Editar", edit_admin_appointment_path(@appointment) %>
+  <%= link_to "Excluir", admin_appointment_path(@appointment), data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" } %>
+<% end %>
+
+<%= link_to "Voltar", admin_appointments_path %>
