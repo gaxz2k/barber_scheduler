@@ -8,6 +8,5 @@ Rails.application.routes.draw do
     resources :services
   end
   resources :appointments
-  resources :barbers
   get "up" => "rails/health#show", as: :rails_health_check
 end
