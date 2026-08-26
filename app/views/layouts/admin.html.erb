@@ -19,6 +19,7 @@
             <li class="nav-item"><%= link_to "Painel", admin_root_path, class: "nav-link" %></li>
             <li class="nav-item"><%= link_to "Barbeiros", admin_barbers_path, class: "nav-link" %></li>
             <li class="nav-item"><%= link_to "Serviços", admin_services_path, class: "nav-link" %></li>
+            <li class="nav-item"><%= link_to "Agendamentos", admin_appointments_path, class: "nav-link" %></li>
           </ul>
           <%= button_to "Sair", destroy_user_session_path, method: :delete, class: "btn btn-outline-light btn-sm" %>
         </div>

@@ -3,23 +3,42 @@ pt-BR:
     barbers:
       create:
         success: "Barbeiro criado com sucesso."
+        failure: "Falha ao criar barbeiro."
       update:
         success: "Barbeiro atualizado com sucesso."
+        failure: "Falha ao atualizar barbeiro."
       destroy:
         success: "Barbeiro removido com sucesso."
-    services:
-      create:
-        success: "Serviço criado com sucesso."
-      update:
-        success: "Serviço atualizado com sucesso."
-      destroy:
-        success: "Serviço removido com sucesso."
+        failure: "Falha ao remover barbeiro."
     appointments:
       create:
         success: "Agendamento criado com sucesso."
+        failure: "Falha ao criar agendamento."
       update:
         success: "Agendamento atualizado com sucesso."
+        failure: "Falha ao atualizar agendamento."
       destroy:
         success: "Agendamento removido com sucesso."
+        failure: "Falha ao remover agendamento."
+    services:
+      create:
+        success: "Serviço criado com sucesso."
+        failure: "Falha ao criar serviço."
+      update:
+        success: "Serviço atualizado com sucesso."
+        failure: "Falha ao atualizar serviço."
+      destroy:
+        success: "Serviço removido com sucesso."
+        failure: "Falha ao remover serviço."
+  appointments:
+    create:
+      success: "Agendamento criado com sucesso."
+      failure: "Falha ao criar agendamento."
+    update:
+      success: "Agendamento atualizado com sucesso."
+      failure: "Falha ao atualizar agendamento."
+    destroy:
+      success: "Agendamento removido com sucesso."
+      failure: "Falha ao remover agendamento."
   admin_authorization:
       restricted: "Você não tem permissão para acessar esta página."

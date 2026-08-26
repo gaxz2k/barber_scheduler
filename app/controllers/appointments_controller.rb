@@ -1,5 +1,5 @@
 class AppointmentsController < ApplicationController
-  before_action :set_appointment, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_appointment, only: [ :show ]
 
   def index
     @appointments = Appointment.order(start_at: :asc)
@@ -12,29 +12,13 @@ class AppointmentsController < ApplicationController
     @appointment = Appointment.new
   end
 
-  def edit
-  end
-
   def create
     @appointment = Appointment.new(appointment_params)
     if @appointment.save
-      redirect_to @appointment, notice: "Agendamento criado com sucesso."
+      redirect_to @appointment, notice: t(".success")
     else
       render :new
     end
-  end
-
-  def update
-    if @appointment.update(appointment_params)
-      redirect_to @appointment, notice: "Agendamento atualizado com sucesso."
-    else
-      render :edit
-    end
-  end
-
-  def destroy
-    @appointment.destroy
-    redirect_to appointments_url, notice: "Agendamento excluído com sucesso."
   end
 
   private
@@ -44,6 +28,6 @@ class AppointmentsController < ApplicationController
   end
 
   def set_appointment
-    @appointment = Appointment.find(params[:id])
+    @appointment = Appointment.find(params.expect(:id))
   end
 end
