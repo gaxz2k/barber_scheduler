@@ -9,6 +9,6 @@ module AdminAuthorization
   private
 
   def require_admin!
-    redirect_to root_path, alert: "Acesso restrito." unless current_user.admin?
+    redirect_to root_path, alert: t("admin_authorization.restricted") unless current_user.admin?
   end
 end

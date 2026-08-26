@@ -16,14 +16,14 @@ class Admin::BarbersController < Admin::BaseController
   def create
     @barber = Barber.new(barber_params)
     if @barber.save
-      redirect_to admin_barbers_path, notice: "Barbeiro criado com sucesso."
+      redirect_to admin_barbers_path, notice: t(".success")
     else
       render :new
     end
   end
   def update
     if @barber.update(barber_params)
-      redirect_to admin_barbers_path, notice: "Barbeiro atualizado com sucesso."
+      redirect_to admin_barbers_path, notice: t(".success")
     else
       render :edit
     end
@@ -31,7 +31,7 @@ class Admin::BarbersController < Admin::BaseController
 
   def destroy
     @barber.destroy
-    redirect_to admin_barbers_path, notice: "Barbeiro excluído com sucesso."
+    redirect_to admin_barbers_path, notice: t(".success")
   end
 
   private

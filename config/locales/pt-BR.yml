@@ -1,0 +1,25 @@
+pt-BR:
+  admin:
+    barbers:
+      create:
+        success: "Barbeiro criado com sucesso."
+      update:
+        success: "Barbeiro atualizado com sucesso."
+      destroy:
+        success: "Barbeiro removido com sucesso."
+    services:
+      create:
+        success: "Serviço criado com sucesso."
+      update:
+        success: "Serviço atualizado com sucesso."
+      destroy:
+        success: "Serviço removido com sucesso."
+    appointments:
+      create:
+        success: "Agendamento criado com sucesso."
+      update:
+        success: "Agendamento atualizado com sucesso."
+      destroy:
+        success: "Agendamento removido com sucesso."
+  admin_authorization:
+      restricted: "Você não tem permissão para acessar esta página."
