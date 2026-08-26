@@ -6,7 +6,8 @@ Rails.application.routes.draw do
     root to: "home#index"
     resources :barbers
     resources :services
+    resources :appointments
   end
-  resources :appointments
+  resources :appointments, only: [ :index, :show, :new, :create ]
   get "up" => "rails/health#show", as: :rails_health_check
 end

@@ -7,31 +7,59 @@ RSpec.describe Service, type: :model do
     expect(service).to be_valid
   end
 
-  it "is invalid without a name" do
-    service = described_class.new(name: nil, duration_minutes: 30)
+  describe "without a name" do
+    subject(:service) { described_class.new(name: nil, duration_minutes: 30) }
 
-    expect(service).not_to be_valid
-    expect(service.errors[:name]).to include("não pode ficar em branco")
+    it "is invalid" do
+      expect(service).not_to be_valid
+    end
+
+    it "has an error on name" do
+      service.valid?
+
+      expect(service.errors[:name]).to include("não pode ficar em branco")
+    end
   end
 
-  it "is invalid without a duration" do
-    service = described_class.new(name: "Corte", duration_minutes: nil)
+  describe "without a duration" do
+    subject(:service) { described_class.new(name: "Corte", duration_minutes: nil) }
 
-    expect(service).not_to be_valid
-    expect(service.errors[:duration_minutes]).to include("não pode ficar em branco")
+    it "is invalid" do
+      expect(service).not_to be_valid
+    end
+
+    it "has an error on duration_minutes" do
+      service.valid?
+
+      expect(service.errors[:duration_minutes]).to include("não pode ficar em branco")
+    end
   end
 
-  it "is invalid when duration is not an integer" do
-    service = described_class.new(name: "Corte", duration_minutes: 30.5)
+  describe "with a non-integer duration" do
+    subject(:service) { described_class.new(name: "Corte", duration_minutes: 30.5) }
 
-    expect(service).not_to be_valid
-    expect(service.errors[:duration_minutes]).to include("não é um número inteiro")
+    it "is invalid" do
+      expect(service).not_to be_valid
+    end
+
+    it "has an error on duration_minutes" do
+      service.valid?
+
+      expect(service.errors[:duration_minutes]).to include("não é um número inteiro")
+    end
   end
 
-  it "is invalid when duration is zero or negative" do
-    service = described_class.new(name: "Corte", duration_minutes: 0)
+  describe "with a duration of zero or less" do
+    subject(:service) { described_class.new(name: "Corte", duration_minutes: 0) }
 
-    expect(service).not_to be_valid
-    expect(service.errors[:duration_minutes]).to include("deve ser maior que 0")
+    it "is invalid" do
+      expect(service).not_to be_valid
+    end
+
+    it "has an error on duration_minutes" do
+      service.valid?
+
+      expect(service.errors[:duration_minutes]).to include("deve ser maior que 0")
+    end
   end
 end
