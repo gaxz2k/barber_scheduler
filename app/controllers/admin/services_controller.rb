@@ -15,7 +15,7 @@ class Admin::ServicesController < Admin::BaseController
   def create
     @service = Service.new(service_params)
     if @service.save
-      redirect_to admin_services_path, notice: "Serviço criado com sucesso."
+      redirect_to admin_services_path, notice: t(".success")
     else
       render :new
     end
@@ -23,7 +23,7 @@ class Admin::ServicesController < Admin::BaseController
 
   def update
     if @service.update(service_params)
-      redirect_to admin_services_path, notice: "Serviço atualizado com sucesso."
+      redirect_to admin_services_path, notice: t(".success")
     else
       render :edit
     end
@@ -31,7 +31,7 @@ class Admin::ServicesController < Admin::BaseController
 
   def destroy
     @service.destroy
-    redirect_to admin_services_path, notice: "Serviço excluído com sucesso."
+    redirect_to admin_services_path, notice: t(".success")
   end
 
   private
