@@ -11,13 +11,14 @@ class Admin::AppointmentsController < Admin::BaseController
   def new
     @appointment = Appointment.new
   end
+
   def edit
   end
 
   def create
     @appointment = Appointment.new(appointment_params)
     if @appointment.save
-      redirect_to @appointment, notice: t(".success")
+      redirect_to admin_appointment_path(@appointment), notice: t(".success")
     else
       render :new, status: :unprocessable_content
     end
@@ -25,7 +26,7 @@ class Admin::AppointmentsController < Admin::BaseController
 
   def update
     if @appointment.update(appointment_params)
-      redirect_to @appointment, notice: t(".success")
+      redirect_to admin_appointment_path(@appointment), notice: t(".success")
     else
       flash.now[:failure] = t(".failure")
       render :edit, status: :unprocessable_content
@@ -34,16 +35,16 @@ class Admin::AppointmentsController < Admin::BaseController
 
   def destroy
     if @appointment.destroy
-      redirect_to appointments_url, notice: t(".success")
+      redirect_to admin_appointments_path, notice: t(".success")
     else
-      redirect_to appointments_url, alert: t(".failure")
+      redirect_to admin_appointments_path, alert: t(".failure")
     end
   end
 
   private
 
   def appointment_params
-    params.expect(appointment: [ :client_id, :barber_id, :service_id, :start_at, :end_at ])
+    params.expect(appointment: [ :client_id, :professional_id, :service_id, :start_at, :end_at ])
   end
 
   def set_appointment

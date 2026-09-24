@@ -1,15 +1,15 @@
 pt-BR:
   admin:
-    barbers:
+    professionals:
       create:
-        success: "Barbeiro criado com sucesso."
-        failure: "Falha ao criar barbeiro."
+        success: "Profissional criado com sucesso."
+        failure: "Falha ao criar profissional."
       update:
-        success: "Barbeiro atualizado com sucesso."
-        failure: "Falha ao atualizar barbeiro."
+        success: "Profissional atualizado com sucesso."
+        failure: "Falha ao atualizar profissional."
       destroy:
-        success: "Barbeiro removido com sucesso."
-        failure: "Falha ao remover barbeiro."
+        success: "Profissional removido com sucesso."
+        failure: "Falha ao remover profissional."
     appointments:
       create:
         success: "Agendamento criado com sucesso."

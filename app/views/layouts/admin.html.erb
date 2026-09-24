@@ -14,10 +14,13 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
       <div class="container">
         <%= link_to "Tela Inicial", admin_root_path, class: "navbar-brand" %>
-        <div class="collapse navbar-collapse">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#admin-navbar" aria-controls="admin-navbar" aria-expanded="false" aria-label="Alternar navegação">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="admin-navbar">
           <ul class="navbar-nav me-auto">
             <li class="nav-item"><%= link_to "Painel", admin_root_path, class: "nav-link" %></li>
-            <li class="nav-item"><%= link_to "Barbeiros", admin_barbers_path, class: "nav-link" %></li>
+            <li class="nav-item"><%= link_to "Profissionais", admin_professionals_path, class: "nav-link" %></li>
             <li class="nav-item"><%= link_to "Serviços", admin_services_path, class: "nav-link" %></li>
             <li class="nav-item"><%= link_to "Agendamentos", admin_appointments_path, class: "nav-link" %></li>
           </ul>

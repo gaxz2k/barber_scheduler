@@ -1,0 +1,24 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="m-0">Profissionais</h1>
+  <%= link_to "Novo profissional", new_admin_professional_path, class: "btn btn-primary" %>
+</div>
+
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th class="text-end">Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @professionals.each do |professional| %>
+      <tr>
+        <td><%= professional.name %></td>
+        <td class="text-end">
+          <%= link_to "Editar", edit_admin_professional_path(professional), class: "btn btn-sm btn-outline-secondary" %>
+          <%= button_to "Excluir", admin_professional_path(professional), method: :delete, class: "btn btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Tem certeza?" } } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

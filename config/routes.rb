@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     root to: "home#index"
-    resources :barbers
+    resources :professionals
     resources :services
     resources :appointments
   end

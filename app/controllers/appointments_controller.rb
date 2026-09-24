@@ -17,14 +17,14 @@ class AppointmentsController < ApplicationController
     if @appointment.save
       redirect_to @appointment, notice: t(".success")
     else
-      render :new
+      render :new, status: :unprocessable_content
     end
   end
 
   private
 
   def appointment_params
-    params.expect(appointment: [ :client_id, :barber_id, :service_id, :start_at, :end_at ])
+    params.expect(appointment: [ :client_id, :professional_id, :service_id, :start_at, :end_at ])
   end
 
   def set_appointment

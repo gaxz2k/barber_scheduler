@@ -5,7 +5,7 @@
 <table>
   <thead>
     <tr>
-      <th>Barbeiro</th>
+      <th>Profissional</th>
       <th>Cliente</th>
       <th>Serviço</th>
       <th>Início</th>
@@ -16,7 +16,7 @@
   <tbody>
     <% @appointments.each do |appointment| %>
       <tr>
-        <td><%= appointment.barber.name %></td>
+        <td><%= appointment.professional.name %></td>
         <td><%= appointment.client.name %></td>
         <td><%= appointment.service.name %></td>
         <td><%= l(appointment.start_at, format: :short) %></td>
