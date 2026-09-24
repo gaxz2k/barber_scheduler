@@ -1,8 +1,8 @@
-<%= form_with model: [:admin, professional] do |form| %>
+<%= form_with model: [:admin, professional], class: "admin-form" do |form| %>
   <% if professional.errors.any? %>
-    <div class="alert alert-danger" id="error_explanation">
-      <h5><%= pluralize(professional.errors.count, "erro") %> impediram este profissional de ser salvo:</h5>
-      <ul class="mb-0">
+    <div class="admin-alert admin-alert--error" id="error_explanation" role="alert">
+      <strong><%= pluralize(professional.errors.count, "erro") %> impediram este profissional de ser salvo:</strong>
+      <ul>
         <% professional.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
@@ -10,12 +10,13 @@
     </div>
   <% end %>
 
-  <div class="mb-3">
-    <%= form.label :name, "Nome", class: "form-label" %>
-    <%= form.text_field :name, class: "form-control" %>
+  <div class="admin-form__group">
+    <%= form.label :name, "Nome do profissional" %>
+    <%= form.text_field :name, required: true, autofocus: true %>
   </div>
 
-  <div>
-    <%= form.submit professional.new_record? ? "Criar profissional" : "Salvar alterações", class: "btn btn-primary" %>
+  <div class="admin-form__actions">
+    <%= form.submit professional.new_record? ? "Criar profissional" : "Salvar alterações", class: "admin-button" %>
+    <%= link_to "Cancelar", admin_professionals_path, class: "admin-button admin-button--quiet" %>
   </div>
 <% end %>

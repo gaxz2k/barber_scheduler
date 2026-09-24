@@ -1,5 +1,8 @@
-<h1>Novo agendamento</h1>
+<% content_for :title, "Novo agendamento | Admin" %>
 
-<%= render "form", appointment: @appointment %>
-
-<%= link_to "Voltar", admin_appointments_path %>
+<section class="admin-form-shell">
+  <div class="admin-kicker">Operação diária</div>
+  <h1 class="admin-page-title">Novo agendamento</h1>
+  <p class="admin-page-description">Cadastre um horário para um cliente, profissional e serviço.</p>
+  <%= render "form", appointment: @appointment %>
+</section>

@@ -1,7 +1,7 @@
-<%= form_with model: [:admin, appointment] do |form| %>
+<%= form_with model: [:admin, appointment], class: "admin-form" do |form| %>
   <% if appointment.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(appointment.errors.count, "erro") %> impediram este agendamento de ser salvo:</h2>
+    <div class="admin-alert admin-alert--error" id="error_explanation" role="alert">
+      <strong><%= pluralize(appointment.errors.count, "erro") %> impediram este agendamento de ser salvo:</strong>
       <ul>
         <% appointment.errors.each do |error| %>
           <li><%= error.full_message %></li>
@@ -10,32 +10,33 @@
     </div>
   <% end %>
 
-  <div>
+  <div class="admin-form__group">
     <%= form.label :professional_id, "Profissional" %>
-    <%= form.collection_select :professional_id, Professional.order(:name), :id, :name, prompt: "Selecione um profissional" %>
+    <%= form.collection_select :professional_id, Professional.order(:name), :id, :name, { prompt: "Selecione um profissional" }, required: true %>
   </div>
 
-  <div>
+  <div class="admin-form__group">
     <%= form.label :client_id, "Cliente" %>
-    <%= form.collection_select :client_id, Client.order(:name), :id, :name, prompt: "Selecione um cliente" %>
+    <%= form.collection_select :client_id, Client.order(:name), :id, :name, { prompt: "Selecione um cliente" }, required: true %>
   </div>
 
-  <div>
+  <div class="admin-form__group">
     <%= form.label :service_id, "Serviço" %>
-    <%= form.collection_select :service_id, Service.order(:name), :id, :name, prompt: "Selecione um serviço" %>
+    <%= form.collection_select :service_id, Service.order(:name), :id, ->(service) { "#{service.name} · #{service.duration_minutes} min" }, { prompt: "Selecione um serviço" }, required: true %>
   </div>
 
-  <div>
+  <div class="admin-form__group">
     <%= form.label :start_at, "Início" %>
-    <%= form.datetime_field :start_at %>
+    <%= form.datetime_local_field :start_at, required: true %>
   </div>
 
-  <div>
+  <div class="admin-form__group">
     <%= form.label :end_at, "Fim" %>
-    <%= form.datetime_field :end_at %>
+    <%= form.datetime_local_field :end_at, required: true %>
   </div>
 
-  <div>
-    <%= form.submit appointment.new_record? ? "Criar agendamento" : "Salvar alterações" %>
+  <div class="admin-form__actions">
+    <%= form.submit appointment.new_record? ? "Criar agendamento" : "Salvar alterações", class: "admin-button" %>
+    <%= link_to "Cancelar", admin_appointments_path, class: "admin-button admin-button--quiet" %>
   </div>
 <% end %>

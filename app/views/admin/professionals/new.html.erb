@@ -1,5 +1,8 @@
-<h1 class="mb-3">Novo profissional</h1>
+<% content_for :title, "Novo profissional | Admin" %>
 
-<%= render "form", professional: @professional %>
-
-<%= link_to "← Voltar", admin_professionals_path, class: "d-inline-block mt-3" %>
+<section class="admin-form-shell">
+  <div class="admin-kicker">Equipe</div>
+  <h1 class="admin-page-title">Novo profissional</h1>
+  <p class="admin-page-description">Cadastre um profissional para disponibilizá-lo na agenda da barbearia.</p>
+  <%= render "form", professional: @professional %>
+</section>

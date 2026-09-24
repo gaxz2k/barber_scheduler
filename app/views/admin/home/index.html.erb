@@ -1,24 +1,45 @@
-<h1 class="mb-3">Painel administrativo</h1>
-<p class="text-muted">Bem-vindo(a), <%= current_user.email %>.</p>
+<% content_for :title, "Painel | Barbearia Senhor R" %>
 
-<div class="row g-3">
-  <div class="col-md-4">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Profissionais</h5>
-        <p class="card-text">Gerencie os profissionais da barbearia.</p>
-        <%= link_to "Gerenciar profissionais", admin_professionals_path, class: "btn btn-primary" %>
-      </div>
-    </div>
+<section class="admin-header-row">
+  <div>
+    <div class="admin-kicker">Visão geral</div>
+    <h1 class="admin-page-title">Bom dia, <%= current_user.email.split("@").first %>.</h1>
+    <p class="admin-page-description">Acompanhe a rotina da barbearia e mantenha horários, profissionais e serviços em ordem.</p>
   </div>
+</section>
 
-  <div class="col-md-4">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Serviços</h5>
-        <p class="card-text">Gerencie os serviços oferecidos.</p>
-        <%= link_to "Gerenciar serviços", admin_services_path, class: "btn btn-primary" %>
-      </div>
-    </div>
+<div class="admin-table-wrap">
+  <div class="admin-empty">
+    <p><strong>Seu painel está pronto para operar.</strong></p>
+    <p>Use os atalhos abaixo para começar.</p>
   </div>
 </div>
+
+<section class="professional-grid" aria-label="Atalhos administrativos">
+  <%= link_to admin_appointments_path, class: "professional-card" do %>
+    <span class="professional-avatar" aria-hidden="true">⌁</span>
+    <span class="professional-card__content">
+      <span class="professional-card__name">Agendamentos</span>
+      <span class="professional-card__caption">Consulte e organize a agenda da barbearia.</span>
+      <span class="professional-card__action">Abrir agenda <span aria-hidden="true">→</span></span>
+    </span>
+  <% end %>
+
+  <%= link_to admin_professionals_path, class: "professional-card" do %>
+    <span class="professional-avatar professional-avatar--r" aria-hidden="true">✦</span>
+    <span class="professional-card__content">
+      <span class="professional-card__name">Profissionais</span>
+      <span class="professional-card__caption">Gerencie quem faz parte do time.</span>
+      <span class="professional-card__action">Gerenciar time <span aria-hidden="true">→</span></span>
+    </span>
+  <% end %>
+
+  <%= link_to admin_services_path, class: "professional-card" do %>
+    <span class="professional-avatar" aria-hidden="true">▦</span>
+    <span class="professional-card__content">
+      <span class="professional-card__name">Serviços</span>
+      <span class="professional-card__caption">Mantenha o cardápio e as durações atualizados.</span>
+      <span class="professional-card__action">Ver serviços <span aria-hidden="true">→</span></span>
+    </span>
+  <% end %>
+</section>

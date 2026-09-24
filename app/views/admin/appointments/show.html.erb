@@ -1,8 +1,17 @@
-<h1><%= @appointment.client.name %></h1>
+<% content_for :title, "Agendamento | Admin" %>
 
-<% if current_user&.admin? %>
-  <%= link_to "Editar", edit_admin_appointment_path(@appointment) %>
-  <%= link_to "Excluir", admin_appointment_path(@appointment), data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" } %>
-<% end %>
+<section class="admin-detail-card">
+  <div class="admin-kicker">Detalhes do atendimento</div>
+  <h1><%= @appointment.client.name %></h1>
 
-<%= link_to "Voltar", admin_appointments_path %>
+  <div class="admin-detail-row"><span>Profissional</span><span><%= @appointment.professional.name %></span></div>
+  <div class="admin-detail-row"><span>Serviço</span><span><%= @appointment.service.name %></span></div>
+  <div class="admin-detail-row"><span>Início</span><span><%= l(@appointment.start_at, format: :long) %></span></div>
+  <div class="admin-detail-row"><span>Fim</span><span><%= l(@appointment.end_at, format: :long) %></span></div>
+  <div class="admin-detail-row"><span>Status</span><span class="admin-badge"><%= @appointment.status.humanize %></span></div>
+
+  <div class="admin-form__actions">
+    <%= link_to "Editar", edit_admin_appointment_path(@appointment), class: "admin-button" %>
+    <%= link_to "Voltar", admin_appointments_path, class: "admin-button admin-button--quiet" %>
+  </div>
+</section>

@@ -1,30 +1,68 @@
-<h1>Agendamentos</h1>
+<% content_for :title, "Seu horário | Barbearia Senhor R" %>
 
-<%= link_to "Novo agendamento", new_appointment_path %>
-
-<table>
-  <thead>
-    <tr>
-      <th>Profissional</th>
-      <th>Cliente</th>
-      <th>Serviço</th>
-      <th>Início</th>
-      <th>Status</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @appointments.each do |appointment| %>
-      <tr>
-        <td><%= appointment.professional.name %></td>
-        <td><%= appointment.client.name %></td>
-        <td><%= appointment.service.name %></td>
-        <td><%= l(appointment.start_at, format: :short) %></td>
-        <td><%= appointment.status.humanize %></td>
-        <td>
-          <%= link_to "Ver", appointment %>
-        </td>
-      </tr>
+<main class="site-shell customer-home">
+  <header class="customer-header">
+    <%= link_to root_path, class: "brand-lockup", aria: { label: "Barbearia Senhor R, início" } do %>
+      <span class="brand-mark" aria-hidden="true">Sr<span class="brand-crown">♛</span></span>
+      <span>
+        <span class="brand-name">Barbearia</span>
+        <span class="brand-name brand-name--strong">Senhor R</span>
+      </span>
     <% end %>
-  </tbody>
-</table>
+    <span class="header-location">Nova Odessa · SP</span>
+  </header>
+
+  <section class="hero-panel" aria-labelledby="home-title">
+    <div class="eyebrow">Seu próximo cuidado começa aqui</div>
+    <h1 id="home-title">Agendar um horário<br><em>sem complicação.</em></h1>
+    <p class="hero-copy">Escolha quem vai te atender, o serviço e o melhor horário para você.</p>
+    <%= link_to "Agendar meu horário", new_appointment_path, class: "button button--primary button--large", data: { turbo: false } %>
+    <div class="hero-trust" aria-label="Informações de confiança">
+      <span><span class="trust-icon" aria-hidden="true">✦</span> Atendimento pessoal</span>
+      <span><span class="trust-icon" aria-hidden="true">◷</span> Escolha seu horário</span>
+    </div>
+  </section>
+
+  <section class="section-block" aria-labelledby="professionals-title">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">Quem vai te atender</div>
+        <h2 id="professionals-title">Escolha seu profissional</h2>
+      </div>
+      <span class="section-note">Toque no card para continuar</span>
+    </div>
+
+    <% if @professionals.any? %>
+      <div class="professional-grid">
+        <% @professionals.each_with_index do |professional, index| %>
+          <%= link_to new_appointment_path(professional: professional.id), class: "professional-card", data: { turbo: false } do %>
+            <span class="professional-avatar <%= "professional-avatar--r" if index.odd? %>" aria-hidden="true"><%= professional.name.first %></span>
+            <span class="professional-card__content">
+              <span class="professional-card__name"><%= professional.name %></span>
+              <span class="professional-card__caption">Cuidado e precisão em cada corte</span>
+              <span class="professional-card__action">Ver horários <span aria-hidden="true">→</span></span>
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="customer-empty-state">
+        <strong>Ainda não há profissionais cadastrados.</strong>
+        <span>Assim que o time for cadastrado, os cards aparecerão aqui.</span>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="service-preview" aria-labelledby="services-preview-title">
+    <div class="eyebrow">Escolha seu ritual</div>
+    <h2 id="services-preview-title">Serviços que fazem parte de você</h2>
+    <p>Encontre o cuidado ideal para o seu momento.</p>
+    <%= link_to "Ver todos os serviços", new_appointment_path, class: "text-link", data: { turbo: false } %>
+  </section>
+
+  <footer class="customer-footer">
+    <span>Barbearia Senhor R</span>
+    <span>·</span>
+    <span>Nova Odessa, SP</span>
+  </footer>
+</main>

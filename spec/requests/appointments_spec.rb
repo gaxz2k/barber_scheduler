@@ -49,5 +49,13 @@ RSpec.describe "Appointments", type: :request do
 
       expect(response).to redirect_to(Appointment.last)
     end
+
+    it "renders the booking form when the appointment is invalid" do
+      params = { appointment: { client_id: nil, professional_id: nil, service_id: nil, start_at: nil, end_at: nil } }
+
+      post appointments_path, params: params
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
   end
 end

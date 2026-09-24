@@ -1,5 +1,8 @@
-<h1 class="mb-3">Editar profissional</h1>
+<% content_for :title, "Editar profissional | Admin" %>
 
-<%= render "form", professional: @professional %>
-
-<%= link_to "← Voltar", admin_professionals_path, class: "d-inline-block mt-3" %>
+<section class="admin-form-shell">
+  <div class="admin-kicker">Equipe</div>
+  <h1 class="admin-page-title">Editar profissional</h1>
+  <p class="admin-page-description">Atualize os dados que aparecerão para os clientes.</p>
+  <%= render "form", professional: @professional %>
+</section>
