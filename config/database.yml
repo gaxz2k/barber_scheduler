@@ -1,43 +1,25 @@
-  # SQLite. Versions 3.8.0 and up are supported.
-  #   gem install sqlite3
-  #
-  #   Ensure the SQLite 3 gem is defined in your Gemfile
-  #   gem "sqlite3"
-  #
-  default: &default
-    adapter: postgresql
-    encoding: unicode
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    host: localhost
-    username: postgres
-    password: <%= ENV["POSTGRES_PASSWORD"] %>
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("POSTGRES_HOST", "localhost") %>
+  username: <%= ENV.fetch("POSTGRES_USER", "postgres") %>
+  password: <%= ENV["POSTGRES_PASSWORD"] %>
 
-  development:
+development:
+  <<: *default
+  database: <%= ENV.fetch("POSTGRES_DATABASE", "barber_scheduler_development") %>
+
+# The test database is disposable and must remain separate from development.
+test:
+  <<: *default
+  database: <%= ENV.fetch("POSTGRES_TEST_DATABASE", "barber_scheduler_test") %>
+
+production:
+  primary:
     <<: *default
-    database: barber_schelude_development
-
-  # Warning: The database defined as "test" will be erased and
-  # re-generated from your development database when you run "rake".
-  # Do not set this db to the same as development or production.
-  test:
+    database: <%= ENV.fetch("POSTGRES_DATABASE", "barber_scheduler_production") %>
+  cable:
     <<: *default
-    database: barber_schelude_test
-
-  # Store production database in the storage/ directory, which by default
-  # is mounted as a persistent Docker volume in config/deploy.yml.
-  production:
-    primary:
-      <<: *default
-      database: barber_schelude_production
-    cache:
-      <<: *default
-      database: barber_schelude_production_cache
-      migrations_paths: db/cache_migrate
-    queue:
-      <<: *default
-      database: barber_schelude_production_queue
-      migrations_paths: db/queue_migrate
-    cable:
-      <<: *default
-      database: barber_schelude_production_cable
-      migrations_paths: db/cable_migrate
+    database: <%= ENV.fetch("POSTGRES_CABLE_DATABASE", "barber_scheduler_production_cable") %>
+    migrations_paths: db/cable_migrate
