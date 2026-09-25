@@ -19,6 +19,25 @@ RSpec.describe "Appointments", type: :request do
     end
   end
 
+  describe "GET /appointments/confirmation/:token" do
+    def finished_appointment(status)
+      slot = 10.days.from_now.change(hour: 10, min: 0, sec: 0)
+      appointment = Appointment.create!(professional: professional, client: client, service: service,
+                                        start_at: slot, end_at: slot + 30.minutes)
+      appointment.update_columns(status: status)
+      appointment
+    end
+
+    it "redirects away without rendering customer data for a finished appointment" do
+      results = %w[canceled completed].map do |status|
+        get "/appointments/confirmation/#{finished_appointment(status).confirmation_token}"
+        [ response.status, response.body.include?(client.name) ]
+      end
+
+      expect(results).to eq([ [ 302, false ], [ 302, false ] ])
+    end
+  end
+
   describe "GET /appointments/new" do
     it "returns http success" do
       get new_appointment_path

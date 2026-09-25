@@ -89,25 +89,24 @@ class AppointmentsController < ApplicationController
 
   private
 
+  # Reached only for pending and confirmed appointments: #confirmation
+  # redirects away when confirmation_accessible? is false, which covers
+  # canceled, completed and expired tokens. Keeping the canceled/completed
+  # branches out of here is deliberate, so that relaxing the guard later
+  # cannot silently start rendering customer data for a finished booking.
   def confirmation_eyebrow
-    return "Agendamento cancelado" if @appointment.canceled?
-    return "Atendimento concluído" if @appointment.completed?
     return "Tudo certo por aqui" if @appointment.confirmed?
 
     "Recebemos seu pedido"
   end
 
   def confirmation_title
-    return "Agendamento cancelado" if @appointment.canceled?
-    return "Atendimento concluído" if @appointment.completed?
     return "Agendamento confirmado" if @appointment.confirmed?
 
     "Agendamento solicitado"
   end
 
   def confirmation_message
-    return "Este agendamento foi cancelado e o horário está livre para uma nova reserva." if @appointment.canceled?
-    return "Este atendimento já foi concluído." if @appointment.completed?
     return "Seu horário está reservado. Guarde os detalhes abaixo para a sua chegada." if @appointment.confirmed?
 
     "Seu horário foi enviado para verificação pela equipe. O status aparece abaixo e pode ser atualizado pela barbearia."

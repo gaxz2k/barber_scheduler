@@ -31,8 +31,11 @@ class Admin::BarbershopPhotosController < Admin::BaseController
   end
 
   def destroy
-    @photo.destroy
-    redirect_to admin_barbershop_photos_path, notice: t(".success")
+    if @photo.destroy
+      redirect_to admin_barbershop_photos_path, notice: t(".success")
+    else
+      redirect_to admin_barbershop_photos_path, alert: t(".failure")
+    end
   end
 
   private
