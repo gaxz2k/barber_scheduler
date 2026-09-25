@@ -11,8 +11,8 @@
   <% end %>
 
   <div>
-    <%= form.label :barber_id, "Barbeiro" %>
-    <%= form.collection_select :barber_id, Barber.order(:name), :id, :name, prompt: "Selecione um barbeiro" %>
+    <%= form.label :professional_id, "Profissional" %>
+    <%= form.collection_select :professional_id, Professional.order(:name), :id, :name, prompt: "Selecione um profissional" %>
   </div>
 
   <div>

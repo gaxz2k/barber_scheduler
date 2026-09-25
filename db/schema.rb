@@ -10,29 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_18_012135) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_25_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "appointments", force: :cascade do |t|
-    t.bigint "barber_id", null: false
     t.bigint "client_id", null: false
     t.datetime "created_at", null: false
     t.datetime "end_at", null: false
+    t.bigint "professional_id", null: false
     t.bigint "service_id", null: false
     t.datetime "start_at", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
-    t.index ["barber_id"], name: "index_appointments_on_barber_id"
     t.index ["client_id"], name: "index_appointments_on_client_id"
+    t.index ["professional_id"], name: "index_appointments_on_professional_id"
     t.index ["service_id"], name: "index_appointments_on_service_id"
-  end
-
-  create_table "barbers", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "name"
-    t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_barbers_on_name", unique: true
   end
 
   create_table "clients", force: :cascade do |t|
@@ -40,6 +33,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_18_012135) do
     t.string "name"
     t.string "phone"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "professionals", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_professionals_on_name", unique: true
   end
 
   create_table "services", force: :cascade do |t|
@@ -62,7 +62,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_18_012135) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  add_foreign_key "appointments", "barbers"
   add_foreign_key "appointments", "clients"
+  add_foreign_key "appointments", "professionals"
   add_foreign_key "appointments", "services"
 end

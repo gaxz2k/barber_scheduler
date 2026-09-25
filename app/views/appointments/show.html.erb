@@ -1,12 +1,10 @@
 <h1>Agendamento #<%= @appointment.id %></h1>
 
-<p><strong>Barbeiro:</strong> <%= @appointment.barber.name %></p>
+<p><strong>Profissional:</strong> <%= @appointment.professional.name %></p>
 <p><strong>Cliente:</strong> <%= @appointment.client.name %></p>
 <p><strong>Serviço:</strong> <%= @appointment.service.name %></p>
 <p><strong>Início:</strong> <%= l(@appointment.start_at, format: :long) %></p>
 <p><strong>Fim:</strong> <%= l(@appointment.end_at, format: :long) %></p>
 <p><strong>Status:</strong> <%= @appointment.status.humanize %></p>
 
-<%= link_to "Editar", edit_appointment_path(@appointment) %>
-<%= link_to "Excluir", @appointment, data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" } %>
 <%= link_to "Voltar", appointments_path %>

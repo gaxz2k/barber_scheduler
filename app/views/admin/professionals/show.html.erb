@@ -1,0 +1,8 @@
+<h1><%= @professional.name %></h1>
+
+<% if current_user&.admin? %>
+  <%= link_to "Editar", edit_admin_professional_path(@professional) %>
+  <%= link_to "Excluir", admin_professional_path(@professional), data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" } %>
+<% end %>
+
+<%= link_to "Voltar", admin_professionals_path %>
