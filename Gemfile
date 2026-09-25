@@ -74,3 +74,6 @@ end
 gem "importmap-rails", "~> 2.2"
 
 gem "devise", "~> 5.0"
+
+gem "inertia_rails", "~> 3.22"
+gem "vite_rails", "~> 3.11"
