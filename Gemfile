@@ -17,9 +17,11 @@ gem "jbuilder"
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
-gem "solid_cache"
-gem "solid_queue"
+# Use Redis for Rails.cache and Sidekiq for Active Job.
+gem "redis", "~> 5.4"
+gem "connection_pool"
+gem "sidekiq", "~> 8.0"
+# Solid Cable remains the Action Cable adapter for production cable storage.
 gem "solid_cable"
 gem "rails-i18n"
 
@@ -41,6 +43,9 @@ group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
   gem "rspec-rails"
   gem "dotenv-rails"
+  gem "mock_redis"
+  gem "factory_bot_rails"
+  gem "shoulda-matchers"
 
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
