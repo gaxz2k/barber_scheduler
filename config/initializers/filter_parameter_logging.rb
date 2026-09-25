@@ -11,10 +11,16 @@ Rails.application.config.filter_parameters += [
 
 # The public booking form posts :client_name and :client_phone, but
 # PublicScheduler persists into the clients table columns name/phone, so the
-# ActiveRecord SQL log binds were written in cleartext. The log subscriber
-# passes the bare column name to the filter (ActiveRecord::LogSubscriber#filter
-# -> inspection_filter.filter_param(attribute_name, value)), so these must be
-# declared as bare column names, not "client.name": a qualified key never
-# matches. The names are declared globally because the subscriber hardcodes
-# ActiveRecord::Base.inspection_filter and cannot see a per-model list.
+# ActiveRecord SQL log binds were written in cleartext.
+#
+# The log subscriber hands the BARE column name to the filter
+# (ActiveRecord::LogSubscriber#filter -> inspection_filter.filter_param) and
+# passes no model context, so these must be declared as bare column names: a
+# qualified "client.name" never matches, and a Proc keyed on the name gives
+# the same result. A side effect is that other name columns (services.name)
+# are also masked in SQL logs. That is over-redaction, not a leak, and it is
+# unavoidable without patching the log subscriber to carry the model name.
+# The keys must live here rather than in the model because the subscriber
+# reads ActiveRecord::Base.inspection_filter and cannot see a per-model
+# filter_attributes list.
 Rails.application.config.filter_parameters += [ "name", "phone" ]

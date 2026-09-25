@@ -36,8 +36,11 @@ class Admin::ServicesController < Admin::BaseController
   end
 
   def destroy
-    @service.destroy
-    redirect_to admin_services_path, notice: t(".success")
+    if @service.destroy
+      redirect_to admin_services_path, notice: t(".success")
+    else
+      redirect_to admin_services_path, alert: t(".failure")
+    end
   end
 
   private
