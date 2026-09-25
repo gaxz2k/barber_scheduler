@@ -1,36 +1,36 @@
-<% content_for :title, "Painel | Barbearia Senhor R" %>
+<% content_for :title, "Admin | Barbearia Senhor R" %>
 
 <section class="admin-header-row">
   <div>
-    <div class="admin-kicker">Visão geral</div>
-    <h1 class="admin-page-title">Bom dia, <%= current_user.email.split("@").first %>.</h1>
-    <p class="admin-page-description">Acompanhe a rotina da barbearia e mantenha horários, profissionais e serviços em ordem.</p>
+    <div class="admin-kicker">Painel operacional</div>
+    <h1 class="admin-page-title">Tudo sob controle</h1>
+    <p class="admin-page-description">Acompanhe a agenda, organize a equipe e mantenha a presença digital da barbearia em dia.</p>
   </div>
 </section>
 
-<div class="admin-table-wrap">
-  <div class="admin-empty">
+<section class="admin-dashboard-hero">
+  <div class="admin-dashboard-hero__copy">
     <p><strong>Seu painel está pronto para operar.</strong></p>
-    <p>Use os atalhos abaixo para começar.</p>
+    <p>Use os atalhos abaixo para cuidar da agenda e da presença digital da barbearia.</p>
   </div>
-</div>
+</section>
 
 <section class="professional-grid" aria-label="Atalhos administrativos">
   <%= link_to admin_appointments_path, class: "professional-card" do %>
     <span class="professional-avatar" aria-hidden="true">⌁</span>
     <span class="professional-card__content">
       <span class="professional-card__name">Agendamentos</span>
-      <span class="professional-card__caption">Consulte e organize a agenda da barbearia.</span>
-      <span class="professional-card__action">Abrir agenda <span aria-hidden="true">→</span></span>
+      <span class="professional-card__caption">Consulte e organize os horários reservados.</span>
+      <span class="professional-card__action">Abrir agenda →</span>
     </span>
   <% end %>
 
   <%= link_to admin_professionals_path, class: "professional-card" do %>
-    <span class="professional-avatar professional-avatar--r" aria-hidden="true">✦</span>
+    <span class="professional-avatar" aria-hidden="true">✦</span>
     <span class="professional-card__content">
       <span class="professional-card__name">Profissionais</span>
-      <span class="professional-card__caption">Gerencie quem faz parte do time.</span>
-      <span class="professional-card__action">Gerenciar time <span aria-hidden="true">→</span></span>
+      <span class="professional-card__caption">Gerencie quem atende na barbearia.</span>
+      <span class="professional-card__action">Gerenciar equipe →</span>
     </span>
   <% end %>
 
@@ -38,8 +38,17 @@
     <span class="professional-avatar" aria-hidden="true">▦</span>
     <span class="professional-card__content">
       <span class="professional-card__name">Serviços</span>
-      <span class="professional-card__caption">Mantenha o cardápio e as durações atualizados.</span>
-      <span class="professional-card__action">Ver serviços <span aria-hidden="true">→</span></span>
+      <span class="professional-card__caption">Atualize o cardápio e as durações.</span>
+      <span class="professional-card__action">Ver serviços →</span>
+    </span>
+  <% end %>
+
+  <%= link_to admin_barbershop_photos_path, class: "professional-card" do %>
+    <span class="professional-avatar" aria-hidden="true">▧</span>
+    <span class="professional-card__content">
+      <span class="professional-card__name">Fotos da barbearia</span>
+      <span class="professional-card__caption">Monte o carrossel da tela inicial.</span>
+      <span class="professional-card__action">Editar galeria →</span>
     </span>
   <% end %>
 </section>

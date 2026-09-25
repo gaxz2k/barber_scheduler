@@ -1,0 +1,52 @@
+<%= form_with model: [:admin, photo], class: "admin-form" do |form| %>
+  <% if photo.errors.any? %>
+    <div class="admin-alert admin-alert--error" id="error_explanation" role="alert">
+      <strong><%= pluralize(photo.errors.count, "erro") %> impediram esta foto de ser salva:</strong>
+      <ul>
+        <% photo.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="admin-form__group">
+    <%= form.label :image, photo.new_record? ? "Foto" : "Trocar foto" %>
+    <%= form.file_field :image, accept: "image/png,image/jpeg,image/webp", required: photo.new_record? %>
+    <span class="field-hint">PNG, JPG ou WEBP, até 10 MB.</span>
+  </div>
+
+  <div class="admin-form__group">
+    <%= form.label :caption, "Legenda" %>
+    <%= form.text_field :caption, maxlength: 140, placeholder: "Ex.: Corte clássico com acabamento" %>
+    <span class="field-hint">A legenda aparece sobre a foto no carrossel.</span>
+  </div>
+
+  <div class="admin-form__row">
+    <div class="admin-form__group">
+      <%= form.label :position, "Ordem" %>
+      <%= form.number_field :position, min: 0, step: 1, required: true %>
+      <span class="field-hint">Menor número aparece primeiro.</span>
+    </div>
+
+    <label class="admin-toggle">
+      <%= form.check_box :active %>
+      <span>
+        <strong>Publicar no carrossel</strong>
+        <small>Desmarque para ocultar sem excluir a imagem.</small>
+      </span>
+    </label>
+  </div>
+
+  <% if photo.persisted? && photo.image.attached? && photo.image.blob&.persisted? %>
+    <div class="admin-current-image">
+      <span>Imagem atual</span>
+      <%= image_tag photo.image, alt: photo.caption.presence || "Foto da Barbearia Senhor R" %>
+    </div>
+  <% end %>
+
+  <div class="admin-form__actions">
+    <%= form.submit photo.new_record? ? "Adicionar foto" : "Salvar alterações", class: "admin-button" %>
+    <%= link_to "Cancelar", admin_barbershop_photos_path, class: "admin-button admin-button--quiet" %>
+  </div>
+<% end %>
