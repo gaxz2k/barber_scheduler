@@ -1,8 +1,8 @@
-<%= form_with model: [:admin, service] do |form| %>
+<%= form_with model: [:admin, service], class: "admin-form" do |form| %>
   <% if service.errors.any? %>
-    <div class="alert alert-danger" id="error_explanation">
-      <h5><%= pluralize(service.errors.count, "erro") %> impediram este serviço de ser salvo:</h5>
-      <ul class="mb-0">
+    <div class="admin-alert admin-alert--error" id="error_explanation" role="alert">
+      <strong><%= pluralize(service.errors.count, "erro") %> impediram este serviço de ser salvo:</strong>
+      <ul>
         <% service.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
@@ -10,17 +10,18 @@
     </div>
   <% end %>
 
-  <div class="mb-3">
-    <%= form.label :name, "Nome", class: "form-label" %>
-    <%= form.text_field :name, class: "form-control" %>
+  <div class="admin-form__group">
+    <%= form.label :name, "Nome do serviço" %>
+    <%= form.text_field :name, required: true, autofocus: true %>
   </div>
 
-  <div class="mb-3">
-    <%= form.label :duration_minutes, "Duração (minutos)", class: "form-label" %>
-    <%= form.number_field :duration_minutes, class: "form-control" %>
+  <div class="admin-form__group">
+    <%= form.label :duration_minutes, "Duração em minutos" %>
+    <%= form.number_field :duration_minutes, required: true, min: 1, step: 1 %>
   </div>
 
-  <div>
-    <%= form.submit service.new_record? ? "Criar serviço" : "Salvar alterações", class: "btn btn-primary" %>
+  <div class="admin-form__actions">
+    <%= form.submit service.new_record? ? "Criar serviço" : "Salvar alterações", class: "admin-button" %>
+    <%= link_to "Cancelar", admin_services_path, class: "admin-button admin-button--quiet" %>
   </div>
 <% end %>

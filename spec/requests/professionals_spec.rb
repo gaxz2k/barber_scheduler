@@ -11,6 +11,20 @@ RSpec.describe "Admin::Professionals", type: :request do
       expect(response).to redirect_to(new_user_session_path)
     end
 
+    it "shows a Portuguese access message after the redirect" do
+      get new_admin_professional_path
+      follow_redirect!
+
+      expect(response.body).to include("Você precisa entrar no painel para acessar esta página.")
+    end
+
+    it "does not expose a translation fallback after the redirect" do
+      get new_admin_professional_path
+      follow_redirect!
+
+      expect(response.body).not_to include("Translation missing")
+    end
+
     it "redirects logged-in users who are not admin" do
       sign_in regular_user
 

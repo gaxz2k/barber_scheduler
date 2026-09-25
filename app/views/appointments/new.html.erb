@@ -1,5 +1,94 @@
-<h1>Novo agendamento</h1>
+<% content_for :title, "Novo agendamento | Barbearia Senhor R" %>
 
-<%= render "form", appointment: @appointment %>
+<main class="site-shell booking-page">
+  <header class="customer-header">
+    <%= link_to root_path, class: "brand-lockup", aria: { label: "Barbearia Senhor R, início" } do %>
+      <span class="brand-mark" aria-hidden="true">Sr<span class="brand-crown">♛</span></span>
+      <span>
+        <span class="brand-name">Barbearia</span>
+        <span class="brand-name brand-name--strong">Senhor R</span>
+      </span>
+    <% end %>
+    <%= link_to "Voltar", root_path, class: "back-link" %>
+  </header>
 
-<%= link_to "Voltar", appointments_path %>
+  <div class="booking-progress" aria-label="Etapas do agendamento">
+    <span class="progress-step progress-step--active"><b>1</b><span>Seu atendimento</span></span>
+    <span class="progress-line"></span>
+    <span class="progress-step"><b>2</b><span>Horário</span></span>
+    <span class="progress-line"></span>
+    <span class="progress-step"><b>3</b><span>Confirmar horário</span></span>
+  </div>
+
+  <section class="booking-intro">
+    <div class="eyebrow">Vamos cuidar de você</div>
+    <h1>Escolha seu profissional</h1>
+    <p>Depois você escolhe o serviço e o horário que combinam com a sua rotina.</p>
+  </section>
+
+  <%= form_with model: @appointment, class: "booking-form" do |form| %>
+  <% if @appointment.errors.any? %>
+      <div id="error_explanation" class="form-alert" role="alert">
+        <strong>Revise os dados abaixo:</strong>
+        <ul>
+          <% @appointment.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <fieldset class="form-section">
+      <legend><span class="form-step">01</span> Quem vai te atender?</legend>
+      <% if @professionals.any? %>
+        <div class="professional-options">
+          <% @professionals.each do |professional| %>
+            <label class="choice-card">
+              <%= form.radio_button :professional_id, professional.id, required: true, class: "choice-input" %>
+              <span class="choice-card__body">
+                <span class="choice-card__avatar" aria-hidden="true"><%= professional.name.first %></span>
+                <span>
+                  <strong><%= professional.name %></strong>
+                  <small>Escolher horários</small>
+                </span>
+              </span>
+            </label>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="form-alert" role="status">Ainda não há profissionais disponíveis. O time da barbearia ainda será cadastrado.</div>
+      <% end %>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend><span class="form-step">02</span> Seus dados</legend>
+      <%= form.label :client_id, "Cliente" %>
+      <%= form.collection_select :client_id, Client.order(:name), :id, :name, { prompt: "Selecione ou informe o cliente" }, required: true, class: "select-field" %>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend><span class="form-step">03</span> Serviço</legend>
+      <%= form.label :service_id, "O que você deseja?" %>
+      <%= form.collection_select :service_id, Service.order(:name), :id, ->(service) { "#{service.name} · #{service.duration_minutes} min" }, { prompt: "Selecione um serviço" }, required: true, class: "select-field" %>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend><span class="form-step">04</span> Horário</legend>
+      <div class="field-grid">
+        <div class="field-group">
+          <%= form.label :start_at, "Início" %>
+          <%= form.datetime_local_field :start_at, required: true %>
+        </div>
+        <div class="field-group">
+          <%= form.label :end_at, "Fim" %>
+          <%= form.datetime_local_field :end_at, required: true %>
+        </div>
+      </div>
+      <p class="field-hint">A disponibilidade completa por profissional chega na próxima etapa.</p>
+    </fieldset>
+
+    <%= form.submit "Continuar para confirmação", class: "button button--primary button--large button--full", data: { turbo: false } %>
+  <% end %>
+
+  <p class="booking-footnote">Ao continuar, você confere os dados antes de finalizar.</p>
+</main>

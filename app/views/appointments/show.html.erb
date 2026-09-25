@@ -1,10 +1,37 @@
-<h1>Agendamento #<%= @appointment.id %></h1>
+<% content_for :title, "Seu agendamento | Barbearia Senhor R" %>
 
-<p><strong>Profissional:</strong> <%= @appointment.professional.name %></p>
-<p><strong>Cliente:</strong> <%= @appointment.client.name %></p>
-<p><strong>Serviço:</strong> <%= @appointment.service.name %></p>
-<p><strong>Início:</strong> <%= l(@appointment.start_at, format: :long) %></p>
-<p><strong>Fim:</strong> <%= l(@appointment.end_at, format: :long) %></p>
-<p><strong>Status:</strong> <%= @appointment.status.humanize %></p>
+<main class="site-shell booking-page">
+  <header class="customer-header">
+    <%= link_to root_path, class: "brand-lockup", aria: { label: "Barbearia Senhor R, início" } do %>
+      <span class="brand-mark" aria-hidden="true">Sr<span class="brand-crown">♛</span></span>
+      <span>
+        <span class="brand-name">Barbearia</span>
+        <span class="brand-name brand-name--strong">Senhor R</span>
+      </span>
+    <% end %>
+    <%= link_to "Voltar", root_path, class: "back-link" %>
+  </header>
 
-<%= link_to "Voltar", appointments_path %>
+  <section class="confirmation-card">
+    <div class="eyebrow"><%= @appointment.confirmed? ? "Tudo certo por aqui" : "Recebemos seu pedido" %></div>
+    <h1><%= @appointment.confirmed? ? "Agendamento confirmado" : "Agendamento solicitado" %></h1>
+    <p>
+      <% if @appointment.confirmed? %>
+        Seu horário está reservado. Guarde os detalhes abaixo para a sua chegada.
+      <% else %>
+        Seu horário foi enviado para verificação pela equipe. O status aparece abaixo e pode ser atualizado pela barbearia.
+      <% end %>
+    </p>
+
+    <dl class="confirmation-details">
+      <div><dt>Profissional</dt><dd><%= @appointment.professional.name %></dd></div>
+      <div><dt>Serviço</dt><dd><%= @appointment.service.name %></dd></div>
+      <div><dt>Início</dt><dd><%= l(@appointment.start_at, format: :long) %></dd></div>
+      <div><dt>Término</dt><dd><%= l(@appointment.end_at, format: :long) %></dd></div>
+      <div><dt>Status</dt><dd><span class="admin-badge"><%= @appointment.status.humanize %></span></dd></div>
+    </dl>
+
+    <p class="field-hint">Quando o link de calendário e o WhatsApp estiverem disponíveis, eles aparecerão aqui.</p>
+    <%= link_to "Fazer outro agendamento", new_appointment_path, class: "button button--primary button--large" %>
+  </section>
+</main>

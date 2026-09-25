@@ -2,17 +2,19 @@ class AppointmentsController < ApplicationController
   before_action :set_appointment, only: [ :show ]
 
   def index
-    @appointments = Appointment.order(start_at: :asc)
+    @professionals = Professional.order(:name)
   end
 
   def show
   end
 
   def new
-    @appointment = Appointment.new
+    @professionals = Professional.order(:name)
+    @appointment = Appointment.new(professional_id: params[:professional])
   end
 
   def create
+    @professionals = Professional.order(:name)
     @appointment = Appointment.new(appointment_params)
     if @appointment.save
       redirect_to @appointment, notice: t(".success")

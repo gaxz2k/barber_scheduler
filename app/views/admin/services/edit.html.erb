@@ -1,5 +1,8 @@
-<h1 class="mb-3">Editar serviço</h1>
+<% content_for :title, "Editar serviço | Admin" %>
 
-<%= render "form", service: @service %>
-
-<%= link_to "← Voltar", admin_services_path, class: "d-inline-block mt-3" %>
+<section class="admin-form-shell">
+  <div class="admin-kicker">Cardápio</div>
+  <h1 class="admin-page-title">Editar serviço</h1>
+  <p class="admin-page-description">Atualize os dados que os clientes verão ao escolher um serviço.</p>
+  <%= render "form", service: @service %>
+</section>

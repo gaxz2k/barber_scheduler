@@ -1,5 +1,8 @@
-<h1>Editar agendamento</h1>
+<% content_for :title, "Editar agendamento | Admin" %>
 
-<%= render "form", appointment: @appointment %>
-
-<%= link_to "Voltar", admin_appointments_path %>
+<section class="admin-form-shell">
+  <div class="admin-kicker">Operação diária</div>
+  <h1 class="admin-page-title">Editar agendamento</h1>
+  <p class="admin-page-description">Ajuste os dados do atendimento e mantenha a agenda consistente.</p>
+  <%= render "form", appointment: @appointment %>
+</section>

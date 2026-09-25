@@ -41,4 +41,13 @@ pt-BR:
       success: "Agendamento removido com sucesso."
       failure: "Falha ao remover agendamento."
   admin_authorization:
-      restricted: "Você não tem permissão para acessar esta página."
+    restricted: "Você não tem permissão para acessar esta página."
+  devise:
+    failure:
+      unauthenticated: "Você precisa entrar no painel para acessar esta página."
+      invalid: "E-mail ou senha inválidos."
+      inactive: "Sua conta ainda não está ativa."
+    sessions:
+      signed_in: "Login realizado com sucesso."
+      signed_out: "Sessão encerrada com sucesso."
+      already_signed_out: "Sessão encerrada com sucesso."

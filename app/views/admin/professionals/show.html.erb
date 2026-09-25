@@ -1,8 +1,14 @@
-<h1><%= @professional.name %></h1>
+<% content_for :title, "Profissional | Admin" %>
 
-<% if current_user&.admin? %>
-  <%= link_to "Editar", edit_admin_professional_path(@professional) %>
-  <%= link_to "Excluir", admin_professional_path(@professional), data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" } %>
-<% end %>
+<section class="admin-detail-card">
+  <div class="admin-kicker">Equipe</div>
+  <h1><%= @professional.name %></h1>
 
-<%= link_to "Voltar", admin_professionals_path %>
+  <div class="admin-detail-row"><span>Profissional</span><span><%= @professional.name %></span></div>
+  <div class="admin-detail-row"><span>Agendamentos</span><span><%= @professional.appointments.size %></span></div>
+
+  <div class="admin-form__actions">
+    <%= link_to "Editar", edit_admin_professional_path(@professional), class: "admin-button" %>
+    <%= link_to "Voltar", admin_professionals_path, class: "admin-button admin-button--quiet" %>
+  </div>
+</section>

@@ -1,26 +1,40 @@
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="m-0">Serviços</h1>
-  <%= link_to "Novo serviço", new_admin_service_path, class: "btn btn-primary" %>
-</div>
+<% content_for :title, "Serviços | Admin" %>
 
-<table class="table table-striped align-middle">
-  <thead>
-    <tr>
-      <th>Nome</th>
-      <th>Duração</th>
-      <th class="text-end">Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @services.each do |service| %>
-      <tr>
-        <td><%= service.name %></td>
-        <td><%= service.duration_minutes %> min</td>
-        <td class="text-end">
-          <%= link_to "Editar", edit_admin_service_path(service), class: "btn btn-sm btn-outline-secondary" %>
-          <%= button_to "Excluir", admin_service_path(service), method: :delete, class: "btn btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Tem certeza?" } } %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<section class="admin-header-row">
+  <div>
+    <div class="admin-kicker">Cardápio</div>
+    <h1 class="admin-page-title">Serviços</h1>
+    <p class="admin-page-description">Mantenha os serviços e as durações que aparecem para o cliente atualizados.</p>
+  </div>
+  <%= link_to "Novo serviço", new_admin_service_path, class: "admin-button" %>
+</section>
+
+<div class="admin-table-wrap">
+  <% if @services.empty? %>
+    <div class="admin-empty">Nenhum serviço cadastrado.</div>
+  <% else %>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Serviço</th>
+          <th>Duração</th>
+          <th><span class="visually-hidden">Ações</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @services.each do |service| %>
+          <tr>
+            <td><strong><%= service.name %></strong></td>
+            <td><%= service.duration_minutes %> min</td>
+            <td>
+              <div class="admin-table__actions">
+                <%= link_to "Editar", edit_admin_service_path(service), class: "admin-button admin-button--quiet" %>
+                <%= button_to "Excluir", admin_service_path(service), method: :delete, class: "admin-button admin-button--danger", form: { data: { turbo_confirm: "Excluir este serviço?" } } %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>
