@@ -25,7 +25,8 @@ RSpec.describe "Visitor data in the SQL log", type: :request do
   end
 
   # Captures the lines the log subscriber builds, at DEBUG so the sql event is
-  # emitted, and restores the original logger afterwards.
+  # emitted, and restores the original logger afterwards. The level is only
+  # reset when it was actually set, since Logger#level= rejects nil.
   def capture_sql_log
     io = StringIO.new
     original_logger = ActiveRecord::Base.logger
@@ -34,7 +35,7 @@ RSpec.describe "Visitor data in the SQL log", type: :request do
     yield
     io.string
   ensure
-    ActiveRecord::Base.logger&.level = original_level
+    ActiveRecord::Base.logger.level = original_level if original_level
     ActiveRecord::Base.logger = original_logger
   end
 

@@ -16,11 +16,14 @@ Rails.application.config.filter_parameters += [
 # The log subscriber hands the BARE column name to the filter
 # (ActiveRecord::LogSubscriber#filter -> inspection_filter.filter_param) and
 # passes no model context, so these must be declared as bare column names: a
-# qualified "client.name" never matches, and a Proc keyed on the name gives
-# the same result. A side effect is that other name columns (services.name)
-# are also masked in SQL logs. That is over-redaction, not a leak, and it is
-# unavoidable without patching the log subscriber to carry the model name.
-# The keys must live here rather than in the model because the subscriber
-# reads ActiveRecord::Base.inspection_filter and cannot see a per-model
-# filter_attributes list.
+# qualified "client.name" never matches, and a per-model filter_attributes
+# declaration never reaches the log, because the subscriber reads
+# ActiveRecord::Base.inspection_filter. That is also why the keys live here
+# rather than in the Client model.
+#
+# Bare strings are deliberate rather than a Proc: a Proc keyed on the exact
+# name matches less. These string keys compile to unanchored regexes, so they
+# also mask columns such as active_storage_blobs.filename and service_name,
+# and they apply to the request Parameters: line as well as the SQL log. That
+# is over-redaction, not a leak, and it is the safer direction.
 Rails.application.config.filter_parameters += [ "name", "phone" ]
