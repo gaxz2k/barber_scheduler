@@ -9,86 +9,172 @@
         <span class="brand-name brand-name--strong">Senhor R</span>
       </span>
     <% end %>
-    <%= link_to "Voltar", root_path, class: "back-link" %>
+    <%= link_to @selected_service ? "Trocar serviço" : "Voltar", root_path, class: "back-link" %>
   </header>
 
   <div class="booking-progress" aria-label="Etapas do agendamento">
-    <span class="progress-step progress-step--active"><b>1</b><span>Seu atendimento</span></span>
+    <span class="progress-step <%= "progress-step--active" if @booking_step == :service %>"><b>1</b><span>Serviço</span></span>
     <span class="progress-line"></span>
-    <span class="progress-step"><b>2</b><span>Horário</span></span>
+    <span class="progress-step <%= "progress-step--active" if @booking_step == :professional %>"><b>2</b><span>Profissional</span></span>
     <span class="progress-line"></span>
-    <span class="progress-step"><b>3</b><span>Confirmar horário</span></span>
+    <span class="progress-step <%= "progress-step--active" if @booking_step == :schedule %>"><b>3</b><span>Horário</span></span>
+    <span class="progress-line"></span>
+    <span class="progress-step"><b>4</b><span>Confirmação</span></span>
   </div>
 
-  <section class="booking-intro">
-    <div class="eyebrow">Vamos cuidar de você</div>
-    <h1>Escolha seu profissional</h1>
-    <p>Depois você escolhe o serviço e o horário que combinam com a sua rotina.</p>
+  <section class="booking-intro" aria-labelledby="booking-title">
+    <div class="eyebrow">
+      <% if @booking_step == :service %>
+        Etapa 1 de 4
+      <% elsif @booking_step == :professional %>
+        Etapa 2 de 4
+      <% else %>
+        Etapa 3 de 4
+      <% end %>
+    </div>
+    <h1 id="booking-title">
+      <% if @booking_step == :service %>
+        Escolha um serviço
+      <% elsif @booking_step == :professional %>
+        Escolha seu profissional
+      <% else %>
+        Escolha data e horário
+      <% end %>
+    </h1>
+    <p>
+      <% if @booking_step == :service %>
+        Escolha o cuidado ideal para o seu momento.
+      <% elsif @booking_step == :professional %>
+        Agora escolha quem vai cuidar de você.
+      <% else %>
+        Informe seus dados para reservar o melhor horário.
+      <% end %>
+    </p>
   </section>
 
-  <%= form_with model: @appointment, class: "booking-form" do |form| %>
-  <% if @appointment.errors.any? %>
-      <div id="error_explanation" class="form-alert" role="alert">
-        <strong>Revise os dados abaixo:</strong>
-        <ul>
-          <% @appointment.errors.each do |error| %>
-            <li><%= error.full_message %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
-
-    <fieldset class="form-section">
-      <legend><span class="form-step">01</span> Quem vai te atender?</legend>
-      <% if @professionals.any? %>
-        <div class="professional-options">
-          <% @professionals.each do |professional| %>
-            <label class="choice-card">
-              <%= form.radio_button :professional_id, professional.id, required: true, class: "choice-input" %>
-              <span class="choice-card__body">
-                <span class="choice-card__avatar" aria-hidden="true"><%= professional.name.first %></span>
-                <span>
-                  <strong><%= professional.name %></strong>
-                  <small>Escolher horários</small>
-                </span>
-              </span>
-            </label>
-          <% end %>
-        </div>
-      <% else %>
-        <div class="form-alert" role="status">Ainda não há profissionais disponíveis. O time da barbearia ainda será cadastrado.</div>
-      <% end %>
-    </fieldset>
-
-    <fieldset class="form-section">
-      <legend><span class="form-step">02</span> Seus dados</legend>
-      <%= form.label :client_id, "Cliente" %>
-      <%= form.collection_select :client_id, Client.order(:name), :id, :name, { prompt: "Selecione ou informe o cliente" }, required: true, class: "select-field" %>
-    </fieldset>
-
-    <fieldset class="form-section">
-      <legend><span class="form-step">03</span> Serviço</legend>
-      <%= form.label :service_id, "O que você deseja?" %>
-      <%= form.collection_select :service_id, Service.order(:name), :id, ->(service) { "#{service.name} · #{service.duration_minutes} min" }, { prompt: "Selecione um serviço" }, required: true, class: "select-field" %>
-    </fieldset>
-
-    <fieldset class="form-section">
-      <legend><span class="form-step">04</span> Horário</legend>
-      <div class="field-grid">
-        <div class="field-group">
-          <%= form.label :start_at, "Início" %>
-          <%= form.datetime_local_field :start_at, required: true %>
-        </div>
-        <div class="field-group">
-          <%= form.label :end_at, "Fim" %>
-          <%= form.datetime_local_field :end_at, required: true %>
-        </div>
-      </div>
-      <p class="field-hint">A disponibilidade completa por profissional chega na próxima etapa.</p>
-    </fieldset>
-
-    <%= form.submit "Continuar para confirmação", class: "button button--primary button--large button--full", data: { turbo: false } %>
+  <% if @booking_errors.present? || @appointment.errors.any? %>
+    <div id="error_explanation" class="form-alert" role="alert">
+      <strong>Revise os dados abaixo:</strong>
+      <ul>
+        <% (@booking_errors || @appointment.errors.full_messages).each do |error| %>
+          <li><%= error %></li>
+        <% end %>
+      </ul>
+    </div>
   <% end %>
 
-  <p class="booking-footnote">Ao continuar, você confere os dados antes de finalizar.</p>
+  <% if @booking_step == :service %>
+    <% if @services.any? %>
+      <ul class="service-choice-list" aria-label="Serviços disponíveis">
+        <% @services.each_with_index do |service, index| %>
+          <li>
+            <%= link_to new_appointment_path(service: service.id), class: "service-choice-card", data: { turbo: false } do %>
+            <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
+            <span class="service-choice-card__body">
+              <strong><%= service.name %></strong>
+              <span><%= service.duration_minutes %> min</span>
+            </span>
+            <span class="service-choice-card__arrow" aria-hidden="true">→</span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="customer-empty-state" role="status">
+        <strong>Ainda não há serviços cadastrados.</strong>
+        <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
+      </div>
+    <% end %>
+  <% elsif @booking_step == :professional %>
+    <div class="booking-selection-summary">
+      <span>Serviço escolhido</span>
+      <strong><%= @selected_service.name %> · <%= @selected_service.duration_minutes %> min</strong>
+    </div>
+
+    <% if @professionals.any? %>
+      <div class="professional-options" role="group" aria-label="Profissionais disponíveis">
+        <% @professionals.each do |professional| %>
+          <%= link_to new_appointment_path(service: @selected_service.id, professional: professional.id, date: (Date.current + 1).iso8601), class: "choice-card choice-card--link", data: { turbo: false } do %>
+            <span class="choice-card__body">
+              <span class="choice-card__avatar" aria-hidden="true"><%= professional.name.first %></span>
+              <span>
+                <strong><%= professional.name %></strong>
+                <small>Ver horários disponíveis</small>
+              </span>
+              <span class="choice-card__arrow" aria-hidden="true">→</span>
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="customer-empty-state" role="status">
+        <strong>Ainda não há profissionais disponíveis.</strong>
+        <span>Assim que o time for cadastrado, os profissionais aparecerão aqui.</span>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="booking-selection-summary">
+      <span>Serviço</span>
+      <strong><%= @selected_service.name %> · <%= @selected_service.duration_minutes %> min</strong>
+      <span>Profissional</span>
+      <strong><%= @selected_professional.name %></strong>
+    </div>
+
+    <%= form_with model: @appointment, class: "booking-form", data: { controller: "booking-wizard" } do |form| %>
+      <%= form.hidden_field :service_id, value: @selected_service.id %>
+      <%= form.hidden_field :professional_id, value: @selected_professional.id %>
+
+      <fieldset class="form-section">
+        <legend><span class="form-step">01</span> Escolha a data</legend>
+        <%= form.label :date, "Data" %>
+        <%= form.date_field :date,
+            value: @selected_date&.iso8601,
+            min: (Date.current + 1).iso8601,
+            max: (Date.current + 1.year).iso8601,
+            required: true,
+            class: "select-field",
+            data: { booking_wizard_target: "date" } %>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend><span class="form-step">02</span> Escolha o melhor horário</legend>
+        <div id="booking-slots" data-booking-wizard-target="slots" aria-live="polite">
+          <% if @available_slots.any? %>
+            <div class="slot-grid" role="radiogroup" aria-label="Horários disponíveis">
+              <% @available_slots.each do |slot| %>
+                <label class="slot-card">
+                  <%= form.radio_button :start_at, slot.iso8601,
+                        { required: true, class: "choice-input", checked: @appointment.start_at.present? && @appointment.start_at == slot } %>
+                  <span><%= slot.strftime("%H:%M") %></span>
+                </label>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="form-alert" role="status">Não há horários disponíveis para esta data. Escolha outro dia.</div>
+          <% end %>
+        </div>
+        <p class="field-hint">Horários atualizados conforme a agenda do profissional.</p>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend><span class="form-step">03</span> Seus dados</legend>
+        <%= form.label :client_name, "Nome" %>
+        <%= form.text_field :client_name,
+              value: params.dig(:appointment, :client_name),
+              required: true,
+              autocomplete: "name",
+              placeholder: "Como podemos te chamar?" %>
+        <%= form.label :client_phone, "Telefone", class: "field-label-spaced" %>
+        <%= form.telephone_field :client_phone,
+              value: params.dig(:appointment, :client_phone),
+              required: true,
+              autocomplete: "tel",
+              placeholder: "(19) 99999-8888" %>
+      </fieldset>
+
+      <%= form.submit "Confirmar agendamento", class: "button button--primary button--large button--full", data: { turbo: false } %>
+    <% end %>
+  <% end %>
+
+  <p class="booking-footnote">Seus dados são usados somente para concluir este agendamento.</p>
 </main>

@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'securerandom'
 
 RSpec.describe Appointment, type: :model do
   describe "attributes" do
@@ -17,6 +18,48 @@ RSpec.describe Appointment, type: :model do
       )
 
       expect(appointment.professional).to eq(professional)
+    end
+
+    it "generates the confirmation token only when the appointment is persisted" do
+      appointment = described_class.new(
+        professional: professional,
+        client: client,
+        service: service,
+        start_at: start_at,
+        end_at: start_at + Scheduling::SLOT_DURATION
+      )
+
+      expect(appointment.confirmation_token).to be_nil
+
+      appointment.save!
+
+      expect(appointment.confirmation_token).to be_present
+      expect(appointment.confirmation_token.length).to eq(32)
+    end
+
+    it "sets an expiration for the confirmation token" do
+      appointment = described_class.create!(
+        professional: professional,
+        client: client,
+        service: service,
+        start_at: start_at,
+        end_at: start_at + Scheduling::SLOT_DURATION
+      )
+
+      expect(appointment.confirmation_expires_at).to be_present
+    end
+
+    it "revokes the confirmation when the appointment becomes terminal" do
+      appointment = described_class.create!(
+        professional: professional,
+        client: client,
+        service: service,
+        start_at: start_at,
+        end_at: start_at + Scheduling::SLOT_DURATION,
+        status: :canceled
+      )
+
+      expect(appointment.confirmation_accessible?).to be(false)
     end
   end
 
@@ -181,6 +224,8 @@ RSpec.describe Appointment, type: :model do
             client_id: client.id,
             professional_id: professional.id,
             service_id: service.id,
+            confirmation_token: SecureRandom.hex(16),
+            confirmation_expires_at: 48.hours.from_now,
             start_at: start_at,
             end_at: start_at + Scheduling::SLOT_DURATION,
             status: described_class.statuses[:pending],

@@ -3,6 +3,9 @@ class Appointment < ApplicationRecord
   belongs_to :professional
   belongs_to :service
 
+  has_secure_token :confirmation_token, length: 32, on: :create
+  before_validation :set_confirmation_expiration, on: :create
+
   validates :start_at, :end_at, presence: true
 
   enum :status, { pending: 0, confirmed: 1, canceled: 2, completed: 3 }, default: :pending
@@ -14,6 +17,14 @@ class Appointment < ApplicationRecord
   validate :professional_is_available
   validate :cannot_cancel_completed_appointment, if: :status_changed?
 
+  after_commit :invalidate_available_slots_cache, on: [ :create, :update, :destroy ],
+                if: :availability_cache_invalidation_required?
+
+  def confirmation_accessible?
+    confirmation_token.present? && confirmation_expires_at.present? && confirmation_expires_at > Time.current &&
+      !canceled? && !completed?
+  end
+
   def confirm!
     update!(status: :confirmed)
   end
@@ -22,7 +33,68 @@ class Appointment < ApplicationRecord
     update!(status: :canceled)
   end
 
+  def set_confirmation_expiration
+    self.confirmation_expires_at ||= 48.hours.from_now
+  end
+
+  def invalidate_available_slots_cache
+    appointments_for_cache_invalidation.each do |professional, service, date|
+      AvailableSlots::Cache.invalidate(
+        professional: professional,
+        date: date,
+        service: service
+      )
+    end
+  rescue Redis::BaseError, RedisClient::Error => error
+    Rails.logger.warn("Available slots cache invalidation failed: #{error.class}")
+    nil
+  end
+
   private
+
+  def availability_cache_invalidation_required?
+    destroyed? || saved_changes.keys.intersect?(%w[professional_id start_at end_at service_id status])
+  end
+
+  def appointments_for_cache_invalidation
+    current_professional_id = professional_id
+    current_service_id = service_id
+    previous_professional_id = saved_changes["professional_id"]&.first || current_professional_id
+    previous_service_id = saved_changes["service_id"]&.first || current_service_id
+    current_start_at = start_at
+    current_end_at = end_at
+    previous_start_at = saved_changes["start_at"]&.first || current_start_at
+    previous_end_at = saved_changes["end_at"]&.first || current_end_at
+
+    current_records = cache_records_for(
+      professional_id: current_professional_id,
+      service_id: current_service_id,
+      start_at: current_start_at,
+      end_at: current_end_at
+    )
+    previous_records = cache_records_for(
+      professional_id: previous_professional_id,
+      service_id: previous_service_id,
+      start_at: previous_start_at,
+      end_at: previous_end_at
+    )
+
+    (current_records + previous_records).uniq
+  end
+
+  def cache_records_for(professional_id:, service_id:, start_at:, end_at:)
+    professional = Professional.find_by(id: professional_id)
+    service = Service.find_by(id: service_id)
+    dates = [ start_at, end_at ].compact.map(&:to_date).uniq
+
+    dates.filter_map do |date|
+      [ professional, service, date ] if professional && service
+    end
+  end
+
+  def changed_attribute?(attribute)
+    saved_changes.key?(attribute)
+  end
 
   def start_at_is_on_slot_grid
     return if start_at.blank?

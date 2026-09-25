@@ -1,0 +1,43 @@
+<% content_for :title, "Fotos da barbearia | Admin" %>
+
+<section class="admin-header-row">
+  <div>
+    <div class="admin-kicker">Identidade visual</div>
+    <h1 class="admin-page-title">Fotos da barbearia</h1>
+    <p class="admin-page-description">Organize o carrossel da tela inicial. Apenas as fotos ativas são exibidas publicamente.</p>
+  </div>
+  <%= link_to "Adicionar foto", new_admin_barbershop_photo_path, class: "admin-button" %>
+</section>
+
+<div class="admin-photo-toolbar" aria-label="Resumo da galeria">
+  <span><strong><%= @photos.size %></strong> cadastradas</span>
+  <span><strong><%= @photos.count(&:active?) %></strong> ativas no carrossel</span>
+  <span>Máximo de <strong>6</strong> ativas</span>
+</div>
+
+<section class="admin-photo-grid" aria-label="Fotos cadastradas">
+  <% if @photos.empty? %>
+    <div class="admin-empty admin-photo-empty">
+      Nenhuma foto cadastrada. Adicione imagens para compor a tela inicial.
+    </div>
+  <% else %>
+    <% @photos.each do |photo| %>
+      <article class="admin-photo-card">
+        <div class="admin-photo-card__preview">
+          <%= image_tag photo.image, alt: photo.caption.presence || "Foto da Barbearia Senhor R" %>
+          <% unless photo.active? %>
+            <span class="admin-photo-card__inactive">Não publicada</span>
+          <% end %>
+        </div>
+        <div class="admin-photo-card__body">
+          <strong><%= photo.caption.presence || "Sem legenda" %></strong>
+          <span>Ordem <%= photo.position %></span>
+        </div>
+        <div class="admin-photo-card__actions">
+          <%= link_to "Editar", edit_admin_barbershop_photo_path(photo), class: "admin-button admin-button--quiet" %>
+          <%= button_to "Remover", admin_barbershop_photo_path(photo), method: :delete, class: "admin-button admin-button--danger", form: { data: { turbo_confirm: "Remover esta foto?" } } %>
+        </div>
+      </article>
+    <% end %>
+  <% end %>
+</section>

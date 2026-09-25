@@ -9,21 +9,17 @@
         <span class="brand-name brand-name--strong">Senhor R</span>
       </span>
     <% end %>
-    <%= link_to "Voltar", root_path, class: "back-link" %>
+    <span class="header-location">Código de confirmação</span>
   </header>
 
   <section class="confirmation-card">
-    <div class="eyebrow"><%= @appointment.confirmed? ? "Tudo certo por aqui" : "Recebemos seu pedido" %></div>
-    <h1><%= @appointment.confirmed? ? "Agendamento confirmado" : "Agendamento solicitado" %></h1>
-    <p>
-      <% if @appointment.confirmed? %>
-        Seu horário está reservado. Guarde os detalhes abaixo para a sua chegada.
-      <% else %>
-        Seu horário foi enviado para verificação pela equipe. O status aparece abaixo e pode ser atualizado pela barbearia.
-      <% end %>
-    </p>
+    <div class="eyebrow"><%= confirmation_eyebrow %></div>
+    <h1><%= confirmation_title %></h1>
+    <p><%= confirmation_message %></p>
 
     <dl class="confirmation-details">
+      <div><dt>Nome</dt><dd><%= @appointment.client.name %></dd></div>
+      <div><dt>Telefone</dt><dd><%= @appointment.client.phone %></dd></div>
       <div><dt>Profissional</dt><dd><%= @appointment.professional.name %></dd></div>
       <div><dt>Serviço</dt><dd><%= @appointment.service.name %></dd></div>
       <div><dt>Início</dt><dd><%= l(@appointment.start_at, format: :long) %></dd></div>
@@ -32,6 +28,6 @@
     </dl>
 
     <p class="field-hint">Quando o link de calendário e o WhatsApp estiverem disponíveis, eles aparecerão aqui.</p>
-    <%= link_to "Fazer outro agendamento", new_appointment_path, class: "button button--primary button--large" %>
+    <%= link_to "Fazer outro agendamento", root_path, class: "button button--primary button--large" %>
   </section>
 </main>

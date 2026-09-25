@@ -30,10 +30,21 @@ pt-BR:
       destroy:
         success: "Serviço removido com sucesso."
         failure: "Falha ao remover serviço."
+    barbershop_photos:
+      create:
+        success: "Foto adicionada com sucesso."
+        failure: "Falha ao adicionar foto."
+      update:
+        success: "Foto atualizada com sucesso."
+        failure: "Falha ao atualizar foto."
+      destroy:
+        success: "Foto removida com sucesso."
+        failure: "Falha ao remover foto."
   appointments:
     create:
       success: "Agendamento criado com sucesso."
       failure: "Falha ao criar agendamento."
+      invalid_confirmation: "Link de confirmação inválido."
     update:
       success: "Agendamento atualizado com sucesso."
       failure: "Falha ao atualizar agendamento."

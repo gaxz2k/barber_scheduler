@@ -15,11 +15,11 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "booking_wizard", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="<%= devise_controller? ? "admin-login-page" : "customer-body" %>">
+  <body class="<%= devise_controller? ? "admin-login-page" : "customer-body" %>" data-theme="<%= devise_controller? ? "login" : "public" %>">
     <% flash.each do |type, message| %>
       <p class="flash flash-<%= type == "notice" ? "notice" : "alert" %>" role="<%= type == "notice" ? "status" : "alert" %>"><%= message %></p>
     <% end %>

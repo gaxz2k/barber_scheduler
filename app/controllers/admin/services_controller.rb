@@ -22,7 +22,13 @@ class Admin::ServicesController < Admin::BaseController
   end
 
   def update
-    if @service.update(service_params)
+    # with_lock reloads the row and holds SELECT ... FOR UPDATE until the update commits, so
+    # a concurrent Appointments::Scheduler either reads the new duration or keeps the old one
+    # under the same lock. Combined with the Service immutability validation, a duration change
+    # is rejected as soon as any appointment exists.
+    updated = @service.with_lock { @service.update(service_params) }
+
+    if updated
       redirect_to admin_services_path, notice: t(".success")
     else
       render :edit
@@ -30,8 +36,11 @@ class Admin::ServicesController < Admin::BaseController
   end
 
   def destroy
-    @service.destroy
-    redirect_to admin_services_path, notice: t(".success")
+    if @service.destroy
+      redirect_to admin_services_path, notice: t(".success")
+    else
+      redirect_to admin_services_path, alert: t(".failure")
+    end
   end
 
   private

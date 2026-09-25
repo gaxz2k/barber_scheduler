@@ -33,6 +33,22 @@ RSpec.describe AvailableSlots::Calculator, type: :service do
       expect(calculate).to eq(calculate.sort)
     end
 
+    it "does not return slots that have already passed today" do
+      today = Date.current
+      current_time = today.in_time_zone.change(hour: 12, min: 0)
+
+      allow(Time).to receive(:current).and_return(current_time)
+
+      slots = described_class.new(
+        professional: professional,
+        date: today,
+        service: service
+      ).call
+
+      expect(slots).not_to include(today.in_time_zone.change(hour: 11, min: 30))
+      expect(slots).to include(today.in_time_zone.change(hour: 12, min: 0))
+    end
+
     it "returns an empty list for a blank date" do
       expect(described_class.new(professional: professional, date: nil, service: service).call).to eq([])
     end

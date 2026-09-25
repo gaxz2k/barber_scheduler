@@ -7,7 +7,11 @@ Rails.application.routes.draw do
     resources :professionals
     resources :services
     resources :appointments
+    resources :barbershop_photos, only: [ :index, :new, :create, :edit, :update, :destroy ]
   end
-  resources :appointments, only: [ :index, :show, :new, :create ]
+
+  get "appointments/availability", to: "appointments#availability", as: :availability
+  get "appointments/confirmation/:token", to: "appointments#confirmation", as: :appointment_confirmation
+  resources :appointments, only: [ :index, :new, :create ]
   get "up" => "rails/health#show", as: :rails_health_check
 end

@@ -16,7 +16,7 @@ module AvailableSlots
       @end_of_day = local_date.end_of_day
 
       (start_of_day...@end_of_day).step(Scheduling::SLOT_DURATION).select do |slot|
-        valid_slot_for_service?(slot) && available?(slot)
+        slot >= Time.current && valid_slot_for_service?(slot) && available?(slot)
       end
     end
 

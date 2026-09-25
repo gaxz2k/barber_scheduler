@@ -46,6 +46,7 @@ RSpec/ExampleLength:
 Rails/SkipsModelValidations:
   Exclude:
     - "spec/models/appointment_spec.rb"
+    - "spec/requests/appointments_spec.rb"
 
 RSpec/MultipleExpectations:
   Exclude:
