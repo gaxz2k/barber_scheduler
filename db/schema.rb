@@ -10,8 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_25_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_25_010000) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
 
   create_table "appointments", force: :cascade do |t|
@@ -26,6 +27,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_25_000000) do
     t.index ["client_id"], name: "index_appointments_on_client_id"
     t.index ["professional_id"], name: "index_appointments_on_professional_id"
     t.index ["service_id"], name: "index_appointments_on_service_id"
+    t.check_constraint "end_at > start_at", name: "appointments_end_after_start"
+    t.exclusion_constraint "professional_id WITH =, tsrange(start_at, end_at, '[)'::text) WITH &&", where: "status = ANY (ARRAY[0, 1])", using: :gist, name: "appointments_no_active_overlap"
   end
 
   create_table "clients", force: :cascade do |t|

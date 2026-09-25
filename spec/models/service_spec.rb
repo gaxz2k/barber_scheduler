@@ -7,6 +7,14 @@ RSpec.describe Service, type: :model do
     expect(service).to be_valid
   end
 
+  describe "with a duration of 45 minutes" do
+    subject(:service) { described_class.new(name: "Corte", duration_minutes: 45) }
+
+    it "is valid" do
+      expect(service).to be_valid
+    end
+  end
+
   describe "without a name" do
     subject(:service) { described_class.new(name: nil, duration_minutes: 30) }
 
