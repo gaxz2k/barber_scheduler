@@ -120,6 +120,7 @@ GEM
       dotenv (= 3.2.0)
       railties (>= 6.1)
     drb (2.2.3)
+    dry-cli (1.4.1)
     ed25519 (1.4.0)
     erb (6.0.7)
     erubi (1.13.1)
@@ -146,6 +147,8 @@ GEM
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
+    inertia_rails (3.22.0)
+      railties (>= 6)
     io-console (0.9.2)
     irb (1.18.0)
       pp (>= 0.6.0)
@@ -190,6 +193,7 @@ GEM
     mock_redis (0.55.0)
       redis (~> 5)
     msgpack (1.8.4)
+    mutex_m (0.3.0)
     net-imap (0.6.6)
       date
       net-protocol
@@ -244,6 +248,8 @@ GEM
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.6)
+    rack-proxy (2.0.1)
+      rack (>= 2.0, < 4)
     rack-session (2.1.2)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -406,6 +412,15 @@ GEM
     unicode-emoji (4.2.0)
     uri (1.1.1)
     useragent (0.16.11)
+    vite_rails (3.11.1)
+      railties (>= 5.1, < 9)
+      vite_ruby (~> 3.0, >= 3.2.2)
+    vite_ruby (3.11.0)
+      dry-cli (>= 0.7, < 2)
+      logger (~> 1.6)
+      mutex_m
+      rack-proxy (>= 0.6.1)
+      zeitwerk (~> 2.2)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.3.0)
@@ -444,6 +459,7 @@ DEPENDENCIES
   factory_bot_rails
   image_processing (~> 1.2)
   importmap-rails (~> 2.2)
+  inertia_rails (~> 3.22)
   jbuilder
   kamal
   mock_redis
@@ -464,6 +480,7 @@ DEPENDENCIES
   thruster
   turbo-rails
   tzinfo-data
+  vite_rails (~> 3.11)
   web-console
 
 BUNDLED WITH

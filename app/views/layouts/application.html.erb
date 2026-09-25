@@ -17,6 +17,8 @@
 
     <%= stylesheet_link_tag "application", "booking_wizard", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <%= vite_client_tag %>
+    <%= vite_javascript_tag 'application.tsx' %>
   </head>
 
   <body class="<%= devise_controller? ? "admin-login-page" : "customer-body" %>" data-theme="<%= devise_controller? ? "login" : "public" %>">

@@ -55,6 +55,14 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
   # arbitrary gems may also be filtered via: config.filter_gems_from_backtrace("gem name")
 
+  # O layout usa vite_javascript_tag, que precisa do manifesto de
+  # public/vite-test. Sem isso todo spec de request que renderiza o layout
+  # quebra com "Vite Ruby can't find entrypoints/application.tsx".
+  config.before(:suite) do
+    manifest = Rails.public_path.join("vite-test/.vite/manifest.json")
+    abort("\nFalta o manifesto do Vite para test. Rode: RAILS_ENV=test npm run build\n") unless File.exist?(manifest)
+  end
+
   # Specs assume an empty database. Records created by `rails runner` probes or a
   # stale test run otherwise leak into counts and uniqueness assertions.
   config.before(:suite) do
