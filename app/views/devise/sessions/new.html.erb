@@ -15,15 +15,11 @@
     <p>Use suas credenciais administrativas para operar a barbearia.</p>
 
     <%= form_with url: session_path(resource_name), method: :post, class: "admin-login-form" do |form| %>
-      <label class="login-field">
-        <span>E-mail</span>
-        <%= form.email_field :email, autofocus: true, autocomplete: "email", required: true %>
-      </label>
+      <%= form.label :email, "E-mail" %>
+      <%= form.email_field :email, autofocus: true, autocomplete: "email", required: true %>
 
-      <label class="login-field">
-        <span>Senha</span>
-        <%= form.password_field :password, autocomplete: "current-password", required: true %>
-      </label>
+      <%= form.label :password, "Senha" %>
+      <%= form.password_field :password, autocomplete: "current-password", required: true %>
 
       <% if devise_mapping.rememberable? %>
         <%= form.label :remember_me, class: "remember-label" do %>
@@ -32,7 +28,7 @@
         <% end %>
       <% end %>
 
-      <%= form.submit "Entrar", class: "button button--primary" %>
+      <%= form.submit "Entrar", class: "button button--primary button--full" %>
     <% end %>
 
     <% if devise_mapping.recoverable? %>

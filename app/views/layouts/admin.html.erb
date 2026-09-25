@@ -1,36 +1,43 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
-    <title><%= content_for(:title) || "Admin | Barbearia Senhor R" %></title>
+    <title><%= content_for(:title) || "Painel | Barbearia Senhor R" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="theme-color" content="#171717">
+    <meta name="application-name" content="Barbearia Senhor R">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#18191a">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="admin-body">
-    <header class="admin-nav">
+  <body class="admin-body" data-theme="admin">
+    <nav class="admin-nav" aria-label="Navegação principal do painel">
       <%= link_to admin_root_path, class: "admin-nav__brand" do %>
         <span class="admin-nav__mark" aria-hidden="true">Sr</span>
-        <span>Senhor R<small>gestão da barbearia</small></span>
+        <span>Barbearia Senhor R <small>Painel administrativo</small></span>
       <% end %>
 
-      <nav class="admin-nav__links" aria-label="Navegação administrativa">
+      <div class="admin-nav__links">
         <%= link_to "Painel", admin_root_path, class: "admin-nav__link" %>
         <%= link_to "Agendamentos", admin_appointments_path, class: "admin-nav__link" %>
         <%= link_to "Profissionais", admin_professionals_path, class: "admin-nav__link" %>
         <%= link_to "Serviços", admin_services_path, class: "admin-nav__link" %>
+        <%= link_to "Fotos", admin_barbershop_photos_path, class: "admin-nav__link" %>
         <%= button_to "Sair", destroy_user_session_path, method: :delete, class: "admin-nav__signout", form: { class: "admin-signout-form" } %>
-      </nav>
-    </header>
+      </div>
+    </nav>
+
+    <% flash.each do |type, message| %>
+      <p class="flash flash-<%= type == "notice" ? "notice" : "alert" %>" role="<%= type == "notice" ? "status" : "alert" %>"><%= message %></p>
+    <% end %>
 
     <main class="admin-content">
-      <% flash.each do |type, message| %>
-        <div class="<%= type == "notice" ? "admin-alert" : "admin-alert admin-alert--error" %>" role="<%= type == "notice" ? "status" : "alert" %>"><%= message %></div>
-      <% end %>
-
       <%= yield %>
     </main>
   </body>

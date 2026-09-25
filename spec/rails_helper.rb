@@ -53,6 +53,14 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
 
   config.include Devise::Test::IntegrationHelpers, type: :request
-  # arbitrary gems may also be filtered via:
-  # config.filter_gems_from_backtrace("gem name")
+  # arbitrary gems may also be filtered via: config.filter_gems_from_backtrace("gem name")
+
+  # Specs assume an empty database. Records created by `rails runner` probes or a
+  # stale test run otherwise leak into counts and uniqueness assertions.
+  config.before(:suite) do
+    tables = ActiveRecord::Base.connection.tables - %w[schema_migrations ar_internal_metadata]
+    ActiveRecord::Base.connection.disable_referential_integrity do
+      tables.each { |table| ActiveRecord::Base.connection.execute("DELETE FROM #{table}") }
+    end
+  end
 end
