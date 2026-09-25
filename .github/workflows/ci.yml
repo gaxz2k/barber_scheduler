@@ -98,6 +98,22 @@ jobs:
         with:
           bundler-cache: true
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend for test
+        # O layout usa vite_javascript_tag, que precisa do manifesto em
+        # public/vite-test. Sem este build todo spec de request falha.
+        env:
+          RAILS_ENV: test
+        run: npm run build
+
       - name: Run tests
         env:
           RAILS_ENV: test
@@ -106,3 +122,36 @@ jobs:
         run: |
           bin/rails db:test:prepare
           bundle exec rspec
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        env:
+          RAILS_ENV: production
+        run: npm run build
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
