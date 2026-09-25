@@ -38,8 +38,16 @@ RSpec:
   Enabled: true
 
 # --- Ajustes de casa -------------------------------------------------------
-# Adicione aqui exceções conforme forem aparecendo, ex.:
-#
-# Rails/SkipsModelValidations:
-#   Exclude:
-#     - "db/migrate/**/*"
+RSpec/ExampleLength:
+  Exclude:
+    - "spec/models/appointment_spec.rb"
+    - "spec/services/**/*"
+
+Rails/SkipsModelValidations:
+  Exclude:
+    - "spec/models/appointment_spec.rb"
+
+RSpec/MultipleExpectations:
+  Exclude:
+    - "spec/models/appointment_spec.rb"
+    - "spec/services/**/*"
