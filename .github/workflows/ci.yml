@@ -120,7 +120,11 @@ jobs:
           POSTGRES_PASSWORD: postgres
           REDIS_URL: redis://localhost:6379/0
         run: |
-          bin/rails db:test:prepare
+          # db:test:prepare carrega db/schema.rb, e um trigger não vive no
+          # schema: as migrations precisam rodar de fato, senão o limite de
+          # fotos publicadas não existe no banco do CI e o exemplo que cobre a
+          # corrida falha.
+          bin/rails db:prepare
           bundle exec rspec
 
   frontend:

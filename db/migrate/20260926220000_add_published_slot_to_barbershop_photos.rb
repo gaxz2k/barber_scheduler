@@ -1,15 +1,21 @@
 class AddPublishedSlotToBarbershopPhotos < ActiveRecord::Migration[8.1]
-  # A validação de Rubi (BarbershopPhoto#published_gallery_limit) conta as fotos
-  # ativas e rejeita a sétima. Duas requisições simultâneas podem ler 5 e gravar
-  # 6, deixando 6 no total; ou ler 6 e gravar 6, deixando 12. A contagem é uma
-  # leitura seguida de escrita, sem nada que impeça a corrida no meio.
+  MAX_PUBLISHED_PHOTOS = 6
+
+  # O limite de seis fotos publicadas era validado só em Rubi, numa contagem
+  # seguida de escrita. Duas requisições simultâneas podem ler 5 e gravar 6, ou
+  # ler 6 e gravar 6, e a galeria passa do limite sem que nenhuma validação
+  # perceba. Um trigger no banco fecha a janela: a verificação roda dentro do
+  # mesmo statement, então a segunda inserção concorrente já vê a primeira.
   #
-  # Um trigger no banco fecha a janela: a verificação acontece dentro do mesmo
-  # statement INSERT/UPDATE, então duas inserções concorrentes são serializadas
-  # pelo lock de linha do próprio PostgreSQL e a segunda já vê a primeira.
+  # A linha só ocupa slot quando está ativa, o que preserva o comportamento de
+  # poder guardar um número ilimitado de fotos inativas.
   #
-  # A linha só ocupa o slot quando está ativa, o que preserva o comportamento de
-  # poder ter um número ilimitado de fotos inativas guardadas.
+  # ATENÇÃO: um trigger não vive em db/schema.rb. `db:prepare` e `db:schema:load`
+  # carregam o dump do schema e marcam todas as versões dele como aplicadas,
+  # então esta migration é pulada e o trigger nunca é criado — foi exatamente o
+  # que aconteceu no primeiro CI desta PR, e também numa base nova criada por
+  # `db:prepare`. Por isso o CI roda `db:migrate` de verdade, e a função abaixo
+  # é idempotente, para poder ser reaplicada por qualquer caminho de setup.
   def up
     execute <<~SQL
       CREATE OR REPLACE FUNCTION enforce_barbershop_photos_published_limit()
@@ -29,16 +35,16 @@ class AddPublishedSlotToBarbershopPhotos < ActiveRecord::Migration[8.1]
           RETURN NEW;
         END IF;
 
-        -- A linha que está sendo alterada é excluída da contagem: em um UPDATE
-        -- que ativa uma foto inativa, ela própria ainda não está gravada, e em
-        -- um INSERT o id é novo. Contar sem o filtro bloquearia o próprio
-        -- registro recém-nascido quando a galeria já estiver cheia.
+        -- A linha sendo alterada é excluída da contagem: em um UPDATE que ativa
+        -- uma foto inativa, ela própria ainda não está gravada, e em um INSERT o
+        -- id é novo. Contar sem o filtro bloquearia o próprio registro
+        -- recém-nascido quando a galeria já estiver cheia.
         SELECT count(*) INTO published_count
           FROM barbershop_photos
           WHERE active AND id IS DISTINCT FROM NEW.id;
 
-        IF published_count >= 6 THEN
-          RAISE EXCEPTION 'limite de 6 fotos publicadas'
+        IF published_count >= #{MAX_PUBLISHED_PHOTOS} THEN
+          RAISE EXCEPTION 'limite de #{MAX_PUBLISHED_PHOTOS} fotos publicadas'
             USING ERRCODE = 'check_violation';
         END IF;
 
@@ -46,6 +52,11 @@ class AddPublishedSlotToBarbershopPhotos < ActiveRecord::Migration[8.1]
       END;
       $$ LANGUAGE plpgsql;
     SQL
+
+    # DROP antes de CREATE: esta migration pode ser reaplicada por um caminho
+    # que já criou o trigger (db:migrate depois de um db:prepare), e
+    # CREATE TRIGGER falha se o trigger já existe.
+    execute "DROP TRIGGER IF EXISTS trg_barbershop_photos_published_limit ON barbershop_photos;"
 
     execute <<~SQL.squish
       CREATE TRIGGER trg_barbershop_photos_published_limit
