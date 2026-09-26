@@ -21,4 +21,25 @@ RSpec.describe Client, type: :model do
 
     expect(result).to include("name", "phone")
   end
+
+  describe "#masked_phone" do
+    # A página de confirmação é acessada por link e mostra o telefone do
+    # cliente. Nome e telefone completos são PII desnecessária ali; o cliente se
+    # reconhece pelos últimos dígitos.
+    it "preserva apenas os quatro ultimos digitos" do
+      expect(described_class.new(phone: "(11) 98765-4321").masked_phone).to eq("*******4321")
+    end
+
+    it "conta os digitos, nao os caracteres de formatacao" do
+      expect(described_class.new(phone: "11987654321").masked_phone).to eq("*******4321")
+    end
+
+    it "devolve o telefone intacto quando ha menos de quatro digitos" do
+      expect(described_class.new(phone: "123").masked_phone).to eq("123")
+    end
+
+    it "nao estoura quando o telefone e vazio" do
+      expect(described_class.new(phone: nil).masked_phone).to be_nil
+    end
+  end
 end

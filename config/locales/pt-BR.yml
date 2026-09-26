@@ -62,3 +62,23 @@ pt-BR:
       signed_in: "Login realizado com sucesso."
       signed_out: "Sessão encerrada com sucesso."
       already_signed_out: "Sessão encerrada com sucesso."
+  activerecord:
+    attributes:
+      appointment:
+        # `status` é um enum, e o Rails resolve enums por
+        # `activerecord.attributes.<model>.<enum>` com pluralização, ou seja,
+        # com as chaves `one`/`other`. Sem elas o I18n levanta
+        # InvalidPluralizationData no meio de qualquer update de status.
+        statuses:
+          pending:
+            one: "Aguardando"
+            other: "Aguardando"
+          confirmed:
+            one: "Confirmado"
+            other: "Confirmado"
+          canceled:
+            one: "Cancelado"
+            other: "Cancelado"
+          completed:
+            one: "Concluído"
+            other: "Concluído"

@@ -18,13 +18,15 @@
     <p><%= confirmation_message %></p>
 
     <dl class="confirmation-details">
-      <div><dt>Nome</dt><dd><%= @appointment.client.name %></dd></div>
-      <div><dt>Telefone</dt><dd><%= @appointment.client.phone %></dd></div>
+      <%# Sem nome e telefone completos: a página é aberta por um link que vive no
+          e-mail do cliente por 48 horas, e quem tiver o link vê tudo. Os últimos
+          dígitos do telefone bastam para o cliente se reconhecer. %>
+      <div><dt>Telefone</dt><dd><%= @appointment.client.masked_phone %></dd></div>
       <div><dt>Profissional</dt><dd><%= @appointment.professional.name %></dd></div>
       <div><dt>Serviço</dt><dd><%= @appointment.service.name %></dd></div>
       <div><dt>Início</dt><dd><%= l(@appointment.start_at, format: :long) %></dd></div>
       <div><dt>Término</dt><dd><%= l(@appointment.end_at, format: :long) %></dd></div>
-      <div><dt>Status</dt><dd><span class="admin-badge"><%= @appointment.status.humanize %></span></dd></div>
+      <div><dt>Status</dt><dd><span class="admin-badge"><%= @appointment.status_label %></span></dd></div>
     </dl>
 
     <p class="field-hint">Quando o link de calendário e o WhatsApp estiverem disponíveis, eles aparecerão aqui.</p>

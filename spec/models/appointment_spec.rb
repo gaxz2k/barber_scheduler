@@ -265,4 +265,40 @@ RSpec.describe Appointment, type: :model do
       expect(appointment.reload.status).to eq("completed")
     end
   end
+
+  describe "#status_label" do
+    let(:professional) { Professional.create!(name: "Profissional") }
+    let(:client) { Client.create!(name: "Cliente", phone: "11987650010") }
+    let(:service) { Service.create!(name: "Corte", duration_minutes: 30) }
+    let(:appointment) do
+      described_class.create!(professional: professional, client: client, service: service,
+                              start_at: 1.day.from_now.change(hour: 10, min: 0),
+                              end_at: 1.day.from_now.change(hour: 10, min: 30))
+    end
+
+    # `status` é uma String e String#humanize não passa pelo I18n, então o
+    # rótulo saía "Pending" numa tela toda em português. Um cliente brasileiro
+    # lendo "Pending" numa confirmação parece tela quebrada.
+    it "traduz o status pendente" do
+      expect(appointment.status_label).to eq("Aguardando")
+    end
+
+    it "traduz os demais status" do
+      appointment.confirm!
+      expect(appointment.status_label).to eq("Confirmado")
+
+      appointment.cancel!
+      expect(appointment.status_label).to eq("Cancelado")
+    end
+
+    it "cai no humanize quando o status nao tem traducao" do
+      # O enum não aceita valor fora da lista, então o fallback é exercitado
+      # removendo a tradução em vez de inventar um status.
+      I18n.backend.reload!
+      key = "activerecord.attributes.appointment.statuses.#{appointment.status}"
+      I18n.backend.store_translations(:'pt-BR', key => {})
+
+      expect(appointment.status_label).to eq("Aguardando".humanize)
+    end
+  end
 end

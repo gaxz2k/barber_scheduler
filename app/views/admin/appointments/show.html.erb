@@ -8,7 +8,7 @@
   <div class="admin-detail-row"><span>Serviço</span><span><%= @appointment.service.name %></span></div>
   <div class="admin-detail-row"><span>Início</span><span><%= l(@appointment.start_at, format: :long) %></span></div>
   <div class="admin-detail-row"><span>Fim</span><span><%= l(@appointment.end_at, format: :long) %></span></div>
-  <div class="admin-detail-row"><span>Status</span><span class="admin-badge"><%= @appointment.status.humanize %></span></div>
+  <div class="admin-detail-row"><span>Status</span><span class="admin-badge"><%= @appointment.status_label %></span></div>
 
   <div class="admin-form__actions">
     <%= link_to "Editar", edit_admin_appointment_path(@appointment), class: "admin-button" %>

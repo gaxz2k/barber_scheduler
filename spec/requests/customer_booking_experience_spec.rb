@@ -464,7 +464,24 @@ RSpec.describe "Customer booking experience", type: :request do
   end
 
   describe "GET /appointments/confirmation/:token" do
-    it "shows the visitor name and phone with a valid token" do
+    it "nao expoe nome e telefone completos enquanto o token valer" do
+      service
+      professional
+      post appointments_path, params: confirmation_params
+      token = response.location.split("/").last
+
+      get appointment_confirmation_path(token: token)
+
+      # O token viaja no e-mail do cliente e vale 48 horas. Quem tiver o link
+      # vê a tela inteira, e o link acaba copiado para o grupo da família, para
+      # o histórico do app de e-mail e para prints. Nome e telefone completos
+      # não são necessários para a página cumprir a função de mostrar data,
+      # serviço, profissional e status, então saem da tela.
+      expect(response.body).not_to include("Maria da Silva")
+      expect(response.body).not_to include("19999998888")
+    end
+
+    it "ainda mostra os dados que a pagina precisa para ser util" do
       service
       professional
       post appointments_path, params: confirmation_params
@@ -473,7 +490,37 @@ RSpec.describe "Customer booking experience", type: :request do
       get appointment_confirmation_path(token: token)
 
       expect(response).to have_http_status(:success)
-      expect(response.body).to include("Maria da Silva", "19999998888")
+      expect(response.body).to include(service.name, professional.name)
+      expect(response.body).to match(/\d{1,2} de \w+ de \d{4}, \d{2}:\d{2}/)
+    end
+
+    it "mascara o telefone em vez de remove-lo, para o cliente se reconhecer" do
+      service
+      professional
+      post appointments_path, params: confirmation_params
+      token = response.location.split("/").last
+
+      get appointment_confirmation_path(token: token)
+
+      # Só os últimos quatro dígitos sobrevivem: o suficiente para o cliente
+      # reconhecer o próprio agendamento, sem o número inteiro na tela.
+      expect(response.body).to include("8888")
+      expect(response.body).not_to include("1999999")
+    end
+
+    it "traduz o status para portugues" do
+      service
+      professional
+      post appointments_path, params: confirmation_params
+      token = response.location.split("/").last
+
+      get appointment_confirmation_path(token: token)
+
+      # `humanize` não passa pelo I18n e devolve "Pending" mesmo com
+      # default_locale em pt-BR. Um cliente brasileiro lendo "Pending" numa tela
+      # de confirmação parece tela quebrada.
+      expect(response.body).to include("Aguardando")
+      expect(response.body).not_to include("Pending")
     end
 
     it "shows the appointment date in Brazilian Portuguese" do
