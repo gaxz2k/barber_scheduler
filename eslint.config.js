@@ -10,10 +10,10 @@ export default tseslint.config(
     ignores: [
       "node_modules/**",
       "public/assets/**",
-      // Bundle compilado: é saída de build, não código-fonte para lint.
-      "public/vite/**",
-      "public/vite-dev/**",
-      "public/vite-test/**",
+      // Bundle compilado: é saída de build, não código-fonte para lint. O
+      // glob cobre qualquer publicOutputDir que o config/vite.json definir, para
+      // um diretório novo não entrar no lint por omissão.
+      "public/vite*/**",
       "tmp/**",
       // Código de terceiros vendorizado: não é nosso para corrigir.
       "vendor/**",
