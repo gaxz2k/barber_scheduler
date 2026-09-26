@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { railsPublicOutputDir, viteOutDir } from "@/viteOutputDir";
+import { railsEnv, railsPublicOutputDir, viteOutDir } from "@/viteOutputDir";
 
 const root = resolve(import.meta.dirname, "..");
 const configPath = resolve(root, "config/vite.json");
@@ -91,5 +91,27 @@ describe("diretório de saída do Vite", () => {
     // acaso, os valores voltem a bater hoje.
     expect(source).not.toMatch(/vite-\$\{/);
     expect(source).toMatch(/viteOutDir/);
+  });
+});
+
+describe("ambiente do Rails", () => {
+  // `Rails.env` é ENV["RAILS_ENV"].presence || ENV["RACK_ENV"].presence ||
+  // "development". Ler só RAILS_ENV reintroduz a divergência que este módulo
+  // existe para eliminar: um deploy que defina apenas RACK_ENV construiria em
+  // public/vite-dev enquanto o vite_ruby procuraria em public/vite.
+  it.each([
+    [{ RAILS_ENV: "production" }, "production"],
+    [{ RACK_ENV: "production" }, "production"],
+    [{ RAILS_ENV: "test", RACK_ENV: "production" }, "test"],
+    // `presence` trata string vazia como ausente; `??` trataria como presente.
+    [{ RAILS_ENV: "", RACK_ENV: "production" }, "production"],
+    [{ RAILS_ENV: "" }, "development"],
+    [{}, "development"],
+  ])("resolve %o para %s", (env, expected) => {
+    expect(railsEnv(env)).toBe(expected);
+  });
+
+  it("usa o ambiente do processo quando nenhum é informado", () => {
+    expect(railsEnv({ RAILS_ENV: "staging" })).toBe("staging");
   });
 });

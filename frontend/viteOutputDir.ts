@@ -41,3 +41,17 @@ export function railsPublicOutputDir(env: string, configPath: string): string {
 export function viteOutDir(env: string, configPath: string, publicDir: string): string {
   return resolve(resolve(publicDir), railsPublicOutputDir(env, configPath));
 }
+
+/**
+ * Ambiente do Rails, resolvido como o railties resolve.
+ *
+ * `Rails.env` é `ENV["RAILS_ENV"].presence || ENV["RACK_ENV"].presence ||
+ * "development"`. Ler só RAILS_ENV diverge em dois casos: um deploy que defina
+ * apenas RACK_ENV construiria em `vite-dev` enquanto o Ruby procuraria em
+ * `vite` — o mesmo MissingEntrypointError de 500, de novo. E `presence`
+ * trata string vazia como ausente, o que `??` não faz: `RAILS_ENV=""` é
+ * truthy para `??` e cairia no default errado.
+ */
+export function railsEnv(env = process.env): string {
+  return env.RAILS_ENV || env.RACK_ENV || "development";
+}
