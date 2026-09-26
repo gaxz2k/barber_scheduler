@@ -57,6 +57,37 @@ RSpec.describe "Admin::Services", type: :request do
       expect(response).to redirect_to(admin_services_path)
     end
 
+    # Um form que volta com 200 e o corpo do formulário é indistinguível de uma
+    # atualização bem-sucedida para o Turbo, que trata 200 como sucesso e
+    # descarta a resposta. O operador acharia que salvou quando a regra de
+    # imutabilidade recusou a mudança. 422 é o que o Rails usa para
+    # "reprocessar este form", e é o que barbershop_photos_controller.rb já faz.
+    it "responds 422 when the duration change is rejected" do
+      create_appointment!
+
+      change_duration_to(45)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "responds 422 when a presence validation fails" do
+      rename_to("")
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "responds 422 when the duration is not a positive integer" do
+      patch admin_service_path(service), params: { service: { duration_minutes: -5 } }
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "still responds 200 on the successful path" do
+      change_duration_to(45)
+
+      expect(response).to have_http_status(:ok).or have_http_status(:redirect)
+    end
+
     it "keeps the duration immutable when appointments already exist" do
       create_appointment!
 

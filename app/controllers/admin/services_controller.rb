@@ -17,7 +17,7 @@ class Admin::ServicesController < Admin::BaseController
     if @service.save
       redirect_to admin_services_path, notice: t(".success")
     else
-      render :new
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -31,7 +31,10 @@ class Admin::ServicesController < Admin::BaseController
     if updated
       redirect_to admin_services_path, notice: t(".success")
     else
-      render :edit
+      # 422, e não 200: o Turbo trata 200 como sucesso e descarta o corpo da
+      # resposta, então o operador veria o formulário de volta sem nenhum erro
+      # visível e acharia que salvou. Mesmo padrão de BarbershopPhotosController.
+      render :edit, status: :unprocessable_content
     end
   end
 

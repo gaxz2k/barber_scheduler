@@ -20,7 +20,7 @@ class Admin::ProfessionalsController < Admin::BaseController
     if @professional.save
       redirect_to admin_professionals_path, notice: t(".success")
     else
-      render :new
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -28,7 +28,7 @@ class Admin::ProfessionalsController < Admin::BaseController
     if @professional.update(professional_params)
       redirect_to admin_professionals_path, notice: t(".success")
     else
-      render :edit
+      render :edit, status: :unprocessable_content
     end
   end
 
