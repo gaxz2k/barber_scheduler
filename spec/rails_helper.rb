@@ -66,6 +66,16 @@ RSpec.configure do |config|
   # Specs assume an empty database. Records created by `rails runner` probes or a
   # stale test run otherwise leak into counts and uniqueness assertions.
   config.before(:suite) do
+    # Este hook faz DELETE em todas as tabelas, então só é seguro contra o banco
+    # descartável de test. `RAILS_ENV=development bundle exec rspec` apagaria os
+    # dados reais da barbearia, e um DATABASE_URL apontando para produção seria
+    # pior. O guard de produção acima não cobre esse caso, porque Rails.env seria
+    # "development" nos dois.
+    unless Rails.env.test?
+      abort("\nA suíte só pode rodar com RAILS_ENV=test (está em #{Rails.env}). " \
+            "O hook de limpeza apaga todas as tabelas.\n")
+    end
+
     tables = ActiveRecord::Base.connection.tables - %w[schema_migrations ar_internal_metadata]
     ActiveRecord::Base.connection.disable_referential_integrity do
       tables.each { |table| ActiveRecord::Base.connection.execute("DELETE FROM #{table}") }
