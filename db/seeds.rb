@@ -36,5 +36,10 @@ services.each do |attributes|
   end
 end
 
-puts "Profissionais: #{Professional.count} (#{Professional.pluck(:name).sort.join(", ")})"
-puts "Serviços: #{Service.count} (#{Service.order(:name).pluck(:name, :duration_minutes).map { |n, d| "#{n} #{d}min" }.join(", ")})"
+Rails.logger.info do
+  "Profissionais: #{Professional.count} (#{Professional.pluck(:name).sort.join(", ")})"
+end
+Rails.logger.info do
+  "Serviços: #{Service.count} " \
+    "(#{Service.order(:name).pluck(:name, :duration_minutes).map { |name, minutes| "#{name} #{minutes}min" }.join(", ")})"
+end
