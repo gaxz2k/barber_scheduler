@@ -120,6 +120,10 @@ jobs:
           POSTGRES_PASSWORD: postgres
           REDIS_URL: redis://localhost:6379/0
         run: |
+          # db:test:prepare é suficiente: o trigger do limite de fotos
+          # publicadas não vive em schema.rb, e o initializer
+          # config/initializers/barbershop_photo_published_limit.rb o garante no
+          # boot, independentemente de como a base foi criada.
           bin/rails db:test:prepare
           bundle exec rspec
 
