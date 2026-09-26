@@ -3,21 +3,8 @@ require 'rails_helper'
 RSpec.describe "Admin::Professionals", type: :request do
   let(:admin) { User.create!(email: "admin@example.com", password: "password123", admin: true) }
   let(:professional) { Professional.create!(name: "Profissional Teste") }
-  let(:client) { Client.create!(name: "Cliente Teste", phone: "11999999999") }
-  let(:service) { Service.create!(name: "Corte", duration_minutes: 30) }
-  let(:start_at) { 1.day.from_now.change(hour: 10, min: 0) }
 
   before { sign_in admin }
-
-  def create_appointment!
-    Appointment.create!(
-      client: client,
-      professional: professional,
-      service: service,
-      start_at: start_at,
-      end_at: start_at + service.duration_minutes.minutes
-    )
-  end
 
   describe "POST /admin/professionals" do
     # 422 e não 200: o Turbo trata 200 como sucesso e descarta o corpo da

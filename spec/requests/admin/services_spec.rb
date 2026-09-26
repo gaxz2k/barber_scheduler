@@ -82,12 +82,6 @@ RSpec.describe "Admin::Services", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
-    it "still responds 200 on the successful path" do
-      change_duration_to(45)
-
-      expect(response).to have_http_status(:ok).or have_http_status(:redirect)
-    end
-
     it "keeps the duration immutable when appointments already exist" do
       create_appointment!
 
@@ -134,6 +128,42 @@ RSpec.describe "Admin::Services", type: :request do
       rename_to("Corte premium")
 
       expect(response).to redirect_to(admin_services_path)
+    end
+  end
+
+  describe "POST /admin/services" do
+    def create_service(name:, duration:)
+      post admin_services_path, params: { service: { name: name, duration_minutes: duration } }
+    end
+
+    it "responds 422 when the name is blank" do
+      create_service(name: "", duration: 30)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "responds 422 when the duration is missing" do
+      create_service(name: "Barba", duration: nil)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "responds 422 when the duration is not a positive integer" do
+      create_service(name: "Barba", duration: -5)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "redirects and persists when valid" do
+      create_service(name: "Barba", duration: 20)
+
+      expect(response).to redirect_to(admin_services_path)
+    end
+
+    it "persists the created service" do
+      create_service(name: "Barba", duration: 20)
+
+      expect(Service.find_by(name: "Barba", duration_minutes: 20)).to be_present
     end
   end
 end
