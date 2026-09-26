@@ -92,10 +92,6 @@ class Appointment < ApplicationRecord
     end
   end
 
-  def changed_attribute?(attribute)
-    saved_changes.key?(attribute)
-  end
-
   def start_at_is_on_slot_grid
     return if start_at.blank?
 

@@ -476,6 +476,21 @@ RSpec.describe "Customer booking experience", type: :request do
       expect(response.body).to include("Maria da Silva", "19999998888")
     end
 
+    it "shows the appointment date in Brazilian Portuguese" do
+      service
+      professional
+      post appointments_path, params: confirmation_params
+      token = response.location.split("/").last
+
+      get appointment_confirmation_path(token: token)
+
+      # A view usa `l(..., format: :long)`. Sem time.formats em pt-BR o Rails cai
+      # no inglês do :en e mostra "September 30, 2026 14:30" para um cliente
+      # brasileiro, sem erro nenhum. Este exemplo fixa o formato em português.
+      expect(response.body).to match(/\d{1,2} de \w+ de \d{4}, \d{2}:\d{2}/)
+      expect(response.body).not_to match(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/)
+    end
+
     it "rejects an expired confirmation token" do
       service
       professional
