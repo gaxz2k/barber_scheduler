@@ -25,6 +25,19 @@ class Appointment < ApplicationRecord
       !canceled? && !completed?
   end
 
+  # `status` é uma String neste enum, e String#humanize não passa pelo I18n:
+  # devolveria "Pending" mesmo com default_locale em pt-BR. As traduções ficam
+  # em config/locales/pt-BR.yml, sob
+  # activerecord.attributes.appointment.statuses, que é a chave que o Rails usa
+  # para enums. O humanize fica de fallback para um status novo não traduzido.
+  def status_label
+    I18n.t(
+      "activerecord.attributes.appointment.statuses.#{status}",
+      count: 1,
+      default: status.to_s.humanize
+    )
+  end
+
   def confirm!
     update!(status: :confirmed)
   end
