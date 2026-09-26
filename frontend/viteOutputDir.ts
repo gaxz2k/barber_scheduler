@@ -46,12 +46,27 @@ export function viteOutDir(env: string, configPath: string, publicDir: string): 
  * Ambiente do Rails, resolvido como o railties resolve.
  *
  * `Rails.env` é `ENV["RAILS_ENV"].presence || ENV["RACK_ENV"].presence ||
- * "development"`. Ler só RAILS_ENV diverge em dois casos: um deploy que defina
- * apenas RACK_ENV construiria em `vite-dev` enquanto o Ruby procuraria em
- * `vite` — o mesmo MissingEntrypointError de 500, de novo. E `presence`
- * trata string vazia como ausente, o que `??` não faz: `RAILS_ENV=""` é
- * truthy para `??` e cairia no default errado.
+ * "development"`. Dois detalhes do `presence` do ActiveSupport que `||` em
+ * JavaScript não reproduz, e que importam porque os dois lados precisam cair
+ * no mesmo diretório:
+ *
+ * - String vazia: `||` já trata `""` como falsy, então isso bate.
+ * - String só com espaços: `presence` usa `blank?`, e `"  "` é blank no Ruby.
+ *   Em JavaScript `"  "` é truthy, então `||` a aceitaria e o build iria para
+ *   `public/vite/` enquanto o Ruby procuraria em `public/vite-test/` — o mesmo
+ *   ViteRuby::MissingEntrypointError de 500, de novo, agora por causa de um
+ *   espaço em uma variável de ambiente.
+ *
+ * Por isso a escolha passa por `trim()`: o que é só espaço é descartado como se
+ * estivesse ausente, igual ao Ruby.
  */
 export function railsEnv(env = process.env): string {
-  return env.RAILS_ENV || env.RACK_ENV || "development";
+  const candidatos = [env.RAILS_ENV, env.RACK_ENV, "development"];
+
+  return (
+    candidatos.find(
+      (valor): valor is string =>
+        typeof valor === "string" && valor.trim() !== "",
+    ) ?? "development"
+  );
 }

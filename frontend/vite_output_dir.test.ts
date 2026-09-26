@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -107,11 +107,24 @@ describe("ambiente do Rails", () => {
     [{ RAILS_ENV: "", RACK_ENV: "production" }, "production"],
     [{ RAILS_ENV: "" }, "development"],
     [{}, "development"],
+    // `presence` usa `blank?`, e "  " é blank no Ruby. Em JavaScript "  " é
+    // truthy, então `||` a aceitaria e o build iria para o diretório errado.
+    [{ RAILS_ENV: "  ", RACK_ENV: "test" }, "test"],
+    [{ RAILS_ENV: "  " }, "development"],
+    [{ RAILS_ENV: "\t" }, "development"],
+    [{ RAILS_ENV: " " }, "development"],
   ])("resolve %o para %s", (env, expected) => {
     expect(railsEnv(env)).toBe(expected);
   });
 
-  it("usa o ambiente do processo quando nenhum é informado", () => {
-    expect(railsEnv({ RAILS_ENV: "staging" })).toBe("staging");
+  // O exemplo acima passa objetos explícitos. Este exercita o caminho de
+  // verdade, o default `env = process.env` que o vite.config.ts usa em runtime.
+  it("le do processo quando nenhum ambiente e informado", () => {
+    vi.stubEnv("RAILS_ENV", "staging");
+    vi.stubEnv("RACK_ENV", "production");
+
+    expect(railsEnv()).toBe("staging");
+
+    vi.unstubAllEnvs();
   });
 });
