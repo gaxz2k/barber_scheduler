@@ -81,3 +81,9 @@ end
 Rails.logger.info do
   "Unidade #{unidade_principal.name} (/#{unidade_principal.slug}): seg-sáb 08:00-19:00"
 end
+
+# A vitrine vem por último, e é a última coisa de propósito: os seeds
+# independentes rodam primeiro, e a demonstração só faz sentido quando a base
+# já tem as tabelas no estado final. `db:prepare` (migrations + seed) é o
+# comando que levanta o projeto com a vitrine de pé.
+load Rails.root.join("db/seeds/demo_barbershop.rb")

@@ -65,6 +65,10 @@ RSpec/ExampleLength:
     # O mesmo vale no CRUD: cadastrar e conferir o que foi gravado é uma única
     # ação vista de dois ângulos.
     - "spec/requests/admin/barbershop_units_spec.rb"
+    # O caminho do agendamento é uma cadeia e cada exemplo percorre um trecho
+    # inteiro dela, com requisição no meio: quebrar mediria método, não
+    # comportamento.
+    - "spec/requests/booking_unit_propagation_spec.rb"
     - "spec/services/**/*"
 
 Rails/SkipsModelValidations:
@@ -83,6 +87,7 @@ RSpec/MultipleExpectations:
     - "spec/models/barbershop_setup_readiness_spec.rb"
     - "spec/requests/admin/setup_readiness_spec.rb"
     - "spec/requests/admin/barbershop_units_spec.rb"
+    - "spec/requests/booking_unit_propagation_spec.rb"
     - "spec/services/**/*"
 
 # Os specs de unidade montam cenário com várias entidades — barbearia, duas
@@ -93,7 +98,15 @@ RSpec/MultipleMemoizedHelpers:
     - "spec/models/appointment_unit_spec.rb"
     - "spec/models/opening_hours_spec.rb"
     - "spec/requests/booking_unit_url_spec.rb"
+    - "spec/requests/booking_unit_propagation_spec.rb"
     - "spec/services/appointments/scheduler_unit_spec.rb"
+
+# O caminho do agendamento é uma cadeia, e cada exemplo percorre um trecho
+# inteiro dela: montar barbearia, unidade, serviço e profissional, fazer a
+# requisição e conferir o link. O que se prova em cada exemplo é a propagação
+# de ponta a ponta, e quebrar isso em passos isolados mediria método em vez de
+# comportamento. Por isso `booking_unit_propagation_spec.rb` está isento de
+# `ExampleLength` e `MultipleExpectations` nas seções acima.
 
 # `Appointments::Scheduler, "unidade obrigatória"` nomeia o serviço e a regra
 # testada. O caminho do arquivo já diz qual serviço é. O mesmo vale para

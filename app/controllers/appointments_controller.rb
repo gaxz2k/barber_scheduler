@@ -9,6 +9,14 @@ class AppointmentsController < ApplicationController
   def index
     @booking_step = :service
     @barbershop_photos = BarbershopPhoto.published.limit(BarbershopPhoto::MAX_PUBLISHED_PHOTOS)
+    # Na raiz não há unidade na URL, e é a raiz que o cliente chega. A lista de
+    # unidades é o que falta para ele escolher onde quer ser atendido: sem
+    # esta etapa, todo link de serviço levaria a uma URL sem `unidade_slug` e o
+    # agendamento seria recusado no fim do caminho.
+    #
+    # Só aparece quando a URL não traz unidade. Com `unidade_slug` a escolha já
+    # está feita, e repetir a lista seria pedir a mesma resposta duas vezes.
+    @booking_units = @barbershop_unit.blank? ? unidades_com_expediente : []
   end
 
   def new
@@ -109,9 +117,41 @@ class AppointmentsController < ApplicationController
   end
 
   helper_method :confirmation_eyebrow, :confirmation_title, :confirmation_message
-  helper_method :barbershop_unit
+  # A unidade precisa ser legível pela view para o formulário mandar o `create`
+  # para a URL certa. O método estava declarado como helper desde o commit que
+  # introduziu a unidade na URL, mas nunca existiu: qualquer view que o
+  # chamasse derrubaria a página com NoMethodError. `params[:unidade_slug]`
+  # sozinho não serve, porque a view precisa da unidade resolvida, e não do
+  # slug que o cliente pode ter digitado errado.
+  helper_method :barbershop_unit, :booking_units, :unidade_path
 
   private
+
+  # A unidade resolvida para esta requisição, ou nil quando a URL não traz
+  # slug — que é o mesmo estado de "não escolheu unidade", e o que a view
+  # precisa para montar o link do formulário.
+  def barbershop_unit
+    @barbershop_unit
+  end
+
+  # O caminho da home com a unidade escolhida, para a lista de lojas da raiz.
+  # Uma rota escrita à mão em vez do helper porque a raiz `/` não é o mesmo
+  # endpoint que o escopo por unidade — são as duas entradas do mesmo fluxo.
+  def unidade_path(unidade)
+    "/barbearia/unidades/#{unidade.slug}"
+  end
+
+  # As unidades onde o cliente pode agendar agora, e só elas.
+  #
+  # Uma unidade sem nenhum dia de expediente aparece como agenda vazia para
+  # quem a escolhe, e isso é a resposta certa — mas oferecer essa loja na lista
+  # de escolha é levar o cliente a um beco sem saída, que não é a mesma coisa.
+  # A lista é o caminho feliz; a loja fechada se descobre pelo link direto.
+  def unidades_com_expediente
+    BarbershopUnit.for_barbershop(Current.barbershop)
+                  .select(&:serves_on_any_day?)
+                  .sort_by(&:name)
+  end
 
   # Reached only for pending and confirmed appointments: #confirmation
   # redirects away when confirmation_accessible? is false, which covers

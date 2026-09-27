@@ -68,7 +68,10 @@
       <ul class="service-choice-list" aria-label="Serviços disponíveis">
         <% @services.each_with_index do |service, index| %>
           <li>
-            <%= link_to new_appointment_path(service: service.id), class: "service-choice-card", data: { turbo: false } do %>
+            <%# A unidade segue na URL, pela mesma razão do link de serviço na
+              home: ela decide os horários e precisa chegar ao `create`. %>
+          <%= link_to new_appointment_path(service: service.id, unidade_slug: params[:unidade_slug]),
+                      class: "service-choice-card", data: { turbo: false } do %>
             <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
             <span class="service-choice-card__body">
               <strong><%= service.name %></strong>
@@ -94,7 +97,11 @@
     <% if @professionals.any? %>
       <div class="professional-options" role="group" aria-label="Profissionais disponíveis">
         <% @professionals.each do |professional| %>
-          <%= link_to new_appointment_path(service: @selected_service.id, professional: professional.id, date: (Date.current + 1).iso8601), class: "choice-card choice-card--link", data: { turbo: false } do %>
+          <%# A unidade segue na URL, pela mesma razão do link de serviço na
+              home: ela decide os horários e precisa chegar ao `create`. %>
+          <%= link_to new_appointment_path(service: @selected_service.id, professional: professional.id,
+                                          date: (Date.current + 1).iso8601, unidade_slug: params[:unidade_slug]),
+                      class: "choice-card choice-card--link", data: { turbo: false } do %>
             <span class="choice-card__body">
               <span class="choice-card__avatar" aria-hidden="true"><%= professional.name.first %></span>
               <span>
@@ -120,7 +127,8 @@
       <strong><%= @selected_professional.name %></strong>
     </div>
 
-    <%= form_with model: @appointment, class: "booking-form", data: { controller: "booking-wizard" } do |form| %>
+    <%= form_with model: @appointment, url: (barbershop_unit ? appointments_path(unidade_slug: barbershop_unit.slug) : appointments_path),
+                  class: "booking-form", data: { controller: "booking-wizard" } do |form| %>
       <%= form.hidden_field :service_id, value: @selected_service.id %>
       <%= form.hidden_field :professional_id, value: @selected_professional.id %>
 

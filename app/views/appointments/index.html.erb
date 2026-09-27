@@ -56,47 +56,85 @@
   <% end %>
 
   <div class="booking-progress" aria-label="Etapas do agendamento">
-    <span class="progress-step progress-step--active"><b>1</b><span>Serviço</span></span>
+    <span class="progress-step <%= "progress-step--active" if @booking_units.any? %>"><b>1</b><span>Unidade</span></span>
     <span class="progress-line"></span>
-    <span class="progress-step"><b>2</b><span>Profissional</span></span>
+    <span class="progress-step <%= "progress-step--active" if @booking_units.empty? %>"><b>2</b><span>Serviço</span></span>
     <span class="progress-line"></span>
-    <span class="progress-step"><b>3</b><span>Horário</span></span>
+    <span class="progress-step"><b>3</b><span>Profissional</span></span>
     <span class="progress-line"></span>
-    <span class="progress-step"><b>4</b><span>Confirmação</span></span>
+    <span class="progress-step"><b>4</b><span>Horário</span></span>
+    <span class="progress-line"></span>
+    <span class="progress-step"><b>5</b><span>Confirmação</span></span>
   </div>
 
-  <section class="booking-intro" aria-labelledby="booking-title">
-    <div class="eyebrow">Seu próximo cuidado começa aqui</div>
-    <h1 id="booking-title">Escolha um serviço</h1>
-    <p>Escolha o cuidado ideal e avançamos juntos até o seu horário.</p>
-  </section>
+  <% if @booking_units.any? %>
+    <%# A etapa da unidade só existe quando a barbearia tem mais de uma loja
+        onde o cliente possa agendar. Com uma unidade só, perguntar "onde você
+        quer ser atendido" é uma pergunta com uma resposta, e a tela mostraria
+        uma escolha que não é escolha. %>
+    <section class="booking-intro" aria-labelledby="booking-unit-title">
+      <div class="eyebrow">Seu próximo cuidado começa aqui</div>
+      <h1 id="booking-unit-title">Escolha onde quer ser atendido</h1>
+      <p>Cada unidade tem seu próprio horário de funcionamento.</p>
+    </section>
 
-  <% if @services.any? %>
-    <ul class="service-choice-list" aria-label="Serviços disponíveis">
-      <% @services.each_with_index do |service, index| %>
+    <ul class="service-choice-list" aria-label="Unidades disponíveis">
+      <% @booking_units.each_with_index do |unit, index| %>
         <li>
-          <%= link_to new_appointment_path(service: service.id), class: "service-choice-card", data: { turbo: false } do %>
-          <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
-          <span class="service-choice-card__body">
-            <strong><%= service.name %></strong>
-            <span><%= service.duration_minutes %> min</span>
-            <%# O preço e a duração são dois fatos independentes: um serviço sem
-                preço cadastrado mostra só a duração, e não uma linha com
-                "R$ " vazio no lugar. %>
-            <% if service.price_label.present? %>
-              <span class="service-choice-card__price"><%= service.price_label %></span>
-            <% end %>
-          </span>
-          <span class="service-choice-card__arrow" aria-hidden="true">→</span>
+          <%= link_to unidade_path(unit), class: "service-choice-card", data: { turbo: false } do %>
+            <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
+            <span class="service-choice-card__body">
+              <strong><%= unit.name %></strong>
+              <span><%= unit.address.presence || "Unidade da #{Current.barbershop.name}" %></span>
+            </span>
+            <span class="service-choice-card__arrow" aria-hidden="true">→</span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <section class="booking-intro" aria-labelledby="booking-title">
+      <div class="eyebrow">Seu próximo cuidado começa aqui</div>
+      <h1 id="booking-title">Escolha um serviço</h1>
+      <p>Escolha o cuidado ideal e avançamos juntos até o seu horário.</p>
+    </section>
+  <% end %>
+
+  <% if @booking_units.empty? %>
+    <% if @services.any? %>
+      <ul class="service-choice-list" aria-label="Serviços disponíveis">
+        <% @services.each_with_index do |service, index| %>
+          <li>
+            <%# A unidade vai na URL do link, e não como campo: é ela que decide
+                os horários da etapa de horário, e ela também precisa sobreviver
+                ao `create`. Um link sem `unidade_slug` leva o cliente até o
+                último botão para ele receber "Escolha a unidade" — a escolha
+                existe na URL justamente para não poder ser perdida entre as
+                etapas. %>
+            <%= link_to new_appointment_path(service: service.id, unidade_slug: params[:unidade_slug]),
+                        class: "service-choice-card", data: { turbo: false } do %>
+              <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
+              <span class="service-choice-card__body">
+                <strong><%= service.name %></strong>
+                <span><%= service.duration_minutes %> min</span>
+                <%# O preço e a duração são dois fatos independentes: um serviço
+                    sem preço cadastrado mostra só a duração, e não uma linha
+                    com "R$ " vazia no lugar. %>
+                <% if service.price_label.present? %>
+                  <span class="service-choice-card__price"><%= service.price_label %></span>
+                <% end %>
+              </span>
+              <span class="service-choice-card__arrow" aria-hidden="true">→</span>
             <% end %>
           </li>
         <% end %>
       </ul>
-  <% else %>
-    <div class="customer-empty-state" role="status">
-      <strong>Ainda não há serviços cadastrados.</strong>
-      <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
-    </div>
+    <% else %>
+      <div class="customer-empty-state" role="status">
+        <strong>Ainda não há serviços cadastrados.</strong>
+        <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
+      </div>
+    <% end %>
   <% end %>
 
   <footer class="customer-footer">
