@@ -323,7 +323,12 @@ RSpec.describe "Customer booking experience", type: :request do
       expect(cliente.name).to eq("Maria da Silva")
       expect(cliente.phone).to eq("19999998888")
       expect(response).to have_http_status(:redirect)
-      expect(response.location).to start_with("http://www.example.com/appointments/confirmation/")
+      # A URL de confirmação carrega o subdomínio da barbearia, porque a página
+      # resolve o tenant pelo host. Afirmar o caminho é o que importa: o host
+      # é o da barbearia do teste, e mudá-lo aqui de volta para `www.example.com`
+      # seria afirmar um comportamento que a aplicação não tem mais.
+      expect(response.location).to include("/appointments/confirmation/")
+      expect(response.location).to start_with("http://#{tenant_host}/")
     end
 
     it "does not expose the old client selector or accept client_id" do
@@ -334,7 +339,9 @@ RSpec.describe "Customer booking experience", type: :request do
 
       post appointments_path, params: params
 
-      expect(response).to redirect_to(%r{\Ahttp://www\.example\.com/appointments/confirmation/})
+      # O host é o subdomínio da barbearia do teste, porque é por ele que a
+      # página resolve o tenant.
+      expect(response).to redirect_to(%r{\Ahttp://#{Regexp.escape(tenant_host)}/appointments/confirmation/})
       cliente = within_tenant { tenant_records(Appointment).last.client }
       expect(cliente.name).to eq("Maria da Silva")
     end

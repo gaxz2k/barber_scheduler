@@ -40,13 +40,16 @@ end
 Current.barbershop = barbershop
 
 professionals.each do |name|
-  Professional.find_or_create_by!(name: name)
+  Professional.find_or_create_by!(name: name, barbershop_id: barbershop.id)
 end
 
 services.each do |attributes|
-  Service.find_or_create_by!(name: attributes[:name]) do |service|
-    service.duration_minutes = attributes[:duration_minutes]
-  end
+  # Os atributos entram na busca, e não no bloco: com `find_or_create_by!` o
+  # bloco só roda DEPOIS da validação, então criar sem duração falharia com
+  # "Duration minutes não pode ficar em branco" — um erro que aponta para o
+  # model e não para o seed.
+  Service.find_or_create_by!(name: attributes[:name], barbershop_id: barbershop.id,
+                             duration_minutes: attributes[:duration_minutes])
 end
 
 Rails.logger.info do

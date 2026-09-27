@@ -276,6 +276,18 @@ body:has(.booking-page) {
   font-size: 0.8rem;
 }
 
+/* O preço é o dado que o cliente compara entre serviços, então pesa mais que a
+   duração — que é informação de compromisso, não de decisão. Fica alinhado à
+   direita para que os valores formem uma coluna comparável, que é como uma
+   lista de preços se lê. */
+.booking-entry .service-choice-card__price,
+.service-choice-card__price {
+  color: var(--meta-ink);
+  font-weight: 800;
+  justify-self: end;
+  margin-top: -0.1rem;
+}
+
 .booking-entry .service-choice-card__arrow,
 .service-choice-card__arrow {
   flex: 0 0 auto;

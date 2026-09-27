@@ -26,6 +26,16 @@ class Barbershop < ApplicationRecord
     slug
   end
 
+  # Busca pelo slug exato. É o que a resolução de subdomínio usa, e por isso
+  # não aceita o slug parcial: "senior-r" não pode devolver a "senhor-r-filial".
+  class << self
+    def for_host(slug)
+      return nil if slug.blank?
+
+      where(slug: slug.to_s.parameterize).first
+    end
+  end
+
   def opening_hours_for(day)
     Array(opening_hours[day.to_s])
   end

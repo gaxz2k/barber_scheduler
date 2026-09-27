@@ -9,4 +9,10 @@ class Professional < ApplicationRecord
   # cadastrar alguém, o que é um defeito de multi-tenant, não uma proteção.
   validates :name, presence: true, uniqueness: { scope: :barbershop_id }
   has_many :appointments, dependent: :restrict_with_error
+
+  # A especialidade como o cliente vê, ou nil quando não foi informada — a view
+  # esconde o campo nesse caso, em vez de deixar um separador órfão.
+  def specialty_label
+    specialty.presence
+  end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_27_000100) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_000200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -102,6 +102,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_000100) do
     t.bigint "barbershop_id", null: false
     t.datetime "created_at", null: false
     t.string "name"
+    t.string "specialty"
     t.datetime "updated_at", null: false
     t.index ["barbershop_id", "name"], name: "index_professionals_on_barbershop_id_and_name", unique: true
     t.index ["barbershop_id"], name: "index_professionals_on_barbershop_id"
@@ -112,6 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_000100) do
     t.datetime "created_at", null: false
     t.integer "duration_minutes"
     t.string "name"
+    t.integer "price_cents"
     t.datetime "updated_at", null: false
     t.index ["barbershop_id"], name: "index_services_on_barbershop_id"
   end

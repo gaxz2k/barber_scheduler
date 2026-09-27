@@ -73,8 +73,6 @@ module TenantTestHelpers
   end
 
   # O host que a requisição deve usar para resolver a barbearia pelo subdomínio.
-  # Só entra em vigor quando o SubdomainResolver existir; até lá, o
-  # around_action que resolve o host é a camada seguinte.
   def tenant_host(barbershop = test_barbershop)
     "#{barbershop.slug}.example.com"
   end
@@ -97,6 +95,16 @@ RSpec.configure do |config|
 
   config.before do
     Current.barbershop = test_barbershop
+  end
+
+  # O host padrão das requisições de teste é o subdomínio da barbearia de
+  # teste, e não `www.example.com`: a resolução de tenant acontece no host, e
+  # `www.example.com` não tem subdomínio que identifique ninguém — todas as
+  # requisições dariam 404. Configurar aqui é melhor do que passar o header em
+  # cada spec, porque um request spec que esquece o header passa a falhar em vez
+  # de silenciosamente testar contra a raiz.
+  config.before(type: :request) do
+    host! tenant_host
   end
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures

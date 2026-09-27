@@ -1,15 +1,15 @@
-<% content_for :title, "Agendar | Barbearia Senhor R" %>
+<% content_for :title, "Agendar | #{Current.barbershop.name}" %>
 
 <main class="site-shell customer-home booking-entry">
   <header class="customer-header">
-    <%= link_to root_path, class: "brand-lockup", aria: { label: "Barbearia Senhor R, início" } do %>
-      <span class="brand-mark" aria-hidden="true">Sr<span class="brand-crown">♛</span></span>
+    <%= link_to root_path, class: "brand-lockup", aria: { label: "#{Current.barbershop.name}, início" } do %>
+      <span class="brand-mark" aria-hidden="true"><%= Current.barbershop.name.to_s.first(2).upcase %></span>
       <span>
-        <span class="brand-name">Barbearia</span>
-        <span class="brand-name brand-name--strong">Senhor R</span>
+        <span class="brand-name"><%= Current.barbershop.tagline.presence || "Barbearia" %></span>
+        <span class="brand-name brand-name--strong"><%= Current.barbershop.name %></span>
       </span>
     <% end %>
-    <span class="header-location">Nova Odessa · SP</span>
+    <span class="header-location"><%= Current.barbershop.address.presence || "" %></span>
   </header>
 
   <% if @barbershop_photos.any? %>
@@ -26,12 +26,12 @@
         </div>
       </div>
 
-      <div class="barbershop-carousel__viewport" data-barbershop-carousel-target="viewport" tabindex="0" role="region" aria-roledescription="carrossel" aria-label="Fotos da Barbearia Senhor R" data-action="keydown->barbershop-carousel#keydown mouseenter->barbershop-carousel#stop mouseleave->barbershop-carousel#start focusin->barbershop-carousel#stop focusout->barbershop-carousel#start">
+      <div class="barbershop-carousel__viewport" data-barbershop-carousel-target="viewport" tabindex="0" role="region" aria-roledescription="carrossel" aria-label="Fotos da <%= Current.barbershop.name %>" data-action="keydown->barbershop-carousel#keydown mouseenter->barbershop-carousel#stop mouseleave->barbershop-carousel#start focusin->barbershop-carousel#stop focusout->barbershop-carousel#start">
         <div class="barbershop-carousel__track" data-barbershop-carousel-target="track">
           <% @barbershop_photos.each_with_index do |photo, index| %>
             <figure class="barbershop-carousel__slide" data-barbershop-carousel-target="slide" data-index="<%= index %>" aria-hidden="<%= index.zero? ? "false" : "true" %>">
               <div class="barbershop-carousel__image-wrap">
-                <%= image_tag photo.image, alt: photo.caption.presence || "Foto da Barbearia Senhor R", loading: index.zero? ? "eager" : "lazy", data: { barbershop_carousel_target: "image", action: "error->barbershop-carousel#imageError" } %>
+                <%= image_tag photo.image, alt: photo.caption.presence || "Foto da #{Current.barbershop.name}", loading: index.zero? ? "eager" : "lazy", data: { barbershop_carousel_target: "image", action: "error->barbershop-carousel#imageError" } %>
                 <div class="barbershop-carousel__image-fallback" data-barbershop-carousel-target="imageFallback" hidden>
                   <span aria-hidden="true">▧</span>
                   <strong>Foto indisponível</strong>
@@ -51,7 +51,7 @@
     <div class="barbershop-carousel barbershop-carousel--empty" role="status">
       <div class="barbershop-carousel__empty-icon" aria-hidden="true">✦</div>
       <strong>Novas fotos em breve</strong>
-      <span>Estamos preparando um tour do espaço da Barbearia Senhor R.</span>
+      <span>Estamos preparando um tour do espaço da <%= Current.barbershop.name %>.</span>
     </div>
   <% end %>
 
@@ -80,6 +80,12 @@
           <span class="service-choice-card__body">
             <strong><%= service.name %></strong>
             <span><%= service.duration_minutes %> min</span>
+            <%# O preço e a duração são dois fatos independentes: um serviço sem
+                preço cadastrado mostra só a duração, e não uma linha com
+                "R$ " vazio no lugar. %>
+            <% if service.price_label.present? %>
+              <span class="service-choice-card__price"><%= service.price_label %></span>
+            <% end %>
           </span>
           <span class="service-choice-card__arrow" aria-hidden="true">→</span>
             <% end %>
@@ -94,8 +100,8 @@
   <% end %>
 
   <footer class="customer-footer">
-    <span>Barbearia Senhor R</span>
+    <span><%= Current.barbershop.name %></span>
     <span>·</span>
-    <span>Nova Odessa, SP</span>
+    <span><%= Current.barbershop.address.presence || Current.barbershop.phone %></span>
   </footer>
 </main>
