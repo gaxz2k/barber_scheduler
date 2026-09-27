@@ -7,6 +7,12 @@ class Barbershop < ApplicationRecord
   # único model acessível sem contexto, e por isso `pluck(:slug)` na resolução
   # de subdomínio é seguro.
 
+  # `:class_name` explícito porque o Rails derivaria "Unidade" de "unidades" — o
+  # nome singular da associação, que não existe. A associação chama unidades
+  # porque é o termo do domínio; a classe chama BarbershopUnit porque é o termo
+  # do código, e uma segunda tabela chamada "unidades" sem o prefixo seria
+  # ambígua com a unidade de medida.
+  has_many :unidades, class_name: "BarbershopUnit", dependent: :destroy
   has_many :clients, dependent: :restrict_with_error
   has_many :professionals, dependent: :restrict_with_error
   has_many :services, dependent: :restrict_with_error
@@ -21,6 +27,16 @@ class Barbershop < ApplicationRecord
   validates :timezone, presence: true
 
   before_validation :normalize_slug
+  # Uma barbearia nova precisa de uma unidade: `Appointment` exige uma, e uma
+  # barbearia recém-criada sem unidade aceita cadastrar catálogo e recusa todo
+  # agendamento. A migration faz o mesmo para as barbearias que já existiam;
+  # aqui é para as que nascem depois.
+  #
+  # `Current` é ligado durante a criação porque a validação de TenantScoped
+  # recusa gravar sem contexto, e a barbearia acabou de nascer — quem a cria
+  # ainda não tem o tenant em `Current`. Só o próprio `barbershop_id` é
+  # aceito, e é o caso certo: a unidade pertence à barbearia que está nascendo.
+  after_create :create_primary_unit
 
   def to_param
     slug
@@ -50,6 +66,18 @@ class Barbershop < ApplicationRecord
   end
 
   private
+
+  def create_primary_unit
+    # `Current` entra só para a criação da unidade e sai logo depois: um job ou
+    # um console que cria uma barbearia não deve ficar com o tenant grudado
+    # depois disso, senão as consultas seguintes herdam a barbearia
+    # recém-criada sem ninguém pedir.
+    anterior = Current.barbershop
+    Current.barbershop = self
+    unidades.create!(name: name, slug: "principal", address: address, phone: phone, whatsapp: whatsapp)
+  ensure
+    Current.barbershop = anterior
+  end
 
   def normalize_slug
     self.slug = slug.to_s.parameterize.presence || name.to_s.parameterize

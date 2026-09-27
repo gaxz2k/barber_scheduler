@@ -7,7 +7,7 @@ RSpec.describe "Appointments", type: :request do
   let(:start_at) { 1.day.from_now.change(hour: 10, min: 0) }
 
   before do
-    Appointment.create!(professional: professional, client: client, service: service,
+    create_test_appointment!(professional: professional, client: client, service: service,
                         start_at: start_at, end_at: start_at + 30.minutes)
   end
 
@@ -26,7 +26,7 @@ RSpec.describe "Appointments", type: :request do
     def finished_appointment(status)
       within_tenant do
         slot = 10.days.from_now.change(hour: 10, min: 0, sec: 0)
-        appointment = Appointment.create!(professional: professional, client: client, service: service,
+        appointment = create_test_appointment!(professional: professional, client: client, service: service,
                                           start_at: slot, end_at: slot + 30.minutes)
         appointment.update_columns(status: status)
         appointment
@@ -69,12 +69,12 @@ RSpec.describe "Appointments", type: :request do
 
     it "creates an appointment" do
       expect {
-        post appointments_path, params: create_params
+        post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: create_params
       }.to change_tenant_count(Appointment).by(1)
     end
 
     it "redirects to the protected confirmation" do
-      post appointments_path, params: create_params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: create_params
 
       expect(response).to redirect_to(appointment_confirmation_path(token: tenant_records(Appointment).last.confirmation_token))
     end
@@ -82,7 +82,7 @@ RSpec.describe "Appointments", type: :request do
     it "renders the booking form when the appointment is invalid" do
       params = { appointment: { service_id: nil, professional_id: nil, date: nil, start_at: nil } }
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
     end

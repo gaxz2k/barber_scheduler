@@ -6,14 +6,15 @@ module AvailableSlots
       new(...).fetch
     end
 
-    def self.invalidate(professional:, date:, service:)
-      new(professional: professional, date: date, service: service).invalidate
+    def self.invalidate(professional:, date:, service:, barbershop_unit: nil)
+      new(professional: professional, date: date, service: service, barbershop_unit: barbershop_unit).invalidate
     end
 
-    def initialize(professional:, date:, service:)
+    def initialize(professional:, date:, service:, barbershop_unit: nil)
       @professional = professional
       @date = date
       @service = service
+      @barbershop_unit = barbershop_unit
     end
 
     def fetch
@@ -21,11 +22,7 @@ module AvailableSlots
       raise ArgumentError, "date is required" if @date.blank?
       raise ArgumentError, "service is required" if @service.blank?
 
-      return AvailableSlots::Calculator.new(
-        professional: @professional,
-        date: @date,
-        service: @service
-      ).call if current_date?
+      return calculate_slots if current_date?
 
       key = cache_key
       cached = redis.get(key)
@@ -52,7 +49,7 @@ module AvailableSlots
 
     private
 
-    attr_reader :professional, :date, :service
+    attr_reader :professional, :date, :service, :barbershop_unit
 
     def with_current_generation(key, version, slots)
       redis.watch(generation_key) do
@@ -75,7 +72,8 @@ module AvailableSlots
       AvailableSlots::Calculator.new(
         professional: professional,
         date: date,
-        service: service
+        service: service,
+        barbershop_unit: barbershop_unit
       ).call
     end
 
@@ -86,6 +84,7 @@ module AvailableSlots
     def cache_key
       [
         "available-slots",
+        barbershop_unit&.id || "sem-unidade",
         professional.id,
         date.to_date,
         service.id,

@@ -72,6 +72,44 @@ module TenantTestHelpers
     Current.barbershop = anterior
   end
 
+  # Cria um Appointment válido, já com a unidade da barbearia em contexto.
+  #
+  # Existe porque a unidade é obrigatória e vários specs montam uma agenda para
+  # exercitar outra coisa — slots, duração, cache. Cada um deles declararia a
+  # mesma unidade, e o que precisam provar não é a unidade.
+  #
+  # A unidade vem da barbearia que está em `Current`, e não de `test_barbershop`
+  # fixo: o spec de isolamento cria duas barbearias e agenda na A, e usar a
+  # unidade de `test_barbershop` faria a validação recusar o agendamento como
+  # pertencente a outra barbearia.
+  def create_test_appointment!(**attributes)
+    alvo = Current.barbershop || test_barbershop
+    within_tenant(alvo) do
+      Appointment.create!(**attributes, barbershop_unit: attributes[:barbershop_unit] || test_unit_for(alvo))
+    end
+  end
+
+  # A unidade principal de uma barbearia, memoizada por barbearia, já com um
+  # expediente definido.
+  #
+  # O expediente 08:00–22:00 em todos os dias existe porque a disponibilidade
+  # passou a depender do horário de funcionamento. Sem ele, todo spec que
+  # verifica slots recebe uma agenda vazia e falha por um motivo que não é o
+  # que está testando. A janela é larga de propósito: o que esses specs
+  # precisam provar é duração, grade e conflito, e não o limite do expediente.
+  #
+  # A gravação acontece dentro de `within_tenant` porque a unidade é
+  # tenant-scoped: lida fora do contexto, ela não aparece.
+  def test_unit_for(barbershop)
+    @test_units ||= {}
+    @test_units[barbershop.id] ||= within_tenant(barbershop) do
+      unit = barbershop.unidades.order(:id).first
+      expediente = (0..6).to_h { |dia| [ dia.to_s, { "open" => "08:00", "close" => "22:00" } ] }
+      unit.update!(opening_hours: expediente)
+      unit
+    end
+  end
+
   # O host que a requisição deve usar para resolver a barbearia pelo subdomínio.
   def tenant_host(barbershop = test_barbershop)
     "#{barbershop.slug}.example.com"

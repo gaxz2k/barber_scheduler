@@ -121,7 +121,7 @@ RSpec.describe "isolamento entre barbearias", type: :model do
       profissional = Professional.create!(name: "Agenda A")
       serviço = Service.create!(name: "Corte A", duration_minutes: 30)
       cliente = Client.create!(name: "Cliente A", phone: "11987650010")
-      Appointment.create!(professional: profissional, service: serviço, client: cliente,
+      create_test_appointment!(professional: profissional, service: serviço, client: cliente,
                           start_at: 2.days.from_now.change(hour: 10, min: 0),
                           end_at: 2.days.from_now.change(hour: 10, min: 30))
 
@@ -136,7 +136,7 @@ RSpec.describe "isolamento entre barbearias", type: :model do
       profissional = Professional.create!(name: "Agenda B")
       serviço = Service.create!(name: "Corte B", duration_minutes: 30)
       cliente = Client.create!(name: "Cliente B", phone: "11987650011")
-      Appointment.create!(professional: profissional, service: serviço, client: cliente,
+      create_test_appointment!(professional: profissional, service: serviço, client: cliente,
                           start_at: 2.days.from_now.change(hour: 14, min: 0),
                           end_at: 2.days.from_now.change(hour: 14, min: 30))
 
@@ -176,7 +176,7 @@ RSpec.describe "isolamento entre barbearias", type: :model do
       cliente_a = Client.create!(name: "Cliente A", phone: "11987650022")
       profissional = Professional.create!(name: "Navegador Forcado")
       serviço = Service.create!(name: "Corte Forcado", duration_minutes: 30)
-      appointment = Appointment.create!(professional: profissional, service: serviço, client: cliente_a,
+      appointment = create_test_appointment!(professional: profissional, service: serviço, client: cliente_a,
                                         start_at: 3.days.from_now.change(hour: 12, min: 0),
                                         end_at: 3.days.from_now.change(hour: 12, min: 30))
       # `update_column` pula as validações de propósito: é o único caminho em
@@ -196,7 +196,7 @@ RSpec.describe "isolamento entre barbearias", type: :model do
       profissional = Professional.create!(name: "Confirmador")
       serviço = Service.create!(name: "Corte Confirmado", duration_minutes: 30)
       cliente = Client.create!(name: "Cliente Confirmado", phone: "11987650030")
-      appointment = Appointment.create!(professional: profissional, service: serviço, client: cliente,
+      appointment = create_test_appointment!(professional: profissional, service: serviço, client: cliente,
                                         start_at: 4.days.from_now.change(hour: 13, min: 0),
                                         end_at: 4.days.from_now.change(hour: 13, min: 30))
 

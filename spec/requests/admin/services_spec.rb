@@ -31,7 +31,7 @@ RSpec.describe "Admin::Services", type: :request do
   end
 
   def create_appointment!
-    Appointment.create!(
+    create_test_appointment!(
       client: client,
       professional: professional,
       service: service,

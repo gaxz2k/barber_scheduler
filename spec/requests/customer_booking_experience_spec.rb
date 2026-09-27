@@ -8,6 +8,17 @@ RSpec.describe "Customer booking experience", type: :request do
   let(:tomorrow) { Date.current + 1 }
   let(:available_start) { tomorrow.in_time_zone.change(hour: 9, min: 0) }
 
+  # As rotas com unidade levam o slug POSICIONAL: e o segment da URL, e nao
+  # query string. Sem ele a rota do scope nao casa e o controller cai no
+  # caminho sem unidade, que recusa por nao ter horario de funcionamento.
+  def unidade_nova(unidade_slug = test_unit_for(test_barbershop).slug, **opts)
+    new_unidade_appointment_path(unidade_slug, **opts)
+  end
+
+  def unidade_disponibilidade(unidade_slug = test_unit_for(test_barbershop).slug, **opts)
+    unidade_availability_path(unidade_slug, **opts)
+  end
+
   def confirmation_params
     {
       appointment: {
@@ -80,7 +91,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "explains when no professional is configured" do
       service
 
-      get new_appointment_path(service: service.id)
+      get unidade_nova(service: service.id)
 
       expect(response.body).to include("Ainda não há profissionais disponíveis")
     end
@@ -89,7 +100,7 @@ RSpec.describe "Customer booking experience", type: :request do
       service
       professional
 
-      get new_appointment_path(service: service.id)
+      get unidade_nova(service: service.id)
 
       expect(response).to have_http_status(:success)
       expect(response.body).to include("Escolha seu profissional", professional.name)
@@ -105,7 +116,7 @@ RSpec.describe "Customer booking experience", type: :request do
         Appointment.ignored_columns += [ "confirmation_token" ]
         Appointment.reset_column_information
 
-        get new_appointment_path(service: service.id)
+        get unidade_nova(service: service.id)
 
         expect(response).to have_http_status(:success)
       ensure
@@ -119,7 +130,7 @@ RSpec.describe "Customer booking experience", type: :request do
       service
       professional
 
-      get new_appointment_path(
+      get unidade_nova(
         service: service.id,
         professional: professional.id,
         date: tomorrow.iso8601
@@ -132,7 +143,7 @@ RSpec.describe "Customer booking experience", type: :request do
       service
       professional
 
-      get new_appointment_path(service: service.id, professional: "999999")
+      get unidade_nova(service: service.id, professional: "999999")
 
       expect(response.body).not_to include("value=\"999999\" checked")
     end
@@ -143,7 +154,7 @@ RSpec.describe "Customer booking experience", type: :request do
       service
       professional
 
-      get availability_path(
+      get unidade_disponibilidade(
         service_id: service.id,
         professional_id: professional.id,
         date: tomorrow.iso8601
@@ -159,7 +170,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "rejects an unknown service" do
       professional
 
-      get availability_path(service_id: "999999", professional_id: professional.id, date: tomorrow.iso8601)
+      get unidade_disponibilidade(service_id: "999999", professional_id: professional.id, date: tomorrow.iso8601)
 
       expect(response).to have_http_status(:unprocessable_content)
     end
@@ -169,7 +180,7 @@ RSpec.describe "Customer booking experience", type: :request do
       professional
 
       expect {
-        get availability_path(
+        get unidade_disponibilidade(
           service_id: service.id,
           professional_id: professional.id,
           date: "999999999-01-01"
@@ -183,7 +194,7 @@ RSpec.describe "Customer booking experience", type: :request do
       service
       professional
 
-      get availability_path(
+      get unidade_disponibilidade(
         service_id: service.id,
         professional_id: professional.id,
         date: (Date.current + 1.year + 1.day).iso8601
@@ -197,7 +208,7 @@ RSpec.describe "Customer booking experience", type: :request do
       professional
 
       expect {
-        get availability_path(
+        get unidade_disponibilidade(
           service_id: service.id,
           professional_id: professional.id,
           date: "not-a-date"
@@ -228,7 +239,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment][:start_at] = (tomorrow + 1.day).in_time_zone.change(hour: 9, min: 0).iso8601
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(Appointment.count).to eq(0)
@@ -240,7 +251,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment][:start_at] = available_start.strftime("%Y-%m-%dT%H:%M:%S%z")
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(Appointment.count).to eq(0)
@@ -252,7 +263,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment][:start_at] = available_start.iso8601.sub("T", " ")
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(Appointment.count).to eq(0)
@@ -264,7 +275,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment][:start_at] = "2026-09-26T09:00:00+14:00"
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(Appointment.count).to eq(0)
@@ -276,7 +287,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment][:start_at] = available_start.strftime("%Y-%m-%dT%H:%M:%S-99:00")
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(Appointment.count).to eq(0)
@@ -288,7 +299,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment][:start_at] = "2026-09-26T09:00:00+14:01"
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(Appointment.count).to eq(0)
@@ -300,7 +311,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment][:start_at] = "2026-09-26T24:00:00-03:00"
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(Appointment.count).to eq(0)
@@ -311,7 +322,7 @@ RSpec.describe "Customer booking experience", type: :request do
       professional
 
       expect {
-        post appointments_path, params: valid_params
+        post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: valid_params
       }.to change_tenant_count(Appointment).by(1).and change_tenant_count(Client).by(1)
 
       # A navegação `appointment.client` usa o escopo padrão de Client, que
@@ -337,7 +348,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment][:client_id] = "999999"
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       # O host é o subdomínio da barbearia do teste, porque é por ele que a
       # página resolve o tenant.
@@ -354,7 +365,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params[:appointment][:client_phone] = "123"
 
       expect {
-        post appointments_path, params: params
+        post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
       }.not_to change_tenant_count(Client)
 
       expect(response).to have_http_status(:unprocessable_content)
@@ -363,14 +374,14 @@ RSpec.describe "Customer booking experience", type: :request do
 
     it "rejects a malformed appointment payload without raising" do
       expect {
-        post appointments_path, params: { appointment: "invalid" }
+        post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: { appointment: "invalid" }
       }.not_to raise_error
 
       expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "shows a selection error before the schedule step" do
-      post appointments_path, params: { appointment: { service_id: nil, professional_id: nil, date: nil } }
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: { appointment: { service_id: nil, professional_id: nil, date: nil } }
 
       expect(response.body).to include(
         "Escolha um serviço",
@@ -383,7 +394,7 @@ RSpec.describe "Customer booking experience", type: :request do
       service
       professional
 
-      get new_appointment_path(
+      get unidade_nova(
         service: service.id,
         professional: professional.id,
         date: tomorrow.iso8601
@@ -401,7 +412,7 @@ RSpec.describe "Customer booking experience", type: :request do
         params[:appointment][field] = [ "unexpected" ]
 
         expect {
-          post appointments_path, params: params
+          post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
         }.not_to raise_error
         expect(response).to have_http_status(:unprocessable_content)
       end
@@ -413,7 +424,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment].delete(:date)
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(Appointment.count).to eq(0)
@@ -426,7 +437,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params[:appointment][:date] = "999999999-01-01"
 
       expect {
-        post appointments_path, params: params
+        post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
       }.not_to raise_error
 
       expect(response).to have_http_status(:unprocessable_content)
@@ -439,7 +450,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params[:appointment][:date] = "not-a-date"
 
       expect {
-        post appointments_path, params: params
+        post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
       }.not_to raise_error
 
       expect(response).to have_http_status(:unprocessable_content)
@@ -451,7 +462,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = valid_params
       params[:appointment][:date] = "not-a-date"
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include(
@@ -469,7 +480,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params[:appointment][:start_at] = "2026-99-99T10:00:00-03:00"
 
       expect {
-        post appointments_path, params: params
+        post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
       }.not_to raise_error
 
       expect(response).to have_http_status(:unprocessable_content)
@@ -480,7 +491,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "nao expoe nome e telefone completos enquanto o token valer" do
       service
       professional
-      post appointments_path, params: confirmation_params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
       token = response.location.split("/").last
 
       get appointment_confirmation_path(token: token)
@@ -497,7 +508,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "ainda mostra os dados que a pagina precisa para ser util" do
       service
       professional
-      post appointments_path, params: confirmation_params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
       token = response.location.split("/").last
 
       get appointment_confirmation_path(token: token)
@@ -510,7 +521,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "mascara o telefone em vez de remove-lo, para o cliente se reconhecer" do
       service
       professional
-      post appointments_path, params: confirmation_params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
       token = response.location.split("/").last
 
       get appointment_confirmation_path(token: token)
@@ -524,7 +535,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "traduz o status para portugues" do
       service
       professional
-      post appointments_path, params: confirmation_params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
       token = response.location.split("/").last
 
       get appointment_confirmation_path(token: token)
@@ -539,7 +550,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "shows the appointment date in Brazilian Portuguese" do
       service
       professional
-      post appointments_path, params: confirmation_params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
       token = response.location.split("/").last
 
       get appointment_confirmation_path(token: token)
@@ -554,7 +565,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "rejects an expired confirmation token" do
       service
       professional
-      post appointments_path, params: confirmation_params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
       token = response.location.split("/").last
       appointment = tenant_records(Appointment).find_by!(confirmation_token: token)
       appointment.update_columns(confirmation_expires_at: 1.minute.ago) # rubocop:disable Rails/SkipsModelValidations
@@ -570,7 +581,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = confirmation_params
       params[:appointment][:client_name] = ""
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include(available_start.strftime("%H:%M"), "Informe seu nome")
@@ -582,7 +593,7 @@ RSpec.describe "Customer booking experience", type: :request do
       params = confirmation_params
       params[:appointment][:client_name] = ""
 
-      post appointments_path, params: params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
       checked = CGI.unescapeHTML(response.body).scan(/<input[^>]*name="appointment\[start_at\]"[^>]*>/).select { |tag| tag.include?("checked") }
       result = checked.any? { |tag| tag.include?(available_start.iso8601) }
@@ -599,7 +610,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "rejects a terminal confirmation token" do
       service
       professional
-      post appointments_path, params: confirmation_params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
       token = response.location.split("/").last
       appointment = tenant_records(Appointment).find_by!(confirmation_token: token)
       within_tenant { appointment.update!(status: :canceled) }
@@ -612,7 +623,7 @@ RSpec.describe "Customer booking experience", type: :request do
     it "rejects a completed confirmation token" do
       service
       professional
-      post appointments_path, params: confirmation_params
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
       token = response.location.split("/").last
       appointment = tenant_records(Appointment).find_by!(confirmation_token: token)
       within_tenant { appointment.update!(status: :completed) }

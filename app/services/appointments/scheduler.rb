@@ -4,17 +4,34 @@ module Appointments
       new(...).call
     end
 
-    def initialize(client:, professional:, service:, start_at:, **_ignored)
+    # `barbershop_unit:` é obrigatório, e não deduzido.
+    #
+    # Deduzir seria transformar "não informado" em "a principal" sem ninguém
+    # pedir: o agendamento existe, a agenda aparece, e o cliente vai para uma
+    # loja que ele não escolheu. Sem unidade explícita a chamada nem chega ao
+    # banco — o `ArgumentError` do Ruby aparece antes de qualquer escrita, e é
+    # melhor que um agendamento gravado no lugar errado.
+    #
+    # A unidade do profissional não é usada como fonte: o profissional pode
+    # atender em várias unidades, e quem sabe onde o cliente vai é a escolha
+    # dele, não o cadastro do profissional.
+    def initialize(client:, professional:, service:, start_at:, barbershop_unit:, **_ignored)
       @client = client
       @professional = professional
       @service = service
       @start_at = start_at
+      @barbershop_unit = barbershop_unit
     end
 
     def call
       return invalid_appointment("serviço é obrigatório") if @service.blank?
       return invalid_appointment("cliente é obrigatório") if @client.blank?
       return invalid_appointment("profissional é obrigatório") if @professional.blank?
+      return invalid_appointment("unidade é obrigatória") if @barbershop_unit.blank?
+      if @professional&.barbershop_unit.present? && @professional.barbershop_unit_id != @barbershop_unit.id
+        return invalid_appointment("profissional não atende nesta unidade")
+      end
+
       return invalid_appointment("horário é obrigatório") if @start_at.nil?
       return invalid_appointment("horário é inválido") unless supported_start_at_type?
       return invalid_appointment("horário é inválido") unless normalize_start_at!
@@ -46,6 +63,7 @@ module Appointments
         client: @client,
         professional: @professional,
         service: @service,
+        barbershop_unit: @barbershop_unit,
         start_at: @start_at,
         end_at: end_at
       )

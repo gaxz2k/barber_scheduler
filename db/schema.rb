@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_27_000200) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_000400) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -45,6 +45,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_000200) do
 
   create_table "appointments", force: :cascade do |t|
     t.bigint "barbershop_id", null: false
+    t.bigint "barbershop_unit_id", null: false
     t.bigint "client_id", null: false
     t.datetime "confirmation_expires_at", null: false
     t.string "confirmation_token", null: false
@@ -56,6 +57,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_000200) do
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["barbershop_id"], name: "index_appointments_on_barbershop_id"
+    t.index ["barbershop_unit_id"], name: "index_appointments_on_barbershop_unit_id"
     t.index ["client_id"], name: "index_appointments_on_client_id"
     t.index ["confirmation_token"], name: "index_appointments_on_confirmation_token", unique: true
     t.index ["professional_id"], name: "index_appointments_on_professional_id"
@@ -73,6 +75,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_000200) do
     t.datetime "updated_at", null: false
     t.index ["active", "position"], name: "index_barbershop_photos_on_active_and_position"
     t.index ["barbershop_id"], name: "index_barbershop_photos_on_barbershop_id"
+  end
+
+  create_table "barbershop_units", force: :cascade do |t|
+    t.string "address"
+    t.bigint "barbershop_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.jsonb "opening_hours", default: {}, null: false
+    t.string "phone"
+    t.string "slug", null: false
+    t.string "timezone"
+    t.datetime "updated_at", null: false
+    t.string "whatsapp"
+    t.index ["barbershop_id", "slug"], name: "index_barbershop_units_on_barbershop_id_and_slug", unique: true
+    t.index ["barbershop_id"], name: "index_barbershop_units_on_barbershop_id"
   end
 
   create_table "barbershops", force: :cascade do |t|
@@ -100,12 +117,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_000200) do
 
   create_table "professionals", force: :cascade do |t|
     t.bigint "barbershop_id", null: false
+    t.bigint "barbershop_unit_id"
     t.datetime "created_at", null: false
     t.string "name"
     t.string "specialty"
     t.datetime "updated_at", null: false
     t.index ["barbershop_id", "name"], name: "index_professionals_on_barbershop_id_and_name", unique: true
     t.index ["barbershop_id"], name: "index_professionals_on_barbershop_id"
+    t.index ["barbershop_unit_id"], name: "index_professionals_on_barbershop_unit_id"
   end
 
   create_table "services", force: :cascade do |t|

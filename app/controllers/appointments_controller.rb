@@ -4,6 +4,7 @@ class AppointmentsController < ApplicationController
 
   before_action :set_booking_collections, only: [ :index, :new, :create, :availability ]
   before_action :set_booking_errors, only: [ :new, :create ]
+  before_action :set_barbershop_unit, only: [ :index, :new, :create, :availability ]
 
   def index
     @booking_step = :service
@@ -36,13 +37,24 @@ class AppointmentsController < ApplicationController
       return
     end
 
+    if @barbershop_unit.blank?
+      @booking_step = :schedule
+      @appointment = Appointment.new
+      @appointment.errors.add(:base, "Escolha a unidade.")
+      @available_slots = []
+      @booking_errors = [ "Escolha a unidade." ]
+      render :new, status: :unprocessable_content
+      return
+    end
+
     result = if public_slot_available?
                Appointments::PublicScheduler.call(
                  name: booking_params[:client_name],
                  phone: booking_params[:client_phone],
                  professional: @selected_professional,
                  service: @selected_service,
-                 start_at: booking_start_at
+                 start_at: booking_start_at,
+                 barbershop_unit: @barbershop_unit
                )
     else
                Appointment.new.tap { |appointment| appointment.errors.add(:base, "Escolha um horário disponível.") }
@@ -97,6 +109,7 @@ class AppointmentsController < ApplicationController
   end
 
   helper_method :confirmation_eyebrow, :confirmation_title, :confirmation_message
+  helper_method :barbershop_unit
 
   private
 
@@ -121,6 +134,17 @@ class AppointmentsController < ApplicationController
     return "Seu horário está reservado. Guarde os detalhes abaixo para a sua chegada." if @appointment.confirmed?
 
     "Seu horário foi enviado para verificação pela equipe. O status aparece abaixo e pode ser atualizado pela barbearia."
+  end
+
+  # A unidade vem da URL e é sempre do tenant em `Current` — o slug é
+  # procurado dentro da barbearia resolvida, nunca globalmente. Uma unidade de
+  # outra barbearia com o mesmo slug devolve `nil` e a requisição recusa, que é
+  # o mesmo comportamento de "não escolheu unidade".
+  def set_barbershop_unit
+    slug = params[:unidade_slug]
+    return @barbershop_unit = nil if slug.blank?
+
+    @barbershop_unit = BarbershopUnit.find_by(barbershop_id: Current.barbershop&.id, slug: slug)
   end
 
   def set_booking_collections
@@ -185,7 +209,8 @@ class AppointmentsController < ApplicationController
     AvailableSlots::Cache.fetch(
       professional: @selected_professional,
       date: @selected_date,
-      service: @selected_service
+      service: @selected_service,
+      barbershop_unit: @barbershop_unit
     )
   end
 

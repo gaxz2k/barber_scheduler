@@ -38,17 +38,68 @@ RSpec:
   Enabled: true
 
 # --- Ajustes de casa -------------------------------------------------------
+#
+# `MultipleExpectations` e `ExampleLength` são excluídos por arquivo, e não
+# desligados. Nos specs de isolamento a segunda asserção não é um segundo
+# fato: "não grava" e "recusa porque é de outra barbearia" são o mesmo
+# comportamento visto de dois ângulos, e separá-las em dois exemplos custaria
+# duas montagens de cenário para provar a mesma coisa. A regra continua valendo
+# em todo o resto da suíte.
+
 RSpec/ExampleLength:
   Exclude:
     - "spec/models/appointment_spec.rb"
+    - "spec/requests/booking_unit_url_spec.rb"
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/barbershop_unit_spec.rb"
+    - "spec/models/opening_hours_spec.rb"
     - "spec/services/**/*"
 
 Rails/SkipsModelValidations:
   Exclude:
     - "spec/models/appointment_spec.rb"
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/barbershop_unit_spec.rb"
     - "spec/requests/appointments_spec.rb"
 
 RSpec/MultipleExpectations:
   Exclude:
     - "spec/models/appointment_spec.rb"
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/barbershop_unit_spec.rb"
+    - "spec/models/opening_hours_spec.rb"
     - "spec/services/**/*"
+
+# Os specs de unidade montam cenário com várias entidades — barbearia, duas
+# unidades, serviço, cliente, profissional — e um `let` por entidade passa do
+# limite. Reduzi-los pioraria a legibilidade sem melhorar a cobertura.
+RSpec/MultipleMemoizedHelpers:
+  Exclude:
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/opening_hours_spec.rb"
+    - "spec/requests/booking_unit_url_spec.rb"
+    - "spec/services/appointments/scheduler_unit_spec.rb"
+
+# `Appointments::Scheduler, "unidade obrigatória"` nomeia o serviço e a regra
+# testada. O caminho do arquivo já diz qual serviço é.
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - "spec/services/appointments/scheduler_unit_spec.rb"
+
+RSpec/DescribeMethod:
+  Exclude:
+    - "spec/services/appointments/scheduler_unit_spec.rb"
+
+RSpec/InstanceVariable:
+  Exclude:
+    # `test_unit_for` é memoizado por barbearia de propósito: a unidade precisa
+    # ser a mesma entre exemplos do mesmo arquivo, senão cada exemplo gravaria
+    # uma unidade nova e o próprio cenário mudaria entre eles.
+    - "spec/rails_helper.rb"
+
+# O spec de unidade descreve comportamento do par Barbershop/BarbershopUnit e
+# não de uma classe só, então `describe` recebe a descrição em vez da classe.
+RSpec/DescribeClass:
+  Exclude:
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/barbershop_unit_spec.rb"
