@@ -1,4 +1,7 @@
 class BarbershopPhoto < ApplicationRecord
+  include TenantScoped
+  apply_tenant_scope
+
   MAX_PUBLISHED_PHOTOS = 6
   MAX_IMAGE_BYTES = 10.megabytes
   ALLOWED_IMAGE_TYPES = %w[image/png image/jpeg image/webp].freeze

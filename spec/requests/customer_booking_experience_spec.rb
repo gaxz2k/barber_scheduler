@@ -312,11 +312,16 @@ RSpec.describe "Customer booking experience", type: :request do
 
       expect {
         post appointments_path, params: valid_params
-      }.to change(Appointment, :count).by(1).and change(Client, :count).by(1)
+      }.to change_tenant_count(Appointment).by(1).and change_tenant_count(Client).by(1)
 
-      appointment = Appointment.last
-      expect(appointment.client.name).to eq("Maria da Silva")
-      expect(appointment.client.phone).to eq("19999998888")
+      # A navegação `appointment.client` usa o escopo padrão de Client, que
+      # depende de Current. Depois da requisição Current está limpo, então a
+      # associação volta a atravessar a fronteira e devolve nil. Toda a leitura
+      # precisa ficar dentro do bloco, porque `within_tenant` restaura Current
+      # ao sair.
+      cliente = within_tenant { tenant_records(Appointment).last.client }
+      expect(cliente.name).to eq("Maria da Silva")
+      expect(cliente.phone).to eq("19999998888")
       expect(response).to have_http_status(:redirect)
       expect(response.location).to start_with("http://www.example.com/appointments/confirmation/")
     end
@@ -330,7 +335,8 @@ RSpec.describe "Customer booking experience", type: :request do
       post appointments_path, params: params
 
       expect(response).to redirect_to(%r{\Ahttp://www\.example\.com/appointments/confirmation/})
-      expect(Appointment.last.client.name).to eq("Maria da Silva")
+      cliente = within_tenant { tenant_records(Appointment).last.client }
+      expect(cliente.name).to eq("Maria da Silva")
     end
 
     it "shows validation errors without creating a client" do
@@ -342,7 +348,7 @@ RSpec.describe "Customer booking experience", type: :request do
 
       expect {
         post appointments_path, params: params
-      }.not_to change(Client, :count)
+      }.not_to change_tenant_count(Client)
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include("Informe seu nome e um telefone válido")
@@ -543,7 +549,7 @@ RSpec.describe "Customer booking experience", type: :request do
       professional
       post appointments_path, params: confirmation_params
       token = response.location.split("/").last
-      appointment = Appointment.find_by!(confirmation_token: token)
+      appointment = tenant_records(Appointment).find_by!(confirmation_token: token)
       appointment.update_columns(confirmation_expires_at: 1.minute.ago) # rubocop:disable Rails/SkipsModelValidations
 
       get appointment_confirmation_path(token: token)
@@ -588,8 +594,8 @@ RSpec.describe "Customer booking experience", type: :request do
       professional
       post appointments_path, params: confirmation_params
       token = response.location.split("/").last
-      appointment = Appointment.find_by!(confirmation_token: token)
-      appointment.update!(status: :canceled)
+      appointment = tenant_records(Appointment).find_by!(confirmation_token: token)
+      within_tenant { appointment.update!(status: :canceled) }
 
       get appointment_confirmation_path(token: token)
 
@@ -601,8 +607,8 @@ RSpec.describe "Customer booking experience", type: :request do
       professional
       post appointments_path, params: confirmation_params
       token = response.location.split("/").last
-      appointment = Appointment.find_by!(confirmation_token: token)
-      appointment.update!(status: :completed)
+      appointment = tenant_records(Appointment).find_by!(confirmation_token: token)
+      within_tenant { appointment.update!(status: :completed) }
 
       get appointment_confirmation_path(token: token)
 

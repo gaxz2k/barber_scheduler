@@ -55,6 +55,6 @@ RSpec.describe "Visitor data in the SQL log", type: :request do
   it "still creates the appointment, so the log was actually exercised" do
     capture_sql_log { book_publicly }
 
-    expect(Appointment.last.client.name).to eq(visitor_name)
+    expect(within_tenant { tenant_records(Appointment).last.client.name }).to eq(visitor_name)
   end
 end

@@ -96,14 +96,22 @@ RSpec.describe 'Barbershop photos', type: :request do
     expect(response).to redirect_to(root_path)
   end
 
+  # O exemplo monta as duas entidades e confere cinco campos de uma vez; dividir
+  # em cinco exemplos de uma expectativa só faria cada um passar sozinho.
+  # rubocop:disable RSpec/ExampleLength
   it 'allows an admin to upload, order, and activate a photo' do
     sign_in admin
     post admin_barbershop_photos_path, params: { barbershop_photo: photo_attributes }
-    photo = BarbershopPhoto.last
-    result = [ photo.caption, photo.position, photo.active?, photo.image.attached?, response.redirect_url ]
+    # `BarbershopPhoto.last` depois da requisição lê o escopo padrão, e Current
+    # foi limpo pelo RequestStore::Middleware. A leitura fica dentro do bloco de tenant.
+    result = within_tenant do
+      photo = tenant_records(BarbershopPhoto).last
+      [ photo.caption, photo.position, photo.active?, photo.image.attached?, response.redirect_url ]
+    end
 
     expect(result).to eq([ 'Novo ambiente', 2, true, true, admin_barbershop_photos_url ])
   end
+  # rubocop:enable RSpec/ExampleLength
 
   it 'replaces an existing image when the admin uploads a replacement' do
     sign_in admin

@@ -26,6 +26,19 @@ services = [
   { name: "Platinado", duration_minutes: 120 }
 ].freeze
 
+# O seed é o bootstrap: ele cria a primeira barbearia e o catálogo dela. Os
+# models com TenantScoped recusam gravar fora de uma requisição, porque em
+# operação normal Current resolve a barbearia pelo host. Aqui não há host, então
+# o seed declara a barbearia explicitamente e a liga em Current — é o uso
+# legítimo de acesso global, e o mesmo caminho que a resolução do subdomínio
+# vai usar.
+barbershop = Barbershop.find_or_create_by!(slug: "senhor-r") do |shop|
+  shop.name = "Barbearia Senhor R"
+  shop.timezone = "America/Sao_Paulo"
+end
+
+Current.barbershop = barbershop
+
 professionals.each do |name|
   Professional.find_or_create_by!(name: name)
 end
@@ -36,6 +49,9 @@ services.each do |attributes|
   end
 end
 
+Rails.logger.info do
+  "Barbearia: #{barbershop.name} (#{barbershop.slug})"
+end
 Rails.logger.info do
   "Profissionais: #{Professional.count} (#{Professional.pluck(:name).sort.join(", ")})"
 end

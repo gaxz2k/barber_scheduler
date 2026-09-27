@@ -64,6 +64,11 @@ pt-BR:
       already_signed_out: "Sessão encerrada com sucesso."
   activerecord:
     attributes:
+      barbershop:
+        slug:
+          # Aparece no formulário de configuração da barbearia, para o
+          # administrador entender por que o slug foi recusado.
+          invalid: "só pode conter letras minúsculas, números e hífens"
       appointment:
         # `status` é um enum, e o Rails resolve enums por
         # `activerecord.attributes.<model>.<enum>` com pluralização, ou seja,

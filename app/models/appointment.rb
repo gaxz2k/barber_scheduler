@@ -1,4 +1,8 @@
 class Appointment < ApplicationRecord
+  include TenantScoped
+  apply_tenant_scope
+  validates_tenant_associations :client, :professional, :service
+
   belongs_to :client
   belongs_to :professional
   belongs_to :service

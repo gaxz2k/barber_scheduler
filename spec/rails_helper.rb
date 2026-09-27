@@ -13,11 +13,91 @@ require 'factory_bot_rails'
 require 'shoulda-matchers'
 require 'mock_redis'
 
+# Matchers de tenant e qualquer outro arquivo em spec/support.
+Rails.root.glob('spec/support/**/*.rb').sort.each { |file| require file }
+
 Sidekiq::Testing.fake!
+
+# Contexto de tenant para os testes.
+#
+# Todo model com TenantScoped nasce ligado à barbearia de Current. Num request
+# spec isso vem do host da requisição; num model spec não há requisição, e o
+# registro ficaria órfã. Este módulo cria uma barbearia por exemplo e a liga em
+# Current, para que os specs existentes continuem testando o que já testavam —
+# `Professional.create!(name: "X")` segue funcionando — e passem a carregar
+# também o vínculo com a barbearia.
+#
+# O reset no fim é obrigatório. Sem ele, a barbearia do exemplo anterior vaza
+# para o seguinte, que é a forma mais sutil de um teste de isolamento passar
+# errado.
+module TenantTestHelpers
+  # O slug é único por exemplo: o hook de limpeza roda no fim da suíte, não
+  # entre exemplos, e um slug fixo esbarraria no índice único no segundo
+  # exemplo.
+  def test_barbershop
+    @test_barbershop ||= Barbershop.create!(
+      name: "Barbearia Teste",
+      slug: "barbearia-teste-#{SecureRandom.hex(4)}"
+    )
+  end
+
+  # Uma segunda barbearia, para os exemplos que provam o isolamento.
+  def other_barbershop
+    @other_barbershop ||= Barbershop.create!(
+      name: "Outra Barbearia",
+      slug: "outra-barbearia-#{SecureRandom.hex(4)}"
+    )
+  end
+
+  def switch_tenant_to(barbershop)
+    Current.barbershop = barbershop
+  end
+
+  # `Model.last` depois de uma requisição lê o escopo padrão, e o escopo padrão
+  # depende de Current — que o RequestStore::Middleware já limpou. Estas leituras acontecem
+  # dentro do tenant explicitamente, sem depender do estado global.
+  def tenant_records(model_class, tenant = nil)
+    model_class.for_barbershop(tenant || test_barbershop)
+  end
+
+  # Executa um bloco com Current ligada à barbearia, e restaura ao final. Para
+  # quando o exemplo precisa *criar* registros depois de uma requisição, e não
+  # apenas lê-los: a validação de TenantScoped olha Current, então só passar
+  # `barbershop:` no new não basta.
+  def within_tenant(barbershop = test_barbershop)
+    anterior = Current.barbershop
+    Current.barbershop = barbershop
+    yield
+  ensure
+    Current.barbershop = anterior
+  end
+
+  # O host que a requisição deve usar para resolver a barbearia pelo subdomínio.
+  # Só entra em vigor quando o SubdomainResolver existir; até lá, o
+  # around_action que resolve o host é a camada seguinte.
+  def tenant_host(barbershop = test_barbershop)
+    "#{barbershop.slug}.example.com"
+  end
+end
 
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
   config.include Shoulda::Matchers::ActiveRecord
+  config.include TenantTestHelpers
+
+  # Cada exemplo começa e termina com uma Current limpa. O contexto é montado
+  # no before, e não no around, porque um `let` lazy roda dentro do exemplo e
+  # já precisa de Current de pé para criar o registro.
+  config.around do |example|
+    Current.reset
+    example.run
+  ensure
+    Current.reset
+  end
+
+  config.before do
+    Current.barbershop = test_barbershop
+  end
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [

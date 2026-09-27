@@ -20,12 +20,17 @@ RSpec.describe "Appointments", type: :request do
   end
 
   describe "GET /appointments/confirmation/:token" do
+    # Este helper roda dentro do exemplo, e um `get` anterior já limpou Current
+    # pelo RequestStore::Middleware. Criar um Appointment aqui exige o tenant explícito,
+    # senão a linha nasceria órfã e a validação recusaria.
     def finished_appointment(status)
-      slot = 10.days.from_now.change(hour: 10, min: 0, sec: 0)
-      appointment = Appointment.create!(professional: professional, client: client, service: service,
-                                        start_at: slot, end_at: slot + 30.minutes)
-      appointment.update_columns(status: status)
-      appointment
+      within_tenant do
+        slot = 10.days.from_now.change(hour: 10, min: 0, sec: 0)
+        appointment = Appointment.create!(professional: professional, client: client, service: service,
+                                          start_at: slot, end_at: slot + 30.minutes)
+        appointment.update_columns(status: status)
+        appointment
+      end
     end
 
     it "redirects away without rendering customer data for a finished appointment" do
@@ -65,13 +70,13 @@ RSpec.describe "Appointments", type: :request do
     it "creates an appointment" do
       expect {
         post appointments_path, params: create_params
-      }.to change(Appointment, :count).by(1)
+      }.to change_tenant_count(Appointment).by(1)
     end
 
     it "redirects to the protected confirmation" do
       post appointments_path, params: create_params
 
-      expect(response).to redirect_to(appointment_confirmation_path(token: Appointment.last.confirmation_token))
+      expect(response).to redirect_to(appointment_confirmation_path(token: tenant_records(Appointment).last.confirmation_token))
     end
 
     it "renders the booking form when the appointment is invalid" do

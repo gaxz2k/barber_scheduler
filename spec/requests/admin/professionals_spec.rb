@@ -30,7 +30,7 @@ RSpec.describe "Admin::Professionals", type: :request do
     it "persists the professional when valid" do
       post admin_professionals_path, params: { professional: { name: "Novo profissional" } }
 
-      expect(Professional.find_by(name: "Novo profissional")).to be_present
+      expect(tenant_records(Professional).find_by(name: "Novo profissional")).to be_present
     end
   end
 

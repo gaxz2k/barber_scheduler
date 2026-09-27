@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_26_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_000100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -44,6 +44,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_220000) do
   end
 
   create_table "appointments", force: :cascade do |t|
+    t.bigint "barbershop_id", null: false
     t.bigint "client_id", null: false
     t.datetime "confirmation_expires_at", null: false
     t.string "confirmation_token", null: false
@@ -54,6 +55,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_220000) do
     t.datetime "start_at", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.index ["barbershop_id"], name: "index_appointments_on_barbershop_id"
     t.index ["client_id"], name: "index_appointments_on_client_id"
     t.index ["confirmation_token"], name: "index_appointments_on_confirmation_token", unique: true
     t.index ["professional_id"], name: "index_appointments_on_professional_id"
@@ -64,36 +66,59 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_220000) do
 
   create_table "barbershop_photos", force: :cascade do |t|
     t.boolean "active", default: true, null: false
+    t.bigint "barbershop_id", null: false
     t.string "caption"
     t.datetime "created_at", null: false
     t.integer "position", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["active", "position"], name: "index_barbershop_photos_on_active_and_position"
+    t.index ["barbershop_id"], name: "index_barbershop_photos_on_barbershop_id"
+  end
+
+  create_table "barbershops", force: :cascade do |t|
+    t.string "address"
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.jsonb "opening_hours", default: {}, null: false
+    t.string "phone"
+    t.string "slug", null: false
+    t.string "tagline"
+    t.string "timezone", default: "America/Sao_Paulo", null: false
+    t.datetime "updated_at", null: false
+    t.string "whatsapp"
+    t.index ["slug"], name: "index_barbershops_on_slug", unique: true
   end
 
   create_table "clients", force: :cascade do |t|
+    t.bigint "barbershop_id", null: false
     t.datetime "created_at", null: false
     t.string "name"
     t.string "phone"
     t.datetime "updated_at", null: false
+    t.index ["barbershop_id"], name: "index_clients_on_barbershop_id"
   end
 
   create_table "professionals", force: :cascade do |t|
+    t.bigint "barbershop_id", null: false
     t.datetime "created_at", null: false
     t.string "name"
     t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_professionals_on_name", unique: true
+    t.index ["barbershop_id", "name"], name: "index_professionals_on_barbershop_id_and_name", unique: true
+    t.index ["barbershop_id"], name: "index_professionals_on_barbershop_id"
   end
 
   create_table "services", force: :cascade do |t|
+    t.bigint "barbershop_id", null: false
     t.datetime "created_at", null: false
     t.integer "duration_minutes"
     t.string "name"
     t.datetime "updated_at", null: false
+    t.index ["barbershop_id"], name: "index_services_on_barbershop_id"
   end
 
   create_table "users", force: :cascade do |t|
     t.boolean "admin", default: false, null: false
+    t.bigint "barbershop_id"
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -101,6 +126,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_220000) do
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.datetime "updated_at", null: false
+    t.index ["barbershop_id"], name: "index_users_on_barbershop_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

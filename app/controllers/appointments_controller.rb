@@ -78,10 +78,21 @@ class AppointmentsController < ApplicationController
     end
   end
 
+  # O link de confirmação chega por e-mail, e o subdomínio que o mailer escreveu
+  # não é confiável — o cliente pode abrir pelo link de um celular com outro
+  # navegador, ou o e-mail pode ser reencaminhado. Por isso a barbearia vem do
+  # próprio token, e não do host.
+  #
+  # Cortar o escopo aqui é deliberado, e é o único ponto do código que faz isso.
+  # A alternativa, exigir que o host bata com o token, transformaria um link de
+  # e-mail em 404 sempre que o domínio mudasse. O risco é pequeno: o token tem
+  # 32 caracteres de entropia, e a partir daqui Current passa a ser o da linha
+  # encontrada, então o resto da requisição está no tenant certo.
   def confirmation
-    @appointment = Appointment.find_by(confirmation_token: params[:token])
+    @appointment = Appointment.without_tenant_scope.find_by(confirmation_token: params[:token])
     return redirect_to new_appointment_path, alert: t("appointments.create.invalid_confirmation") unless @appointment&.confirmation_accessible?
 
+    Current.barbershop = @appointment.barbershop
     render :show
   end
 

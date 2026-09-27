@@ -1,4 +1,7 @@
 class Service < ApplicationRecord
+  include TenantScoped
+  apply_tenant_scope
+
   validates :name, :duration_minutes, presence: true
   validates :duration_minutes, numericality: { only_integer: true, greater_than: 0 }
   validate :duration_cannot_change_with_appointments

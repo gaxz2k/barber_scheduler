@@ -24,6 +24,10 @@ gem "sidekiq", "~> 8.0"
 # Solid Cable remains the Action Cable adapter for production cable storage.
 gem "solid_cable"
 gem "rails-i18n"
+# Current attributes por requisição. Sem isso, o contexto de multi-tenant
+# dependeria de uma variável global, que sobrevive entre requisições num
+# processo de worker e serve a agenda da barbearia errada.
+gem "request_store"
 
 
 # Reduces boot times through caching; required in config/boot.rb
