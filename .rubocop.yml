@@ -53,6 +53,18 @@ RSpec/ExampleLength:
     - "spec/models/appointment_unit_spec.rb"
     - "spec/models/barbershop_unit_spec.rb"
     - "spec/models/opening_hours_spec.rb"
+    # O cenário de prontidão monta barbearia, unidade, serviço e profissional
+    # antes de perguntar o que falta. Quebrar isso em helpers tornaria o exemplo
+    # mais curto e ilegível: o que se prova é que os três juntos completam a
+    # prontidão, e o exemplo inteiro é o enunciado.
+    - "spec/models/barbershop_setup_readiness_spec.rb"
+    # O painel afirma pronto OU incompleto, e prova os dois lados do mesmo
+    # template: com a asserção positiva sozinha, uma home que não mostra nada
+    # quando falta também passaria.
+    - "spec/requests/admin/setup_readiness_spec.rb"
+    # O mesmo vale no CRUD: cadastrar e conferir o que foi gravado é uma única
+    # ação vista de dois ângulos.
+    - "spec/requests/admin/barbershop_units_spec.rb"
     - "spec/services/**/*"
 
 Rails/SkipsModelValidations:
@@ -68,6 +80,9 @@ RSpec/MultipleExpectations:
     - "spec/models/appointment_unit_spec.rb"
     - "spec/models/barbershop_unit_spec.rb"
     - "spec/models/opening_hours_spec.rb"
+    - "spec/models/barbershop_setup_readiness_spec.rb"
+    - "spec/requests/admin/setup_readiness_spec.rb"
+    - "spec/requests/admin/barbershop_units_spec.rb"
     - "spec/services/**/*"
 
 # Os specs de unidade montam cenário com várias entidades — barbearia, duas
@@ -81,14 +96,18 @@ RSpec/MultipleMemoizedHelpers:
     - "spec/services/appointments/scheduler_unit_spec.rb"
 
 # `Appointments::Scheduler, "unidade obrigatória"` nomeia o serviço e a regra
-# testada. O caminho do arquivo já diz qual serviço é.
+# testada. O caminho do arquivo já diz qual serviço é. O mesmo vale para
+# `Barbershop, "prontidão para atendimento"`: o arquivo diz qual model, e o
+# segundo argumento do `describe` é a regra de negócio coberta, não um método.
 RSpec/SpecFilePathFormat:
   Exclude:
     - "spec/services/appointments/scheduler_unit_spec.rb"
+    - "spec/models/barbershop_setup_readiness_spec.rb"
 
 RSpec/DescribeMethod:
   Exclude:
     - "spec/services/appointments/scheduler_unit_spec.rb"
+    - "spec/models/barbershop_setup_readiness_spec.rb"
 
 RSpec/InstanceVariable:
   Exclude:

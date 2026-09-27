@@ -12,7 +12,7 @@ class Barbershop < ApplicationRecord
   # porque é o termo do domínio; a classe chama BarbershopUnit porque é o termo
   # do código, e uma segunda tabela chamada "unidades" sem o prefixo seria
   # ambígua com a unidade de medida.
-  has_many :unidades, class_name: "BarbershopUnit", dependent: :destroy
+  has_many :unidades, class_name: "BarbershopUnit", inverse_of: :barbershop, dependent: :destroy
   has_many :clients, dependent: :restrict_with_error
   has_many :professionals, dependent: :restrict_with_error
   has_many :services, dependent: :restrict_with_error
@@ -37,6 +37,47 @@ class Barbershop < ApplicationRecord
   # ainda não tem o tenant em `Current`. Só o próprio `barbershop_id` é
   # aceito, e é o caso certo: a unidade pertence à barbearia que está nascendo.
   after_create :create_primary_unit
+
+  # O que ainda falta para a barbearia poder atender.
+  #
+  # Os quatro itens são o mínimo do caminho de reserva: sem serviço não há o
+  # que agendar, sem profissional não há quem atenda, sem horário de
+  # funcionamento a agenda fica vazia (a unidade já nasce com uma), e sem
+  # nenhuma unidade não há onde o cliente escolha ir.
+  #
+  # Devolve símbolos, e não texto, para a interface poder linkar cada item na
+  # tela certa sem adivinhar o que significa. Um texto aqui obrigaria a view a
+  # fazer parse de string para descobrir o que falta.
+  #
+  # `:unidades` só aparece quando a lista está realmente vazia, o que só
+  # acontece por remoção manual — a criação da unidade principal é
+  # garantida pelo `after_create`.
+  def missing_setup
+    faltando = []
+    faltando << :unidades if unidades.none?
+    faltando << :servicos if services.none?
+    faltando << :profissionais if professionals.none?
+    # Uma unidade sem expediente NÃO impede a barbearia de estar pronta: o
+    # cliente que escolher aquela loja vê agenda vazia, que é a resposta
+    # correta para uma loja que não atende naquele dia. O que bloquearia o
+    # cadastro inteiro seria nenhuma unidade ter horário — aí não existe lugar
+    # nenhum onde agendar.
+    #
+    # O teste é "alguma unidade tem alguma janela de verdade", e não
+    # `opening_hours.present?`: o formulário de unidades sempre submete os sete
+    # dias, com string vazia nos que o dono deixou fechado, então o
+    # `opening_hours` de uma unidade recém-criada é `{}` — mas um hash com
+    # `{"1"=>{"open"=>"", "close"=>""}, ...}` também é `present?` e não define
+    # expediente nenhum. Com o teste frouxo o painel declarava a barbearia
+    # pronta logo depois de salvar a unidade vazia, que é exatamente o caso que
+    # o aviso existe para pegar.
+    faltando << :horarios if unidades.any? && unidades.none? { |unit| unit.serves_on_any_day? }
+    faltando
+  end
+
+  def setup_complete?
+    missing_setup.empty?
+  end
 
   def to_param
     slug

@@ -40,6 +40,14 @@ pt-BR:
       destroy:
         success: "Foto removida com sucesso."
         failure: "Falha ao remover foto."
+    barbershop_units:
+      create:
+        success: "Unidade cadastrada com sucesso."
+        failure: "Falha ao cadastrar unidade."
+      update:
+        success: "Unidade atualizada com sucesso."
+        failure: "Falha ao atualizar unidade."
+      not_found: "Unidade não encontrada."
   appointments:
     create:
       success: "Agendamento criado com sucesso."

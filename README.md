@@ -40,11 +40,18 @@ bin/rails db:seed
 ```
 
 `db:prepare` cria o banco e aplica as migrations. `db:seed` carrega o catálogo
-da barbearia — profissionais e serviços — e é idempotente: pode rodar quantas
-vezes precisar, em qualquer ambiente, sem duplicar nada.
+da barbearia — profissionais, serviços e o horário de funcionamento da unidade
+principal — e é idempotente: pode rodar quantas vezes precisar, em qualquer
+ambiente, sem duplicar nada.
 
 O passo do seed não é opcional para uso real. Sem ele a aplicação sobe, mas o
-agendamento público não tem serviço nem profissional para oferecer.
+agendamento público não tem serviço nem profissional para oferecer, e a agenda
+de qualquer dia vem vazia porque nenhuma unidade tem expediente.
+
+O seed também sobrescreve o horário da unidade principal a cada execução. Ele
+é a configuração de demonstração; quem quiser o próprio expediente usa a tela
+**Unidades** do painel, e aceitar o valor do seed é o preço de rodar `db:seed`
+de novo.
 
 > Um trigger do banco (o limite de seis fotos publicadas) não é representado em
 > `db/schema.rb`, e `db:prepare` marca todas as versões do dump como já
@@ -88,6 +95,7 @@ O catálogo vem de `db/seeds.rb`:
 - Profissionais: Gustavo, Richard e Marcus.
 - Serviços: Corte (30min), Barba (30min), Corte + Barba (60min), Pigmentação
   (45min) e Platinado (120min).
+- Unidade principal `/<slug da barbearia>`: segunda a sábado, 08:00–19:00.
 
 Fotos, clientes e agendamentos **não** são semeados: são dados de operação e
 pertencem a quem opera a barbearia. Um administrador precisa ser criado

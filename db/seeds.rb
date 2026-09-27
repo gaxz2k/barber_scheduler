@@ -52,6 +52,22 @@ services.each do |attributes|
                              duration_minutes: attributes[:duration_minutes])
 end
 
+# O expediente da unidade principal, pelo mesmo motivo do catálogo: sem ele a
+# agenda do cliente vem vazia em qualquer dia, e a demonstração do subdomínio
+# mostra uma barbearia que existe mas não atende.
+#
+# O `update` é idempotente e sobrescreve de propósito. O seed é a fonte da
+# configuração de demonstração, e um expediente editado à mão no painel volta
+# ao valor do seed no próximo `db:seed` — que é o comportamento esperado de um
+# seed, e o motivo de a tela de unidades existir para quem quiser manter o
+# próprio.
+#
+# Segunda a sábado, 08:00–19:00. Domingo fica de fora de propósito: é o dia em
+# que a maioria fecha, e a agenda vazia no domingo é a resposta certa.
+expediente_principal = (1..6).to_h { |dia| [ dia.to_s, { "open" => "08:00", "close" => "19:00" } ] }
+unidade_principal = barbershop.unidades.order(:id).first
+unidade_principal.update!(opening_hours: expediente_principal)
+
 Rails.logger.info do
   "Barbearia: #{barbershop.name} (#{barbershop.slug})"
 end
@@ -61,4 +77,7 @@ end
 Rails.logger.info do
   "Serviços: #{Service.count} " \
     "(#{Service.order(:name).pluck(:name, :duration_minutes).map { |name, minutes| "#{name} #{minutes}min" }.join(", ")})"
+end
+Rails.logger.info do
+  "Unidade #{unidade_principal.name} (/#{unidade_principal.slug}): seg-sáb 08:00-19:00"
 end

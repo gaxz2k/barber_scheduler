@@ -1,0 +1,55 @@
+<% content_for :title, "Unidades | Admin" %>
+
+<section class="admin-header-row">
+  <div>
+    <div class="admin-kicker">Presença</div>
+    <h1 class="admin-page-title">Unidades</h1>
+    <p class="admin-page-description">Cada unidade tem seu próprio horário de funcionamento, e o cliente escolhe onde quer ser atendido antes de agendar.</p>
+  </div>
+  <%= link_to "Nova unidade", new_admin_barbershop_unit_path, class: "admin-button" %>
+</section>
+
+<div class="admin-table-wrap">
+  <% if @barbershop_units.empty? %>
+    <div class="admin-empty">Nenhuma unidade cadastrada. Crie ao menos uma para poder agendar.</div>
+  <% else %>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Unidade</th>
+          <th>Endereço</th>
+          <th>Horário</th>
+          <th><span class="visually-hidden">Ações</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @barbershop_units.each do |unit| %>
+          <%# A listagem usa `window_on?`, o mesmo método que decide a prontidão e
+              a agenda: um dia guardado com janela quebrada é dia fechado para o
+              cliente, e mostrá-lo como expediente seria a tela mentindo. %>
+          <% expediente = Admin::BarbershopUnitsController::WEEK_DAYS.filter_map do |dia, nome| %>
+            <% janela = unit.window_on?(dia) %>
+            <% next unless janela %>
+            <% format("%s %s–%s", nome, formatar_minutos(janela[:open]), formatar_minutos(janela[:close])) %>
+          <% end %>
+          <tr>
+            <td><strong><%= unit.name %></strong></td>
+            <td><code>/barbearia/unidades/<%= unit.slug %></code></td>
+            <td>
+              <% if expediente.any? %>
+                <%= expediente.join(" · ") %>
+              <% else %>
+                <span class="field-hint">Sem horário — a agenda aparece vazia para o cliente</span>
+              <% end %>
+            </td>
+            <td>
+              <div class="admin-table__actions">
+                <%= link_to "Editar", edit_admin_barbershop_unit_path(unit), class: "admin-button admin-button--quiet" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

@@ -1013,6 +1013,84 @@ textarea:focus {
   margin-bottom: 1.25rem;
 }
 
+/* Expediente por dia da semana: uma linha por dia, com os dois campos de hora
+   lado a lado. A grade fixa existe porque sete pares de `input[type=time]` em
+   fluxo normal viram uma coluna de 2.800px de largura numa tela estreita. */
+.unit-schedule {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+  background: var(--paper);
+}
+
+.unit-schedule legend {
+  padding: 0 0.4rem;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.unit-schedule .field-hint {
+  margin-bottom: 0.3rem;
+}
+
+.unit-day {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, 1fr) minmax(0, 1.6fr) minmax(0, 1.6fr);
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.unit-day__name {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.unit-day__field {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.unit-day__field span {
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* A lista de pendências da home é uma lista de links de ação, não de texto:
+   cada item precisa parecer clicável ou o dono não percebe que o aviso tem
+   destino. */
+.setup-checklist {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-checklist__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.setup-checklist__link:hover {
+  border-color: var(--gold);
+}
+
 .admin-toggle {
   display: flex;
   min-height: 2.9rem;
@@ -1262,6 +1340,19 @@ textarea:focus {
   .admin-photo-grid,
   .admin-form__row {
     grid-template-columns: 1fr;
+  }
+
+  /* A grade do expediente sobrevive ao celular com o nome do dia em cima: as
+     duas horas lado a lado numa coluna de 320px deixariam campos de 90px, e
+     o `input[type=time]` não aceita uma largura menor que o próprio texto. */
+  .unit-day {
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.6rem;
+  }
+
+  .unit-day__name {
+    grid-column: 1 / -1;
   }
 
   .booking-progress {

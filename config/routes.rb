@@ -8,6 +8,9 @@ Rails.application.routes.draw do
     resources :services
     resources :appointments
     resources :barbershop_photos, only: [ :index, :new, :create, :edit, :update, :destroy ]
+    # A unidade é onde o horário de funcionamento se cadastra, e é por ela que
+    # `missing_setup` aponta quando o expediente falta.
+    resources :barbershop_units, only: [ :index, :new, :create, :edit, :update ]
   end
 
   get "appointments/confirmation/:token", to: "appointments#confirmation", as: :appointment_confirmation
