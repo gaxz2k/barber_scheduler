@@ -2,6 +2,26 @@ Rails.application.routes.draw do
   devise_for :users
   root to: "appointments#index"
 
+  # Desvio de desenvolvimento para abrir uma barbearia sem subdomínio.
+  #
+  # `/t/barbearia-exemplo` serve a mesma tela que `barbearia-exemplo.localhost`,
+  # e existe para um caso concreto: quem olha a demonstração de fora não tem
+  # como resolver `slug.<algo>`. Um túnel efêmero entrega um único hostname, e
+  # prefixar `slug.` nele é recusado na borda — o endereço simplesmente não
+  # abre.
+  #
+  # A rota aponta para `appointments#index` — e não para uma ação deste
+  # controller — porque o tenant chega pelo `around_action`, e uma action
+  # intermediária reentraria na cadeia de callbacks. O que `/t/<slug>` faz de
+  # especial é gravar o cookie do desvio, e a partir daí a navegação é comum.
+  #
+  # Só existe fora de produção, e `barbershop_from_cookie` também se recusa lá:
+  # um cookie que resolve tenant em produção daria a qualquer cookie de sessão
+  # a tela de uma barbearia.
+  unless Rails.env.production?
+    get "/t/:slug", to: "appointments#index", as: :tenant_path
+  end
+
   namespace :admin do
     root to: "home#index"
     resources :professionals

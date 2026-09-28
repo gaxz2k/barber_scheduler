@@ -69,6 +69,10 @@ RSpec/ExampleLength:
     # inteiro dela, com requisição no meio: quebrar mediria método, não
     # comportamento.
     - "spec/requests/booking_unit_propagation_spec.rb"
+    # O caminho fundido monta um POST inteiro — serviço, unidade, profissional,
+    # horário, cliente — e confere o que foi gravado. Quebrar em duas
+    # expectativas mediria o RSpec, não o agendamento.
+    - "spec/requests/merged_booking_spec.rb"
     - "spec/services/**/*"
 
 Rails/SkipsModelValidations:
@@ -88,6 +92,7 @@ RSpec/MultipleExpectations:
     - "spec/requests/admin/setup_readiness_spec.rb"
     - "spec/requests/admin/barbershop_units_spec.rb"
     - "spec/requests/booking_unit_propagation_spec.rb"
+    - "spec/requests/merged_booking_spec.rb"
     - "spec/services/**/*"
 
 # Os specs de unidade montam cenário com várias entidades — barbearia, duas
@@ -99,6 +104,10 @@ RSpec/MultipleMemoizedHelpers:
     - "spec/models/opening_hours_spec.rb"
     - "spec/requests/booking_unit_url_spec.rb"
     - "spec/requests/booking_unit_propagation_spec.rb"
+    # O caminho fundido monta um POST com serviço, unidade, profissional,
+    # horário e cliente. Um `let` de hash também passaria do limite, e deixaria
+    # os exemplos lendo `cenario[:unidade]` em vez de `unidade`.
+    - "spec/requests/merged_booking_spec.rb"
     - "spec/services/appointments/scheduler_unit_spec.rb"
 
 # O caminho do agendamento é uma cadeia, e cada exemplo percorre um trecho

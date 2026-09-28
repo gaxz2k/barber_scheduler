@@ -1,4 +1,8 @@
 class Barbershop < ApplicationRecord
+  # O código do país usado para montar o link de WhatsApp. Fica como constante
+  # e não dentro do método porque o método é chamado em view, e um literal
+  # solto ali seria um número mágico sem explicação.
+  CODIGO_DO_PAIS = "55"
   # Uma barbearia é a fronteira de isolamento: todo dado de operação pertence a
   # uma, e nenhuma query sem escopo atravessa essa fronteira (ver TenantScoped).
   #
@@ -104,6 +108,21 @@ class Barbershop < ApplicationRecord
 
   def whatsapp_number
     whatsapp.to_s.gsub(/\D/, "")
+  end
+
+  # O link de WhatsApp, já com o código do país.
+  #
+  # O `55` é o código do Brasil, e é o país do produto — a barbearia atendida
+  # aqui está no Brasil, e um número cadastrado como "(11) 98888-1200" precisa
+  # virar "55119888812000" para o link funcionar. O número gravado pode ou não
+  # trazer o código: se trouxer, concatenar de novo produziria "5511988881200"
+  # e o WhatsApp não abriria. Por isso a checagem, e não a concatenação cega.
+  def whatsapp_link
+    numero = whatsapp_number
+    return nil if numero.blank?
+
+    completo = numero.start_with?(CODIGO_DO_PAIS) ? numero : "#{CODIGO_DO_PAIS}#{numero}"
+    "https://wa.me/#{completo}"
   end
 
   private

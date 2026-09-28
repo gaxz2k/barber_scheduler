@@ -96,14 +96,18 @@ RSpec.describe "Customer booking experience", type: :request do
       expect(response.body).to include("Ainda não há profissionais disponíveis")
     end
 
-    it "presents the professional step after a service is selected" do
+    it "presents the merged professional and schedule step after a service is selected" do
       service
       professional
 
       get unidade_nova(service: service.id)
 
       expect(response).to have_http_status(:success)
-      expect(response.body).to include("Escolha seu profissional", professional.name)
+      # A etapa virou "quem e quando" numa tela só. O texto antigo, "Escolha
+      # seu profissional", foi trocado porque a tela agora mostra a agenda de
+      # cada um — e um título que só fala de profissional deixaria o cliente
+      # procurando o campo de horário que está logo abaixo.
+      expect(response.body).to include("Escolha quem vai cuidar de você", professional.name)
       expect(response.body).not_to include("client_id")
     end
 
@@ -126,6 +130,9 @@ RSpec.describe "Customer booking experience", type: :request do
       end
     end
 
+    # O título é o da tela fundida, e não o da etapa de horário separado que
+    # existia antes: com profissional e data escolhidos, a grade aparece
+    # dentro do bloco "Escolha o profissional e o horário".
     it "presents future available times after a professional and date are selected" do
       service
       professional
@@ -136,7 +143,7 @@ RSpec.describe "Customer booking experience", type: :request do
         date: tomorrow.iso8601
       )
 
-      expect(response.body).to include("Escolha o melhor horário", "09:00")
+      expect(response.body).to include("Escolha o profissional e o horário", "09:00")
     end
 
     it "does not preselect an unknown professional" do
@@ -456,7 +463,11 @@ RSpec.describe "Customer booking experience", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
-    it "keeps an invalid date on the schedule step with an error" do
+    # O título esperado é o da tela fundida ("Escolha quem vai cuidar de
+    # você"), e não o da antiga etapa de horário separado. A data inválida faz
+    # o `booking_step` cair para `:professional` — sem data não há agenda para
+    # listar — e a tela que o cliente vê é a fundida, com o erro em cima.
+    it "keeps an invalid date on the merged step with an error" do
       service
       professional
       params = valid_params
@@ -466,7 +477,7 @@ RSpec.describe "Customer booking experience", type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include(
-        "Escolha data e horário",
+        "Escolha quem vai cuidar de você",
         "Selecione serviço, profissional e data válidos.",
         'id="error_explanation"',
         'name="appointment[date]"'
@@ -595,6 +606,10 @@ RSpec.describe "Customer booking experience", type: :request do
 
       post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
 
+      # O `value` do radio na tela fundida é `profissional_id|horario`, então a
+      # checagem é pelo horário solto. Procurar o `iso8601` inteiro nunca
+      # encontraria, e a falha seria do teste — não da tela, que segue marcando
+      # o horário que o cliente tinha escolhido.
       checked = CGI.unescapeHTML(response.body).scan(/<input[^>]*name="appointment\[start_at\]"[^>]*>/).select { |tag| tag.include?("checked") }
       result = checked.any? { |tag| tag.include?(available_start.iso8601) }
 

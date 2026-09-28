@@ -78,12 +78,14 @@ RSpec.describe "a unidade sobrevive às etapas do agendamento", type: :request d
     expect(links.map { |href| caminho_da_unidade(href) }).to all(be(true))
   end
 
-  it "a etapa de serviço entrega a unidade no link de profissional" do
+  # Depois da fusão não existe mais link de profissional: a agenda vem toda na
+  # tela do serviço escolhido. O que a unidade precisa é sobreviver no
+  # formulário de data, que é a única navegação que sai dessa etapa — e é por
+  # ela que o cliente troca o dia e recarrega a agenda.
+  it "a etapa de serviço entrega a unidade no formulário de data" do
     get new_appointment_path(service: servico.id, unidade_slug: unidade.slug), headers: host
 
-    links = response.body.scan(/href="([^"]*appointments\/new[^"]*)"/)
-    expect(links).not_to be_empty
-    expect(links.map { |href,| caminho_da_unidade(href) }).to all(be(true))
+    expect(response.body).to include(caminho_da_unidade(new_appointment_path(service: servico.id)).to_s)
   end
 
   it "a etapa de profissional entrega a unidade no formulário" do

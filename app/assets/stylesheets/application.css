@@ -1,27 +1,49 @@
-/* Meta-inspired interface system for every public and admin surface. */
-
+/* A identidade do Studio Navalha: preto, dourado e creme.
+ *
+ * Antes era "Meta-inspired", com `--gold: #0866ff` — um azul de plataforma
+ * genérica, e a própria palavra `gold` mentindo sobre o que a cor era. Os
+ * nomes agora dizem a verdade, porque `--gold` sendo dourado é metade do
+ * trabalho de manter a paleta honesta.
+ *
+ * O dourado não é enfeite: ele marca o que é agendar, o que está escolhido
+ * e o que é o número do passo. Se um dia o dourado aparecer em lugar que não
+ * é decisão, ele perdeu o sentido e virou enfeite.
+ *
+ * O creme é o fundo da página e o branco é a superfície do card. A diferença
+ * é o que faz o card existir sem borda grossa, que é a linguagem visual da
+ * referência. */
 :root {
-  --ink: #18191a;
-  --ink-soft: #65676c;
-  --cream: #f5f6f7;
-  --paper: #ffffff;
-  --paper-deep: #f0f2f3;
-  --oat: #d8dade;
-  --gold: #0866ff;
-  --gold-deep: #075ce5;
-  --green: #137a45;
-  --green-soft: #e8f5ed;
-  --danger: #b42318;
-  --danger-soft: #fef0ef;
-  --line: #d8dade;
-  --line-soft: #e8e9eb;
-  --shadow-soft: 0 12px 36px rgba(24, 25, 26, 0.08);
-  --shadow-card: 0 3px 12px rgba(24, 25, 26, 0.06);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
+  --ink: #12100e;
+  --ink-soft: #6b635a;
+  --cream: #f7f3ec;
+  --paper: #fffdf9;
+  --paper-deep: #f0e9dd;
+  --oat: #ded2bf;
+  --gold: #b08640;
+  --gold-deep: #8a6624;
+  --green: #2f6b4f;
+  --green-soft: #eaf3ee;
+  --danger: #8c2f22;
+  --danger-soft: #fbeeea;
+  --line: #ded2bf;
+  --line-soft: #ece3d6;
+  --shadow-soft: 0 18px 44px rgba(18, 16, 14, 0.12);
+  --shadow-card: 0 2px 10px rgba(18, 16, 14, 0.07);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 4px;
   --radius-pill: 999px;
   --content: 68rem;
+  /* A coluna estreita do fluxo de agendamento. É a medida da referência: um
+   * formulário de cadastro que ocupa 1100px obriga o olho a percorrer uma
+   * linha inteira para achar o próximo campo, e o cadastro vira rolagem. */
+  --flow: 34rem;
+  /* Serifada para o nome da barbearia e para os números de etapa; a sem
+   * serifa fica para o corpo. O par é de sistema, e não de webfont: o nome da
+   * marca é o único texto em serifada, e baixar um arquivo de fonte para isso
+   * custaria uma requisição bloqueante em quem só quer agendar. */
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 * {
@@ -31,7 +53,7 @@
 html {
   background: var(--cream);
   color: var(--ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 16px;
   text-rendering: optimizeLegibility;
 }
@@ -117,35 +139,44 @@ strong,
   color: var(--ink);
 }
 
+/* O monograma. Preto com as iniciais em dourado: é a única peça da marca que
+ * aparece em toda tela, e é ela que precisa carregar a ideia de barbearia
+ * clássica. Um círculo com as duas iniciais em sans-serif seria a mesma
+ * marca de plataforma genérica de antes. */
 .brand-mark {
   display: inline-grid;
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 2.75rem;
+  height: 2.75rem;
   place-items: center;
-  border: 0;
+  border: 1px solid var(--gold);
   border-radius: 50%;
   background: var(--ink);
-  color: #fff;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.95rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
+/* A coroa do monograma nas telas de login e de confirmação, que ainda usam
+ * a marca antiga em vez do nome do tenant. Fica dourada como o resto do
+ * acento; o azul que estava aqui antes era a cor errada do design system. */
 .brand-crown {
   margin-left: 0.05rem;
-  color: #8fc0ff;
-  font-size: 0.6em;
+  color: var(--gold);
+  font-size: 0.55em;
   letter-spacing: 0;
+  vertical-align: super;
 }
 
 .brand-name {
   display: block;
   color: var(--ink);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  line-height: 1.1;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .brand-name--strong {
@@ -209,6 +240,272 @@ strong,
   max-width: 52rem;
 }
 
+/* ── O fluxo estreito ────────────────────────────────────────────────────
+ *
+ * A página de agendamento é um formulário de cadastro, e cadastro em coluna
+ * estreita é o que a referência mostra: a largura toda da tela transformaria
+ * quatro campos em quatro faixas com o olho atravessando o monitor inteiro
+ * para achar o próximo. O `--flow` é a medida; `site-shell` alinha no
+ * centro com a margem automática.
+ */
+.booking-flow {
+  max-width: var(--flow);
+  margin-inline: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: 1.75rem 1.5rem 2rem;
+}
+
+/* O cabeçalho do card, com a barra dourada no topo. É a única coisa que
+ * lembra a referência que o usuário mandou, e ela é a assinatura do
+ * tratamento: creme, borda fina, um fio de ouro. */
+.booking-flow__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: -1.75rem -1.5rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+  border-top: 3px solid var(--gold);
+  padding: 0.9rem 1.5rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.booking-flow__head .button--secondary {
+  background: transparent;
+  border-color: rgba(255, 253, 249, 0.5);
+  color: var(--paper);
+  padding: 0.4rem 0.8rem;
+  font-size: 0.7rem;
+}
+
+.booking-flow__head .button--secondary:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+/* ── A faixa que abre o card ────────────────────────────────────────────
+ *
+ * A referência abre o formulário com um aviso sobre antecedência. É o que
+ * tira a tela do genérico: quem agenda precisa saber as regras antes de
+ * escolher, e não descobrir a de antecedência depois de confirmar. */
+.booking-notice {
+  border: 1px dashed var(--gold);
+  border-radius: var(--radius-sm);
+  background: var(--paper-deep);
+  padding: 0.85rem 1rem;
+  text-align: center;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  margin-bottom: 1.5rem;
+}
+
+.booking-notice strong {
+  display: block;
+  color: var(--gold-deep);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+/* ── A lista de serviços com o seletor "COM" ────────────────────────────
+ *
+ * A referência traz uma lista, com "com" (quem faz) à esquerda e "AGENDAR"
+ * à direita. É a escolha certa aqui por dois motivos que a referência não
+ * explicita: a lista cabe em tela sem rolagem para barbearia de catálogo
+ * grande, e o "com" deixa de ser uma pergunta em tela própria — o cliente
+ * escolhe o serviço e quem faz na mesma linha, e o agendamento vira um
+ * formulário só em vez de três.
+ *
+ * Este bloco não tinha CSS antes: a view markupava `service-choice-card` e
+ * nenhuma regra existia para ela. Por isso a lista aparecia sem borda,
+ * sem separação e sem o botão. */
+.service-list {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--paper);
+}
+
+.service-list__head {
+  background: var(--gold);
+  color: var(--ink);
+  padding: 0.6rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.service-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.service-row:hover {
+  background: var(--paper-deep);
+}
+
+.service-row__body {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.service-row__name {
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.service-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: baseline;
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+}
+
+/* O preço é o número mais importante da linha depois do nome, e a
+ * referência o põe em cima da duração. Aqui ele é o único elemento em
+ * serifada, e é o que dá a hierarquia da linha sem precisar de negrito. */
+.service-row__price {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.service-row__action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* O "com" é um `<select>` de verdade, e não um botão: ele filtra a lista de
+ * profissionais e a escolha precisa ser acessível por teclado e narrada
+ * pelo leitor de tela. `Nenhum selecionado` é o texto inicial de
+ * propósito — é o estado que leva o cliente a pensar em quem, e não uma
+ * escolha já feita que ele teria de desfazer. */
+.service-row__select {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236b635a' d='M0 0h10L5 6z'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
+  color: var(--ink);
+  font-size: 0.78rem;
+  padding: 0.4rem 1.7rem 0.4rem 0.6rem;
+  max-width: 11rem;
+  cursor: pointer;
+}
+
+.service-row__select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+.service-row__go {
+  white-space: nowrap;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.9rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.service-row__go:hover,
+.service-row__go:focus-visible {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+/* ── A grade de horários ───────────────────────────────────────────────
+ *
+ * Mesma ausência de antes: a view markupava `slot-grid` e `slot-card` e
+ * nenhuma regra existia. A grade é o que o cliente mais toca na tela, e
+ * sem estilo ela saía como um bloco de texto com rádios invisíveis. */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+.slot-card {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 0.15rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  padding: 0.5rem 0.25rem;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+
+.slot-card span {
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.slot-card:hover {
+  border-color: var(--gold);
+  background: var(--paper-deep);
+}
+
+/* O estado marcado é dourado, e não azul: o dourado é a cor de decisão
+ * da identidade, e um horário escolhido que aparece azul seria a única
+ * quebra da regra que vale para a paleta inteira. */
+.slot-card:has(.choice-input:checked) {
+  border-color: var(--gold);
+  background: var(--gold);
+}
+
+.slot-card:has(.choice-input:checked) span {
+  color: var(--ink);
+}
+
+.slot-card:has(.choice-input:focus-visible) {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 2px;
+}
+
+/* O radio é o alvo do clique e o portador do estado, mas ele é escondido:
+ * o círculo desenhado é o estado, e o `label` é o alvo. `opacity` em vez
+ * de `display: none` porque um input fora da árvore de acessibilidade
+ * some do leitor de tela. */
+.choice-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
 .booking-page .customer-header,
 .booking-entry .customer-header {
   min-height: 3.5rem;
@@ -254,6 +551,13 @@ strong,
   border-color: var(--ink);
   background: var(--ink);
   color: #fff;
+}
+
+/* As etapas à frente ficam mais apagadas que a atual, e as que já passaram
+ * continuam legíveis. A distinção é de opacidade e não de cor: a cor do
+ * círculo já diz "você está aqui", e a opacidade diz o que ainda falta. */
+.progress-step--todo {
+  opacity: 0.55;
 }
 
 .progress-line {
@@ -330,6 +634,261 @@ strong,
   font-size: 0.65rem;
 }
 
+/* O seletor de profissional do fluxo público.
+ *
+ * Estas classes eram usadas pela view sem nenhuma regra correspondente: o
+ * grid saía `display: block`, os cards saíam sem borda, e o nome ficava colado
+ * do "Ver horários disponíveis" como texto corrido. O avatar tinha estilo
+ * porque sozinho ele já é um elemento visível — o resto da linha é que não
+ * tinha nada.
+ *
+ * O card é um link inteiro (`.choice-card--link`), então o alvo de toque é o
+ * cartão todo, e não só o nome. A área clicável começa em 44px, que é o
+ * mínimo confortável no celular — daí o `min-height` do avatar mais a borda.
+ */
+.professional-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.choice-card {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  box-shadow: var(--shadow-card);
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.choice-card--link {
+  padding: 1rem 1.1rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.choice-card--link:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+/* O foco do teclado precisa ser visível mesmo com a regra de hover acima:
+   sem isto, quem navega por teclado não distingue o card em que está. */
+.choice-card--link:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.choice-card__body {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+/* O nome cresce e a seta fica na ponta. Sem `min-width: 0`, um nome longo
+ * empurra a seta para fora do card em vez de quebrar o texto. */
+.choice-card__body > span:nth-child(2) {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 0.15rem;
+}
+
+.choice-card__body strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.choice-card__body small {
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+}
+
+.choice-card__arrow {
+  flex: 0 0 auto;
+  color: var(--gold);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+/* Texto só para leitor de tela.
+ *
+ * Não é `display: none`: um elemento escondido assim some da árvore de
+ * acessibilidade, e o leitor de tela nunca anuncia o `aria-describedby` que
+ * aponta para ele. O truque é tirar da vista sem tirar do fluxo — 1px, clip e
+ * sem rolagem. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.booking-inline-form {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.booking-inline-form .select-field {
+  flex: 1;
+}
+
+/* A agenda fundida: uma linha por profissional, com a grade de horários logo
+ * abaixo do nome.
+ *
+ * O card é separado por uma linha, e não uma borda em volta de cada um: são
+ * blocos de agenda que se leem como uma lista, e quatro caixas soltas dariam a
+ * impressão de quatro escolhas independentes quando o que existe é uma escolha
+ * de um par. A borda fica no nome, que é a âncora visual do bloco. */
+.agenda-list {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.agenda-card {
+  padding: 1rem 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.agenda-card:last-child {
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.agenda-card__name {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.agenda-card__empty {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+/* A foto do profissional. Redonda como a inicial que ela substitui, e do
+ * mesmo tamanho: trocar a inicial por um quadrado mudaria a altura da linha e
+ * a lista de agendas ficaria desalinhada entre quem tem foto e quem não tem. */
+.agenda-card__photo {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--paper-deep);
+}
+
+/* A identificação da barbearia, abaixo da galeria.
+ *
+ * O nome é um `h1` e não um link: nesta tela a galeria já é o topo, e um
+ * link "início" apontando para a própria página seria um alvo que não leva
+ * a lugar nenhum. */
+.customer-header--identity {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.barbershop-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.barbershop-identity h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.1;
+}
+
+.barbershop-identity .brand-name {
+  display: block;
+}
+
+.barbershop-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barbershop-contact li {
+  display: grid;
+  gap: 0.1rem;
+  font-size: 0.85rem;
+}
+
+.barbershop-contact__label {
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.barbershop-contact a {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* O atalho de refazer o último horário.
+ *
+ * Fica logo acima da lista de unidades e não no fim da página porque quem
+ * volta para remarcar é porque já sabe o que quer — o atalho é para pular a
+ * decisão, e uma lista de tarefas embaixo do formulário de verdade competiria
+ * com a escolha principal. */
+.booking-again {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1.1rem;
+  background: var(--paper);
+  box-shadow: var(--shadow-card);
+}
+
+.booking-again__text {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.booking-again__text strong {
+  color: var(--ink);
+}
+
+/* O "ver todos" do resumo: devolve a comparação de todos os profissionais
+ * depois de o cliente ter escolhido um só. Dourado porque é a única coisa
+ * clicável naquele bloco — o resto é resumo, e resumo que parece link
+ * confunde. */
+.booking-selection-summary__change {
+  color: var(--gold);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  margin-left: 0.35rem;
+}
+
+.booking-selection-summary__change:hover {
+  color: var(--gold-deep);
+}
+
 .booking-selection-summary {
   display: grid;
   gap: 0.2rem;
@@ -389,6 +948,16 @@ strong,
   color: var(--gold);
   font-size: 1.1rem;
   font-weight: 800;
+}
+
+/* No fluxo público o avatar é a parte mais alta do card, e é ele que garante
+   que a área tocável passe de 44px. Sem este piso, um nome curto deixaria o
+   alvo com a altura da linha de texto. */
+.choice-card__avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  font-size: 0.95rem;
 }
 
 .professional-avatar--r {
@@ -555,49 +1124,6 @@ textarea:focus {
 /* Public home carousel */
 .barbershop-carousel {
   margin: 0 0 2.5rem;
-}
-
-.barbershop-carousel__header {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.barbershop-carousel__header h2 {
-  margin: 0.4rem 0 0;
-  color: var(--ink);
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
-  font-weight: 750;
-  letter-spacing: -0.04em;
-}
-
-.barbershop-carousel__controls {
-  display: flex;
-  gap: 0.45rem;
-}
-
-.barbershop-carousel__button {
-  display: inline-grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--paper);
-  color: var(--ink);
-  cursor: pointer;
-  font-size: 1.2rem;
-  font-weight: 800;
-  transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
-}
-
-.barbershop-carousel__button:hover,
-.barbershop-carousel__button:focus-visible {
-  border-color: var(--gold);
-  background: #f4f8ff;
-  color: var(--gold);
 }
 
 .barbershop-carousel__viewport {
@@ -1342,6 +1868,14 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  /* O formulário de data fica em linha só na tela larga. Empilhado, o botão
+     "Ver agenda" abaixo do campo é o esperado — e um botão ao lado com o
+     campo esticado sobra pouco espaço para a data caber. */
+  .booking-inline-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   /* A grade do expediente sobrevive ao celular com o nome do dia em cima: as
      duas horas lado a lado numa coluna de 320px deixariam campos de 90px, e
      o `input[type=time]` não aceita uma largura menor que o próprio texto. */
@@ -1353,6 +1887,14 @@ textarea:focus {
 
   .unit-day__name {
     grid-column: 1 / -1;
+  }
+
+  /* O carrossel do topo e a barra de etapas não podem encostar. A regra geral
+     do cabeçalho não cobre este caso porque o cabeçalho agora vem DEPOIS da
+     galeria, e o que precisa de respiro é a transição entre os dois blocos
+     vizinhos. */
+  .customer-header--identity {
+    margin-top: 2rem;
   }
 
   .booking-progress {
@@ -1408,11 +1950,6 @@ textarea:focus {
 
   .barbershop-carousel__viewport {
     aspect-ratio: 4 / 3;
-  }
-
-  .barbershop-carousel__header {
-    align-items: start;
-    flex-direction: column;
   }
 
   .confirmation-details > div {

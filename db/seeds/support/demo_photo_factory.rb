@@ -130,4 +130,109 @@ module DemoShowcase
       (fundo.cast(:float) + (camada.cast(:float) * (opacidade * 255.0))).cast(:uchar)
     end
   end
+
+  # Retratos dos profissionais, também gerados em código.
+  #
+  # São silhuetas geométricas — cabeça e ombros sobre um fundo da paleta — e
+  # não rostos. Um rosto gerado por código sai com os olhos tortos, e pior que
+  # isso: um rosto sintético numa vitrine que se apresenta como plataforma de
+  # clientes seria uma foto de pessoa que não existe, com nome de pessoa que
+  # existe. A silhueta dá o mesmo resultado visual no cartão de 44px — que é o
+  # tamanho em que a foto aparece — sem inventar um rosto.
+  #
+  # A variação entre os profissionais vem do ângulo do degradê e do deslocamento
+  # da silhueta, não de seis desenhos diferentes: no tamanho do cartão o que se
+  # enxerga é a cor e a posição, e é isso que precisa variar.
+  module PortraitFactory
+    LADO = 512
+    # O azul da paleta do design system e o azul-escuro do `--ink`. Os dois
+    # valores vêm das custom properties do layout, e não de números soltos: a
+    # silhueta precisa ser legível sobre o mesmo fundo do cartão.
+    FONDO = [ 18, 58, 107 ].freeze
+    INK = [ 11, 31, 58 ].freeze
+
+    # O deslocamento horizontal vai de 42% a 58% da largura, o suficiente
+    # para duas pessoas do mesmo time não saírem com a cabeça no mesmo
+    # lugar, e pouco o bastante para nenhuma delas ficar cortada.
+    def self.gerar(indice:)
+      gera(0.42 + ((indice % 4) * 0.0533))
+    end
+
+    def self.gera(centro_x)
+      x = Vips::Image.xyz(LADO, LADO).cast(:float)
+      # A cabeça é um círculo no terço superior e os ombros um círculo largo e
+      # mais baixo, cortado pela borda de baixo. Duas elipses, e não um
+      # desenho: no cartão de 44px as duas viram a mesma silhueta, que é o
+      # que interessa.
+      #
+      # Os dois círculos se sobrepõem de propósito. Com um vão entre eles a
+      # cabeça fica flutuando acima dos ombros, e a silhueta deixa de parecer
+      # gente — que é a única coisa que este desenho precisa parecer.
+      cabeca = elipse(x, centro_x, 0.32, 0.17, 0.21)
+      ombros = elipse(x, centro_x, 0.88, 0.34, 0.38)
+      # A união das duas elipses é a máscara do recorte: 255 dentro da
+      # silhueta, 0 fora. É multiplicada pelos canais do fundo, e não pintada
+      # por cima — é isso que faz a cabeça parecer recortada do fundo em vez
+      # de desenhada sobre ele.
+      mascara = (cabeca | ombros).cast(:uchar)
+
+      # O fundo é o degradê diagonal da paleta, e é o mesmo para todos: o que
+      # diferencia um profissional do outro é a posição da silhueta, e um
+      # fundo variado por pessoa transformaria o cartão numa colcha de retalhos.
+      fundo = [ 0, 1, 2 ].map do |b|
+        t = ((x[0] / LADO.to_f) * 0.35) + ((x[1] / LADO.to_f) * 0.65)
+        ((t * (FONDO[b] - INK[b])) + INK[b]).cast(:uchar)
+      end.reduce { |acc, canal| acc.bandjoin(canal) }
+
+      # A cor final escolhe entre duas por pixel: o degradê onde a máscara
+      # vale 255, e o azul-escuro onde vale 0. A conta é a mesma sobreposição
+      # da galeria — o peso de cada cor é a própria máscara — e não há alpha
+      # nem composição, porque o ruby-vips deste projeto expõe só aritmética
+      # de banda. Foi exatamente esse o motivo de a primeira versão sair
+      # branca: a silhueta era pintada e o resto ficava sem cor nenhuma.
+      #
+      # `invert` devolve o complemento da máscara, que é 255 fora da silhueta.
+      inversa = mascara.invert()
+      [ 0, 1, 2 ].map do |b|
+        # O peso vem primeiro na multiplicação: o ruby-vips aceita escalar à
+        # esquerda de imagem, e não à direita — inverter a ordem levanta
+        # `Integer#*` com "Vips::Image can't be coerced into Integer".
+        peso_fundo = mascara.cast(:float) / 255.0
+        peso_tinta = inversa.cast(:float) / 255.0
+        ((fundo[b] * peso_fundo) + (peso_tinta * INK[b])).cast(:uchar)
+      end.reduce { |acc, canal| acc.bandjoin(canal) }
+       .write_to_buffer(".webp[Q=88]")
+    end
+
+    def self.elipse(x, centro_x, centro_y, raio_x, raio_y)
+      dx = (x[0] - (LADO * centro_x)) / (LADO * raio_x)
+      dy = (x[1] - (LADO * centro_y)) / (LADO * raio_y)
+      (((dx * dx) + (dy * dy)) < 1.0).cast(:uchar)
+    end
+  end
+
+  # Guarda a silhueta de um profissional no Active Storage e devolve o
+  # `signed_id` para a coluna `professionals.photo`.
+  #
+  # O `signed_id` e não o blob: a coluna é uma string, e o Active Storage
+  # resolve em runtime. É o mesmo caminho de `Barbershop#logo`, e a vantagem é
+  # que o upload, a validação de tipo e a variant de redimensionamento
+  # continuam sendo os do Active Storage.
+  #
+  # A chave do blob inclui o nome da pessoa, e não o índice: reordenar a lista
+  # de profissionais no seed não pode trocar a foto de quem é quem. E a
+  # reexecução não duplica nada, porque o blob é procurado pela chave antes de
+  # ser criado.
+  def self.retrato_de(nome, indice:)
+    chave = "demo/profissional-#{ActiveSupport::Digest.hexdigest(nome)}"
+    blob = ActiveStorage::Blob.find_by(key: chave) ||
+           ActiveStorage::Blob.create_and_upload!(
+             io: StringIO.new(PortraitFactory.gerar(indice: indice)),
+             filename: "profissional-#{indice + 1}.webp",
+             content_type: "image/webp",
+             key: chave
+           )
+
+    blob.signed_id
+  end
 end

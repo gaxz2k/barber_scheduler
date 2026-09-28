@@ -2,13 +2,31 @@ class AppointmentsController < ApplicationController
   MAX_BOOKING_HORIZON = 1.year
   BOOKING_MIN_DAYS = 1
 
+  # Uma agenda: o profissional e os horários livres dele naquela data.
+  #
+  # É uma Struct, e não um Hash, porque a view acessa `agenda.professional` e
+  # `agenda.slots` — e `agenda[:professional]` num template é um `agenda[:…]`
+  # digitado certo só por acaso, sem o editor avisando quando o nome muda.
+  #
+  # Fica aqui, e não entre os métodos privados, porque uma constante escrita
+  # depois de `private` continua pública mas parece privada — e o RuboCop
+  # acusa esse acesso inútil, que aqui seria um sinal de onde o autor achava
+  # que ela estava.
+  Agenda = Data.define(:professional, :slots)
+
   before_action :set_booking_collections, only: [ :index, :new, :create, :availability ]
   before_action :set_booking_errors, only: [ :new, :create ]
   before_action :set_barbershop_unit, only: [ :index, :new, :create, :availability ]
+  # A agenda é lida pela view em toda renderização de `new`, e nem todo caminho
+  # passa por `prepare_booking` — um erro de validação monta `@appointment` à
+  # mão. Sem este piso, a view receberia nil e quebraria ao chamar `each`, com
+  # um NoMethodError no lugar do erro que o cliente deveria ler.
+  before_action :set_agenda_padrao, only: [ :new, :create ]
 
   def index
     @booking_step = :service
     @barbershop_photos = BarbershopPhoto.published.limit(BarbershopPhoto::MAX_PUBLISHED_PHOTOS)
+    @ultimo_agendamento = ultimo_agendamento
     # Na raiz não há unidade na URL, e é a raiz que o cliente chega. A lista de
     # unidades é o que falta para ele escolher onde quer ser atendido: sem
     # esta etapa, todo link de serviço levaria a uma URL sem `unidade_slug` e o
@@ -28,28 +46,47 @@ class AppointmentsController < ApplicationController
   end
 
   def create
+    # O `start_at` chega como `profissional_id|horario` quando a escolha de
+    # profissional e horário veio da tela fundida, e como o horário puro na
+    # tela antiga. Os dois formatos são aceitos porque o link de uma etapa
+    # antiga pode chegar por URL, e quem já estava na página não pode ver a
+    # tela quebrar por um detalhe do formulário.
+    escolha = slot_escolhido(booking_params[:start_at])
+    # A tela a reenquadrar no erro é a fundida, e não a de horário: nesta o
+    # profissional é escolhido junto com o horário, então `booking_step` já
+    # diria "schedule" e o erro apareceria numa tela que não é a que o cliente
+    # está vendo. O passo fica travado aqui e é recalculado só depois da
+    # validação, quando a resposta é outra.
+    @booking_step = :professional
     prepare_booking(
       service_id: booking_params[:service_id],
-      professional_id: booking_params[:professional_id],
+      professional_id: escolha[:professional_id] || booking_params[:professional_id],
       date: booking_params[:date],
       date_default: false
     )
 
     if @selected_service.blank? || @selected_professional.blank? || @selected_date.blank?
+      # A etapa do erro é a do que falta, e não a fundida: sem serviço
+      # escolhido a tela fundida mostraria o resumo "Serviço escolhido" com
+      # um serviço que não existe. `booking_step` já devolve a etapa certa
+      # — `:service` quando o serviço não veio, `:professional` quando veio
+      # serviço mas não o dia.
       @booking_step = booking_step
       @appointment = Appointment.new
       @appointment.errors.add(:base, "Selecione serviço, profissional e data válidos.")
       @available_slots = []
+      @agenda_por_profissional = agenda_por_profissional
       @booking_errors = [ "Selecione serviço, profissional e data válidos." ]
       render :new, status: :unprocessable_content
       return
     end
 
     if @barbershop_unit.blank?
-      @booking_step = :schedule
+      @booking_step = :professional
       @appointment = Appointment.new
       @appointment.errors.add(:base, "Escolha a unidade.")
       @available_slots = []
+      @agenda_por_profissional = agenda_por_profissional
       @booking_errors = [ "Escolha a unidade." ]
       render :new, status: :unprocessable_content
       return
@@ -72,12 +109,16 @@ class AppointmentsController < ApplicationController
       redirect_to appointment_confirmation_path(token: result.confirmation_token),
                   notice: t(".success")
     else
-      @booking_step = :schedule
+      # O erro volta para a tela fundida, com a agenda de todo mundo de novo:
+      # o cliente precisa reescolher o par (quem, quando), e mostrar só a agenda
+      # do profissional que ele já tinha escolhido esconderia a alternativa.
+      @booking_step = :professional
       @appointment = result
       @appointment.service = @selected_service
       @appointment.professional = @selected_professional
       @appointment.start_at = booking_start_at
       @available_slots = available_slots
+      @agenda_por_profissional = agenda_por_profissional
       @booking_errors = result.errors.full_messages
       render :new, status: :unprocessable_content
     end
@@ -123,7 +164,7 @@ class AppointmentsController < ApplicationController
   # chamasse derrubaria a página com NoMethodError. `params[:unidade_slug]`
   # sozinho não serve, porque a view precisa da unidade resolvida, e não do
   # slug que o cliente pode ter digitado errado.
-  helper_method :barbershop_unit, :booking_units, :unidade_path
+  helper_method :barbershop_unit, :booking_units, :unidade_path, :slot_preselecionado?
 
   private
 
@@ -151,6 +192,19 @@ class AppointmentsController < ApplicationController
     BarbershopUnit.for_barbershop(Current.barbershop)
                   .select(&:serves_on_any_day?)
                   .sort_by(&:name)
+  end
+
+  # O último agendamento do cliente, para oferecer o atalho de refazer.
+  #
+  # Só `pending` e `confirmed`, e nunca `canceled` nem `completed`: um
+  # agendamento cancelado é justamente o que o cliente não quer refazer, e
+  # oferecer o atalho para um corte que já aconteceu seria sugerir que a
+  # data passou. O limite de um é porque o botão é "refazer o último", e uma
+  # lista de histórico é outra feature.
+  def ultimo_agendamento
+    Appointment.where(status: [ :pending, :confirmed ])
+              .order(start_at: :desc)
+              .first
   end
 
   # Reached only for pending and confirmed appointments: #confirmation
@@ -196,23 +250,84 @@ class AppointmentsController < ApplicationController
     @booking_errors = []
   end
 
+  def set_agenda_padrao
+    @agenda_por_profissional ||= []
+  end
+
   def prepare_booking(service_id:, professional_id:, date:, date_default: true)
     @selected_service = find_service(service_id)
     @selected_professional = find_professional(professional_id) if @selected_service
     @selected_date = selected_date(date, default: date_default)
     @available_slots = available_slots
+    # A agenda vem depois de `@booking_step` porque dela depende: a grade de
+    # todo mundo só é calculada enquanto a tela está pedindo quem faz o
+    # serviço. Calcular antes testaria um `@booking_step` do request anterior.
     @booking_step = booking_step
+    @agenda_por_profissional = agenda_por_profissional
     @appointment = Appointment.new(
       service_id: @selected_service&.id,
       professional_id: @selected_professional&.id
     )
   end
 
+  # A agenda de cada profissional para a data escolhida, e só na etapa em que o
+  # cliente ainda não escolheu quem.
+  #
+  # A data vem primeiro de propósito: ela é comum a todo mundo, e trocar o dia
+  # recarrega a agenda inteira de uma vez. Recalcular por profissional só
+  # depois é o que mantém a tela com um campo de data, e não um por agenda.
+  #
+  # Profissionais sem nenhum horário livre entram na lista com a agenda vazia,
+  # e não são filtrados: "a Camila não tem vaga nesta data" é informação que o
+  # cliente precisa antes de escolher outro dia, e um nome que sumiu da tela
+  # parece um profissional que saiu da equipe.
+  #
+  # Quando o profissional veio da URL — o cliente escolheu "com Bruno" na lista
+  # de serviços — a agenda é só dele. É o que a escolha significa: quem
+  # escolheu o profissional quer a agenda dele, e mostrar as dos outros seria
+  # desobedecer à escolha feita duas telas atrás. O nome continua visível, com
+  # um link de volta para a comparação de todo mundo.
+  def agenda_por_profissional
+    return [] unless @selected_service && @selected_date && @booking_step == :professional
+
+    lista = @selected_professional ? [ @selected_professional ] : @professionals
+    lista.map do |professional|
+      slots = AvailableSlots::Cache.fetch(
+        professional: professional,
+        date: @selected_date,
+        service: @selected_service,
+        barbershop_unit: @barbershop_unit
+      )
+      Agenda.new(professional: professional, slots: slots)
+    end
+  end
+
+  # O par (profissional, horário) volta marcado quando o envio falhou.
+  #
+  # Comparar o `@appointment.start_at` com o slot já basta na tela antiga, onde
+  # o profissional vinha de outro campo. Na fundida o mesmo horário aparece em
+  # mais de uma agenda, e marcar todos marcaria vários radios de uma vez — o
+  # que o navegador resolve por último, e o cliente não. Por isso o
+  # profissional também é comparado.
+  def slot_preselecionado?(professional, slot)
+    return false if @appointment&.start_at.blank?
+
+    @appointment.professional_id == professional.id && @appointment.start_at == slot
+  end
+
+  # A etapa que a tela mostra.
+  #
+  # Só existe uma etapa depois do serviço, e é a fundida: ela serve tanto para
+  # "ainda não escolhi quem" quanto para "escolhi quem na lista de serviços".
+  # O que muda entre os dois casos é a agenda — de todo mundo ou só do escolhido
+  # — e não a tela. A etapa `:schedule`, que era a tela de horário separado, foi
+  # removida de propósito: ela só existia depois que o profissional já estava
+  # escolhido, e mostrava uma lista de horários sem foto e sem a comparação
+  # que o cliente fez para chegar ali.
   def booking_step
     return :service if @selected_service.blank?
-    return :professional if @selected_professional.blank?
 
-    :schedule
+    :professional
   end
 
   def find_service(value)
@@ -269,12 +384,34 @@ class AppointmentsController < ApplicationController
     appointment_params.permit(:service_id, :professional_id, :date, :start_at, :client_name, :client_phone)
   end
 
-  def booking_start_at
-    value = booking_params[:start_at]
-    return if value.blank? || !value.is_a?(String)
-    return unless strict_iso8601?(value)
+  # Separa o `profissional_id|horario` que a tela fundida monta.
+  #
+  # O profissional NÃO é confiado: ele é revalidado em `prepare_booking` contra
+  # os profissionais do tenant, e o horário é revalidado contra a agenda real
+  # daquele profissional em `public_slot_available?`. O par serve para dizer ao
+  # servidor qual agenda conferir — não para dar como válido um par qualquer.
+  #
+  # Um valor sem o separador volta como `{}`, e o `create` cai no
+  # `professional_id` do campo escondido, que é o caminho da tela antiga. Uma
+  # requisição forjada não ganha nada com isto, e um formulário válido não é
+  # recusado por causa de um caractere a mais.
+  def slot_escolhido(valor)
+    profissional, horario = valor.to_s.split("|", 2)
+    return {} if horario.blank? || !horario.match?(/T\d{2}:\d{2}/)
 
-    Time.zone.parse(value)
+    { professional_id: profissional, start_at: horario }
+  end
+
+  def booking_start_at
+    # Na tela fundida o `start_at` é o par; o horário puro está depois do
+    # separador. Preferir o horário isolado aqui mantém uma única leitura de
+    # "que horas é" para as duas telas, em vez de cada uma cortar a string do
+    # seu jeito.
+    valor = slot_escolhido(booking_params[:start_at])[:start_at] || booking_params[:start_at]
+    return if valor.blank? || !valor.is_a?(String)
+    return unless strict_iso8601?(valor)
+
+    Time.zone.parse(valor)
   rescue ArgumentError, TypeError => error
     Rails.logger.warn("Invalid public booking start_at: #{error.class}")
     nil

@@ -106,10 +106,11 @@ profissionais = [
   { name: "Camila Duarte", specialty: "Corte e acabamento", unidade: "jardim" }
 ].freeze
 
-profissionais.each do |dados|
+profissionais.each_with_index do |dados, indice|
   unidade = demo.unidades.find_by!(slug: dados[:unidade])
   profissional = Professional.find_or_create_by!(name: dados[:name], barbershop_id: demo.id)
   profissional.update!(specialty: dados[:specialty], barbershop_unit: unidade)
+  profissional.update!(photo: DemoShowcase.retrato_de(dados[:name], indice: indice))
 end
 
 # ── Serviços ────────────────────────────────────────────────────────────────
