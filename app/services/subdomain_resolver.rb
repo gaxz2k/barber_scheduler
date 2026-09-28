@@ -19,14 +19,27 @@ class SubdomainResolver
     @root_host = (root_host || self.class.default_root_host).to_s.downcase
   end
 
-  # O domínio base contra o qual o subdomínio é lido. É configuração, não
-  # constante: a URL pública muda entre ambientes, e em teste o host dos request
-  # specs é `example.com`, não `localhost`.
+  # O domínio base contra o qual o subdomínio é lido. É configuração, e não
+  # constante, porque a URL pública muda entre ambientes e o acesso de quem
+  # olha a demonstração de fora não vem de `localhost`.
+  #
+  # `BARBERSHOP_ROOT_HOST` é lido em qualquer ambiente, e não só em produção: a
+  # vitrine precisa ser acessível por um nome que o navegador resolva, e
+  # `slug.187.127.27.192` só funciona se a base for esse IP. Sem esta leitura,
+  # abrir a demo pela internet daria 404 — o host não teria subdomínio para o
+  # resolver ler — com um sintoma que parece ausência de barbearia e não
+  # configuração.
+  #
+  # O valor padrão por ambiente continua valendo quando a variável não está
+  # definida: `localhost` em desenvolvimento, `example.com` em teste e
+  # `barbearia.app` em produção.
   def self.default_root_host
+    return ENV["BARBERSHOP_ROOT_HOST"].to_s.strip if ENV["BARBERSHOP_ROOT_HOST"].to_s.strip.present?
+
     return TEST_ROOT_HOST if Rails.env.test?
     return DEVELOPMENT_ROOT_HOST unless Rails.env.production?
 
-    ENV.fetch("BARBERSHOP_ROOT_HOST", "barbearia.app")
+    "barbearia.app"
   end
 
   def call
