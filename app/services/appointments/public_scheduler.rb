@@ -4,12 +4,13 @@ module Appointments
       new(...).call
     end
 
-    def initialize(name:, phone:, professional:, service:, start_at:)
+    def initialize(name:, phone:, professional:, service:, start_at:, barbershop_unit:)
       @name = name.to_s.strip
       @phone = phone.to_s.gsub(/\D/, "")
       @professional = professional
       @service = service
       @start_at = start_at
+      @barbershop_unit = barbershop_unit
     end
 
     def call
@@ -18,6 +19,7 @@ module Appointments
       return invalid_appointment("Serviço é obrigatório") if @service.blank?
       return invalid_appointment("Profissional é obrigatório") if @professional.blank?
       return invalid_appointment("Horário é obrigatório") if @start_at.blank?
+      return invalid_appointment("Escolha a unidade") if @barbershop_unit.blank?
 
       result = Client.transaction do
         client = Client.create!(name: @name, phone: @phone)
@@ -25,7 +27,8 @@ module Appointments
           client: client,
           professional: @professional,
           service: @service,
-          start_at: @start_at
+          start_at: @start_at,
+          barbershop_unit: @barbershop_unit
         )
         raise ActiveRecord::Rollback unless result.persisted?
 

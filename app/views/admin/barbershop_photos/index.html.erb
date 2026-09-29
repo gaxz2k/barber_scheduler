@@ -24,7 +24,7 @@
     <% @photos.each do |photo| %>
       <article class="admin-photo-card">
         <div class="admin-photo-card__preview">
-          <%= image_tag photo.image, alt: photo.caption.presence || "Foto da Barbearia Senhor R" %>
+          <%= image_tag photo.image, alt: photo.caption.presence || "Foto da #{Current.barbershop.name}" %>
           <% unless photo.active? %>
             <span class="admin-photo-card__inactive">Não publicada</span>
           <% end %>

@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Admin::Professionals", type: :request do
-  let(:admin) { User.create!(email: "admin@example.com", password: "password123", admin: true) }
+  let(:admin) { create_admin_for }
   let(:regular_user) { User.create!(email: "user@example.com", password: "password123") }
 
   describe "GET /admin/professionals/new" do
@@ -48,7 +48,7 @@ RSpec.describe "Admin::Professionals", type: :request do
 
       expect {
         post admin_professionals_path, params: { professional: { name: "Richard" } }
-      }.not_to change(Professional, :count)
+      }.not_to change_tenant_count(Professional)
     end
 
     it "lets an admin create a professional" do
@@ -56,7 +56,7 @@ RSpec.describe "Admin::Professionals", type: :request do
 
       expect {
         post admin_professionals_path, params: { professional: { name: "Richard" } }
-      }.to change(Professional, :count).by(1)
+      }.to change_tenant_count(Professional).by(1)
     end
   end
 end

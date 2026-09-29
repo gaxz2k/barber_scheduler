@@ -1,37 +1,30 @@
-<% content_for :title, "Agendar | Barbearia Senhor R" %>
+<% content_for :title, "Agendar | #{Current.barbershop.name}" %>
 
 <main class="site-shell customer-home booking-entry">
-  <header class="customer-header">
-    <%= link_to root_path, class: "brand-lockup", aria: { label: "Barbearia Senhor R, início" } do %>
-      <span class="brand-mark" aria-hidden="true">Sr<span class="brand-crown">♛</span></span>
-      <span>
-        <span class="brand-name">Barbearia</span>
-        <span class="brand-name brand-name--strong">Senhor R</span>
-      </span>
-    <% end %>
-    <span class="header-location">Nova Odessa · SP</span>
-  </header>
+  <%# A galeria vem antes do cabeçalho.
+      A ordem aqui é deliberada e invertida em relação ao que a página fazia:
+      a foto do salão é o que o cliente quer ver ao chegar, e o nome da
+      barbearia é o que ele descobre logo abaixo dela. Com o nome em cima, a
+      primeira dobra era um cabeçalho de texto e a galeria ficava abaixo da
+      dobra — fora da tela em quase todo celular, que é onde a maior parte
+      dos clientes entra.
 
+      Sem botão de pausa, e sem os de anterior e próximo. A rotação é de 3s,
+      abaixo do limite de 5s do WCAG 2.2.2 (Pause, Stop, Hide), que é a regra
+      que exige uma forma de parar movimento automático mais longo. Quem tem
+      `prefers-reduced-motion` ligado no sistema não vê a rotação nenhuma — o
+      controller confere isso antes de iniciar. E passar o mouse ou o foco
+      sobre a faixa continua parando, que é o comportamento que já existia. %>
   <% if @barbershop_photos.any? %>
     <section class="barbershop-carousel" aria-labelledby="barbershop-carousel-title" data-controller="barbershop-carousel">
-      <div class="barbershop-carousel__header">
-        <div>
-          <div class="eyebrow">Conheça a barbearia</div>
-          <h2 id="barbershop-carousel-title">Um espaço feito para você</h2>
-        </div>
-        <div class="barbershop-carousel__controls">
-          <button type="button" class="barbershop-carousel__button" data-barbershop-carousel-target="pause" data-action="barbershop-carousel#togglePause" aria-label="Pausar carrossel" aria-pressed="false">Ⅱ</button>
-          <button type="button" class="barbershop-carousel__button" data-action="barbershop-carousel#previous" aria-label="Foto anterior">←</button>
-          <button type="button" class="barbershop-carousel__button" data-action="barbershop-carousel#next" aria-label="Próxima foto">→</button>
-        </div>
-      </div>
+      <h2 id="barbershop-carousel-title" class="sr-only">Galeria de <%= Current.barbershop.name %></h2>
 
-      <div class="barbershop-carousel__viewport" data-barbershop-carousel-target="viewport" tabindex="0" role="region" aria-roledescription="carrossel" aria-label="Fotos da Barbearia Senhor R" data-action="keydown->barbershop-carousel#keydown mouseenter->barbershop-carousel#stop mouseleave->barbershop-carousel#start focusin->barbershop-carousel#stop focusout->barbershop-carousel#start">
+      <div class="barbershop-carousel__viewport" data-barbershop-carousel-target="viewport" tabindex="0" role="region" aria-roledescription="carrossel" aria-label="Fotos da <%= Current.barbershop.name %>" data-action="keydown->barbershop-carousel#keydown mouseenter->barbershop-carousel#stop mouseleave->barbershop-carousel#start focusin->barbershop-carousel#stop focusout->barbershop-carousel#start">
         <div class="barbershop-carousel__track" data-barbershop-carousel-target="track">
           <% @barbershop_photos.each_with_index do |photo, index| %>
             <figure class="barbershop-carousel__slide" data-barbershop-carousel-target="slide" data-index="<%= index %>" aria-hidden="<%= index.zero? ? "false" : "true" %>">
               <div class="barbershop-carousel__image-wrap">
-                <%= image_tag photo.image, alt: photo.caption.presence || "Foto da Barbearia Senhor R", loading: index.zero? ? "eager" : "lazy", data: { barbershop_carousel_target: "image", action: "error->barbershop-carousel#imageError" } %>
+                <%= image_tag photo.image, alt: photo.caption.presence || "Foto da #{Current.barbershop.name}", loading: index.zero? ? "eager" : "lazy", data: { barbershop_carousel_target: "image", action: "error->barbershop-carousel#imageError" } %>
                 <div class="barbershop-carousel__image-fallback" data-barbershop-carousel-target="imageFallback" hidden>
                   <span aria-hidden="true">▧</span>
                   <strong>Foto indisponível</strong>
@@ -51,51 +44,131 @@
     <div class="barbershop-carousel barbershop-carousel--empty" role="status">
       <div class="barbershop-carousel__empty-icon" aria-hidden="true">✦</div>
       <strong>Novas fotos em breve</strong>
-      <span>Estamos preparando um tour do espaço da Barbearia Senhor R.</span>
+      <span>Estamos preparando um tour do espaço da <%= Current.barbershop.name %>.</span>
     </div>
   <% end %>
 
-  <div class="booking-progress" aria-label="Etapas do agendamento">
-    <span class="progress-step progress-step--active"><b>1</b><span>Serviço</span></span>
-    <span class="progress-line"></span>
-    <span class="progress-step"><b>2</b><span>Profissional</span></span>
-    <span class="progress-line"></span>
-    <span class="progress-step"><b>3</b><span>Horário</span></span>
-    <span class="progress-line"></span>
-    <span class="progress-step"><b>4</b><span>Confirmação</span></span>
-  </div>
+  <%# A identificação da barbearia fica abaixo da galeria, e é o bloco que
+      responde às três perguntas que um cliente tem ao abrir a página: quem é,
+      onde fica, e como falar com alguém se não quiser agendar. %>
+  <header class="customer-header customer-header--identity">
+    <div class="barbershop-identity">
+      <span class="brand-mark" aria-hidden="true"><%= Current.barbershop.monograma %></span>
+      <div>
+        <% if Current.barbershop.tagline.present? %>
+          <span class="brand-name"><%= Current.barbershop.tagline %></span>
+        <% end %>
+        <h1 class="brand-name brand-name--strong"><%= Current.barbershop.name %></h1>
+      </div>
+    </div>
 
-  <section class="booking-intro" aria-labelledby="booking-title">
-    <div class="eyebrow">Seu próximo cuidado começa aqui</div>
-    <h1 id="booking-title">Escolha um serviço</h1>
-    <p>Escolha o cuidado ideal e avançamos juntos até o seu horário.</p>
-  </section>
-
-  <% if @services.any? %>
-    <ul class="service-choice-list" aria-label="Serviços disponíveis">
-      <% @services.each_with_index do |service, index| %>
+    <ul class="barbershop-contact">
+      <% if Current.barbershop.address.present? %>
+        <li><span class="barbershop-contact__label">Endereço</span><span><%= Current.barbershop.address %></span></li>
+      <% end %>
+      <% if Current.barbershop.whatsapp_link.present? %>
         <li>
-          <%= link_to new_appointment_path(service: service.id), class: "service-choice-card", data: { turbo: false } do %>
-          <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
-          <span class="service-choice-card__body">
-            <strong><%= service.name %></strong>
-            <span><%= service.duration_minutes %> min</span>
-          </span>
-          <span class="service-choice-card__arrow" aria-hidden="true">→</span>
+          <span class="barbershop-contact__label">WhatsApp</span>
+          <a href="<%= Current.barbershop.whatsapp_link %>" rel="noopener">
+            <%= Current.barbershop.whatsapp %>
+          </a>
+        </li>
+      <% end %>
+    </ul>
+  </header>
+
+  <%= booking_progress(booking_steps(:unit, com_unidade: @booking_units.any?, unidade_ativa: @booking_units.any?)) %>
+
+  <% if @booking_units.any? %>
+    <% if @ultimo_agendamento.present? %>
+      <div class="booking-again">
+        <p class="booking-again__text">
+          Você tem um horário marcado com <strong><%= @ultimo_agendamento.professional.name %></strong>
+          em <%= l(@ultimo_agendamento.start_at.to_date, format: :long) %>,
+          às <%= @ultimo_agendamento.start_at.strftime("%H:%M") %>.
+        </p>
+        <%= link_to new_appointment_path(service: @ultimo_agendamento.service_id,
+                                        professional: @ultimo_agendamento.professional_id,
+                                        date: @ultimo_agendamento.start_at.to_date.iso8601,
+                                        unidade_slug: @ultimo_agendamento.barbershop_unit&.slug),
+                    class: "button button--secondary", data: { turbo: false } do %>
+          Reagendar
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# A etapa da unidade só existe quando a barbearia tem mais de uma loja
+        onde o cliente possa agendar. Com uma unidade só, perguntar "onde você
+        quer ser atendido" é uma pergunta com uma resposta, e a tela mostraria
+        uma escolha que não é escolha. %>
+    <section class="booking-intro" aria-labelledby="booking-unit-title">
+      <div class="eyebrow">Seu próximo cuidado começa aqui</div>
+      <h1 id="booking-unit-title">Escolha onde quer ser atendido</h1>
+      <p>Cada unidade tem seu próprio horário de funcionamento.</p>
+    </section>
+
+    <ul class="service-choice-list" aria-label="Unidades disponíveis">
+      <% @booking_units.each_with_index do |unit, index| %>
+        <li>
+          <%= link_to unidade_path(unit), class: "service-choice-card", data: { turbo: false } do %>
+            <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
+            <span class="service-choice-card__body">
+              <strong><%= unit.name %></strong>
+              <span><%= unit.address.presence || "Unidade da #{Current.barbershop.name}" %></span>
+            </span>
+            <span class="service-choice-card__arrow" aria-hidden="true">→</span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <section class="booking-intro" aria-labelledby="booking-title">
+      <div class="eyebrow">Seu próximo cuidado começa aqui</div>
+      <h1 id="booking-title">Escolha um serviço</h1>
+      <p>Escolha o cuidado ideal e avançamos juntos até o seu horário.</p>
+    </section>
+  <% end %>
+
+  <% if @booking_units.empty? %>
+    <% if @services.any? %>
+      <ul class="service-choice-list" aria-label="Serviços disponíveis">
+        <% @services.each_with_index do |service, index| %>
+          <li>
+            <%# A unidade vai na URL do link, e não como campo: é ela que decide
+                os horários da etapa de horário, e ela também precisa sobreviver
+                ao `create`. Um link sem `unidade_slug` leva o cliente até o
+                último botão para ele receber "Escolha a unidade" — a escolha
+                existe na URL justamente para não poder ser perdida entre as
+                etapas. %>
+            <%= link_to new_appointment_path(service: service.id, unidade_slug: params[:unidade_slug]),
+                        class: "service-choice-card", data: { turbo: false } do %>
+              <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
+              <span class="service-choice-card__body">
+                <strong><%= service.name %></strong>
+                <span><%= service.duration_minutes %> min</span>
+                <%# O preço e a duração são dois fatos independentes: um serviço
+                    sem preço cadastrado mostra só a duração, e não uma linha
+                    com "R$ " vazia no lugar. %>
+                <% if service.price_label.present? %>
+                  <span class="service-choice-card__price"><%= service.price_label %></span>
+                <% end %>
+              </span>
+              <span class="service-choice-card__arrow" aria-hidden="true">→</span>
             <% end %>
           </li>
         <% end %>
       </ul>
-  <% else %>
-    <div class="customer-empty-state" role="status">
-      <strong>Ainda não há serviços cadastrados.</strong>
-      <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
-    </div>
+    <% else %>
+      <div class="customer-empty-state" role="status">
+        <strong>Ainda não há serviços cadastrados.</strong>
+        <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
+      </div>
+    <% end %>
   <% end %>
 
   <footer class="customer-footer">
-    <span>Barbearia Senhor R</span>
+    <span><%= Current.barbershop.name %></span>
     <span>·</span>
-    <span>Nova Odessa, SP</span>
+    <span><%= Current.barbershop.address.presence || Current.barbershop.phone %></span>
   </footer>
 </main>

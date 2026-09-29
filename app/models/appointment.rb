@@ -1,4 +1,9 @@
 class Appointment < ApplicationRecord
+  include TenantScoped
+  apply_tenant_scope
+  validates_tenant_associations :client, :professional, :service, :barbershop_unit
+
+  belongs_to :barbershop_unit
   belongs_to :client
   belongs_to :professional
   belongs_to :service
@@ -7,6 +12,14 @@ class Appointment < ApplicationRecord
   before_validation :set_confirmation_expiration, on: :create
 
   validates :start_at, :end_at, presence: true
+
+  # A agenda de uma unidade. Sem argumento devolve tudo da barbearia, que é o
+  # que o painel usa; com argumento, só a unidade.
+  def self.for_unit(barbershop_unit)
+    return all if barbershop_unit.nil?
+
+    where(barbershop_unit_id: barbershop_unit.id)
+  end
 
   enum :status, { pending: 0, confirmed: 1, canceled: 2, completed: 3 }, default: :pending
 
@@ -51,11 +64,12 @@ class Appointment < ApplicationRecord
   end
 
   def invalidate_available_slots_cache
-    appointments_for_cache_invalidation.each do |professional, service, date|
+    appointments_for_cache_invalidation.each do |professional, service, date, unit|
       AvailableSlots::Cache.invalidate(
         professional: professional,
         date: date,
-        service: service
+        service: service,
+        barbershop_unit: unit
       )
     end
   rescue Redis::BaseError, RedisClient::Error => error
@@ -78,30 +92,54 @@ class Appointment < ApplicationRecord
     current_end_at = end_at
     previous_start_at = saved_changes["start_at"]&.first || current_start_at
     previous_end_at = saved_changes["end_at"]&.first || current_end_at
+    current_unit_id = barbershop_unit_id
+    previous_unit_id = saved_changes["barbershop_unit_id"]&.first || current_unit_id
 
     current_records = cache_records_for(
       professional_id: current_professional_id,
       service_id: current_service_id,
       start_at: current_start_at,
-      end_at: current_end_at
+      end_at: current_end_at,
+      unit_id: current_unit_id
     )
     previous_records = cache_records_for(
       professional_id: previous_professional_id,
       service_id: previous_service_id,
       start_at: previous_start_at,
-      end_at: previous_end_at
+      end_at: previous_end_at,
+      unit_id: previous_unit_id
     )
 
     (current_records + previous_records).uniq
   end
 
-  def cache_records_for(professional_id:, service_id:, start_at:, end_at:)
+  # A unidade entra no registro porque ela faz parte da chave do cache. Sem
+  # ela, a invalidação usaria a chave "sem-unidade" e nunca apagaria a agenda
+  # que foi calculada para a unidade real — o cache ficaria velho para sempre
+  # depois do primeiro agendamento.
+  #
+  # A unidade vem do agendamento, e não do profissional: um profissional pode
+  # atender em duas unidades, e é a unidade do agendamento que define a agenda
+  # que mudou. Quando o profissional mudou, invalida as duas unidades, porque
+  # as duas podem ter agenda calculada para ele.
+  def cache_records_for(professional_id:, service_id:, start_at:, end_at:, unit_id: barbershop_unit_id)
     professional = Professional.find_by(id: professional_id)
     service = Service.find_by(id: service_id)
+    return [] unless professional && service
+
+    units = units_for_invalidation(unit_id)
     dates = [ start_at, end_at ].compact.map(&:to_date).uniq
 
-    dates.filter_map do |date|
-      [ professional, service, date ] if professional && service
+    dates.flat_map do |date|
+      units.filter_map { |unit| [ professional, service, date, unit ] }
+    end
+  end
+
+  def units_for_invalidation(unit_id)
+    if unit_id.present?
+      [ BarbershopUnit.find_by(id: unit_id) ].compact
+    else
+      BarbershopUnit.none
     end
   end
 

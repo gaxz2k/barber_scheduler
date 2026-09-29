@@ -18,7 +18,7 @@ RSpec.describe AvailableSlots::Cache, type: :service do
   end
 
   def fetch(date: self.date, service: self.service, professional: self.professional)
-    described_class.fetch(professional: professional, date: date, service: service)
+    described_class.fetch(professional: professional, date: date, service: service, barbershop_unit: test_unit_for(test_barbershop))
   end
 
   describe ".fetch" do
@@ -55,7 +55,7 @@ RSpec.describe AvailableSlots::Cache, type: :service do
     end
 
     it "deletes the exact cache key on invalidation" do
-      cache = described_class.new(professional: professional, date: date, service: service)
+      cache = described_class.new(professional: professional, date: date, service: service, barbershop_unit: test_unit_for(test_barbershop))
       fetch
       key = redis.keys.find do |redis_key|
         !redis_key.end_with?(":generation")
@@ -70,7 +70,7 @@ RSpec.describe AvailableSlots::Cache, type: :service do
       allow(redis).to receive(:del).and_raise(Redis::CannotConnectError, "offline")
 
       expect do
-        appointment = Appointment.create!(
+        appointment = create_test_appointment!(
           client: client,
           professional: professional,
           service: service,
@@ -83,10 +83,13 @@ RSpec.describe AvailableSlots::Cache, type: :service do
     end
 
     it "does not repopulate the cache after an appointment invalidates a stale calculation" do
-      cache = described_class.new(professional: professional, date: date, service: service)
+      cache = described_class.new(professional: professional, date: date, service: service, barbershop_unit: test_unit_for(test_barbershop))
       calculated_slots = [ date.in_time_zone.change(hour: 9, min: 0) ]
+      # A unidade entra na chave: o mesmo profissional em unidades diferentes
+      # tem horários diferentes, e uma agenda seria devolvida para a outra.
       cache_key = [
         "available-slots",
+        test_unit_for(test_barbershop).id,
         professional.id,
         date.to_date,
         service.id,
@@ -113,6 +116,7 @@ RSpec.describe AvailableSlots::Cache, type: :service do
         client: client,
         professional: professional,
         service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
         start_at: start_at,
         end_at: start_at + service.duration_minutes.minutes
       )
@@ -125,7 +129,7 @@ RSpec.describe AvailableSlots::Cache, type: :service do
 
     it "recalculates after the appointment status changes" do
       start_at = date.in_time_zone.change(hour: 9, min: 0)
-      appointment = Appointment.create!(
+      appointment = create_test_appointment!(
         client: client,
         professional: professional,
         service: service,
@@ -143,7 +147,7 @@ RSpec.describe AvailableSlots::Cache, type: :service do
     it "recalculates after the appointment professional changes" do
       start_at = date.in_time_zone.change(hour: 9, min: 0)
       other_professional = Professional.create!(name: "Profissional Outro")
-      appointment = Appointment.create!(
+      appointment = create_test_appointment!(
         client: client,
         professional: professional,
         service: service,
@@ -164,7 +168,7 @@ RSpec.describe AvailableSlots::Cache, type: :service do
 
     it "recalculates after the appointment is destroyed" do
       start_at = date.in_time_zone.change(hour: 9, min: 0)
-      appointment = Appointment.create!(
+      appointment = create_test_appointment!(
         client: client,
         professional: professional,
         service: service,
@@ -182,7 +186,7 @@ RSpec.describe AvailableSlots::Cache, type: :service do
     it "recalculates after the appointment service changes" do
       start_at = date.in_time_zone.change(hour: 9, min: 0)
       other_service = Service.create!(name: "Barba", duration_minutes: 30)
-      appointment = Appointment.create!(
+      appointment = create_test_appointment!(
         client: client,
         professional: professional,
         service: service,

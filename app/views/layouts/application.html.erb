@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+  <%# `Current.barbershop` é nil em duas telas: o cadastro de barbearia (que é
+      a única requisição do sistema sem tenant — é ela que cria a primeira) e
+      qualquer página de erro antes da resolução. Ler `.name` direto quebrava
+      ambas com NoMethodError, o que transformava "crie sua barbearia" em uma
+      tela branca em vez de um formulário. O piso é o nome do produto, e é o que
+      o título mostra enquanto não existe uma casa. %>
+  <% nome_da_casa = Current.barbershop&.name || "Barbearia" %>
   <head>
-    <title><%= content_for(:title) || "Barbearia Senhor R" %></title>
+    <title><%= content_for(:title) || nome_da_casa %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Barbearia Senhor R">
+    <meta name="application-name" content="<%= nome_da_casa %>">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#171717">
     <%= csrf_meta_tags %>

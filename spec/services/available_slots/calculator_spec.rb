@@ -7,11 +7,11 @@ RSpec.describe AvailableSlots::Calculator, type: :service do
   let(:date) { Date.current + 1 }
 
   def calculate
-    described_class.new(professional: professional, date: date, service: service).call
+    described_class.new(professional: professional, date: date, service: service, barbershop_unit: test_unit_for(test_barbershop)).call
   end
 
   def occupy!(start_time, status: :pending)
-    Appointment.create!(
+    create_test_appointment!(
       client: client,
       professional: professional,
       service: service,
@@ -42,11 +42,24 @@ RSpec.describe AvailableSlots::Calculator, type: :service do
       slots = described_class.new(
         professional: professional,
         date: today,
-        service: service
+        service: service,
+        barbershop_unit: test_unit_for(test_barbershop)
       ).call
 
-      expect(slots).not_to include(today.in_time_zone.change(hour: 11, min: 30))
-      expect(slots).to include(today.in_time_zone.change(hour: 12, min: 0))
+      # Ancorado no "agora" e não em 12:00: a suite roda a qualquer hora do
+      # dia, e um horario fixo passa a tarde e quebra de manha.
+      #
+      # Passado: a meia hora ANTERIOR a agora, que com certeza ja passou.
+      # Futuro: a proxima meia hora, que ainda esta dentro do expediente de
+      # 08:00 as 22:00 que o helper define. O instante exato de agora nao e
+      # usado de proposito: o filtro e `>=`, entao ele aparece, e afirmar o
+      # contrario mediria o filtro em vez do que interessa.
+      agora = Time.current
+      passada = agora - 30.minutes
+      futura = agora.change(min: ((agora.min / 30) * 30) + 30, sec: 0)
+
+      expect(slots).not_to include(passada)
+      expect(slots).to include(futura)
     end
 
     it "returns an empty list for a blank date" do

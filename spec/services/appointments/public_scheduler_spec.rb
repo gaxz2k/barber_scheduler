@@ -11,7 +11,8 @@ RSpec.describe Appointments::PublicScheduler, type: :service do
       phone: phone,
       professional: professional,
       service: service,
-      start_at: start_at
+      start_at: start_at,
+      barbershop_unit: test_unit_for(test_barbershop)
     )
   end
 

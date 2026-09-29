@@ -13,6 +13,7 @@ RSpec.describe Appointment, type: :model do
         professional: professional,
         client: client,
         service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
         start_at: start_at,
         end_at: start_at + Scheduling::SLOT_DURATION
       )
@@ -25,6 +26,7 @@ RSpec.describe Appointment, type: :model do
         professional: professional,
         client: client,
         service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
         start_at: start_at,
         end_at: start_at + Scheduling::SLOT_DURATION
       )
@@ -42,6 +44,7 @@ RSpec.describe Appointment, type: :model do
         professional: professional,
         client: client,
         service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
         start_at: start_at,
         end_at: start_at + Scheduling::SLOT_DURATION
       )
@@ -54,6 +57,7 @@ RSpec.describe Appointment, type: :model do
         professional: professional,
         client: client,
         service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
         start_at: start_at,
         end_at: start_at + Scheduling::SLOT_DURATION,
         status: :canceled
@@ -75,6 +79,10 @@ RSpec.describe Appointment, type: :model do
           client: client,
           professional: professional,
           service: service,
+          # A unidade é obrigatória, e um agendamento sem ela não existe. Vai
+          # no helper e não em cada exemplo: o que estes exemplos provam é
+          # duração, grade e status, e a unidade é cenário, não asserção.
+          barbershop_unit: test_unit_for(test_barbershop),
           start_at: start_at,
           end_at: start_at + service.duration_minutes.minutes
         }.merge(attributes)
@@ -187,6 +195,7 @@ RSpec.describe Appointment, type: :model do
         professional: professional,
         client: client,
         service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
         start_at: start_at,
         end_at: start_at + Scheduling::SLOT_DURATION
       )
@@ -214,6 +223,7 @@ RSpec.describe Appointment, type: :model do
         client: client,
         professional: professional,
         service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
         start_at: start_at,
         end_at: start_at + Scheduling::SLOT_DURATION
       )
@@ -224,6 +234,11 @@ RSpec.describe Appointment, type: :model do
             client_id: client.id,
             professional_id: professional.id,
             service_id: service.id,
+            # A unidade vai no insert porque a coluna é NOT NULL: sem ela a
+            # inserção falharia por violação de coluna, e o exemplo passaria
+            # pelo motivo errado — ele existe para provar a restrição de
+            # sobreposição, não a obrigatoriedade da unidade.
+            barbershop_unit_id: test_unit_for(test_barbershop).id,
             confirmation_token: SecureRandom.hex(16),
             confirmation_expires_at: 48.hours.from_now,
             start_at: start_at,
@@ -243,6 +258,7 @@ RSpec.describe Appointment, type: :model do
         professional: professional,
         client: client,
         service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
         start_at: start_at,
         end_at: start_at + Scheduling::SLOT_DURATION,
         status: :completed
@@ -272,6 +288,7 @@ RSpec.describe Appointment, type: :model do
     let(:service) { Service.create!(name: "Corte", duration_minutes: 30) }
     let(:appointment) do
       described_class.create!(professional: professional, client: client, service: service,
+      barbershop_unit: test_unit_for(test_barbershop),
                               start_at: 1.day.from_now.change(hour: 10, min: 0),
                               end_at: 1.day.from_now.change(hour: 10, min: 30))
     end

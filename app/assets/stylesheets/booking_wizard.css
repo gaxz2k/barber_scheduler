@@ -1,33 +1,43 @@
 /*
- * Public booking interface — Meta-inspired without copying Meta's identity.
- * The surface is intentionally quiet, high-contrast, and action-first.
+ * Ajustes do fluxo público de agendamento.
+ *
+ * Este arquivo já foi a paleta inteira do produto, com as cores hardcoded e o
+ * prefixo `--meta-*`. A paleta agora vive em `:root`, no `application.css`,
+ * e as regras daqui apontam para lá com `var()`. Manter duas paletas foi o que
+ * fez o botão sair azul depois da troca para dourado: o `application.css` foi
+ * atualizado, este aqui não, e o `--meta-blue` antigo continuava vencendo
+ * porque tinha especificidade de escopo.
+ *
+ * Os nomes `--meta-*` continuam por compatibilidade com as regras mais
+ * abaixo deste arquivo e com o que o JavaScript do wizard lê. Renomear seria
+ * mexer em 700 linhas para ganhar só consistência de nome.
  */
 
 .booking-entry,
 .booking-page {
-  --meta-ink: #18191a;
-  --meta-text: #25262a;
-  --meta-muted: #65676c;
-  --meta-subtle: #8a8d92;
-  --meta-canvas: #f5f6f7;
-  --meta-surface: #ffffff;
-  --meta-surface-alt: #f0f2f3;
-  --meta-line: #d8dade;
-  --meta-line-soft: #e8e9eb;
-  --meta-blue: #0866ff;
-  --meta-blue-hover: #075ce5;
-  --meta-blue-soft: #e7f0ff;
-  --meta-success: #137a45;
-  --meta-danger: #b42318;
-  --meta-danger-soft: #fef0ef;
-  --meta-radius-sm: 8px;
-  --meta-radius-md: 12px;
-  --meta-radius-lg: 18px;
+  --meta-ink: var(--ink);
+  --meta-text: var(--ink);
+  --meta-muted: var(--ink-soft);
+  --meta-subtle: var(--ink-soft);
+  --meta-canvas: var(--cream);
+  --meta-surface: var(--paper);
+  --meta-surface-alt: var(--paper-deep);
+  --meta-line: var(--line);
+  --meta-line-soft: var(--line-soft);
+  --meta-blue: var(--gold);
+  --meta-blue-hover: var(--gold-deep);
+  --meta-blue-soft: var(--paper-deep);
+  --meta-success: var(--green);
+  --meta-danger: var(--danger);
+  --meta-danger-soft: var(--danger-soft);
+  --meta-radius-sm: var(--radius-sm);
+  --meta-radius-md: var(--radius-md);
+  --meta-radius-lg: var(--radius-lg);
 }
 
 body:has(.booking-entry),
 body:has(.booking-page) {
-  background: #f5f6f7;
+  background: var(--meta-canvas);
 }
 
 .booking-entry,
@@ -61,7 +71,7 @@ body:has(.booking-page) {
   border-radius: 50%;
   background: var(--meta-ink);
   color: #fff;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.95rem;
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -69,14 +79,14 @@ body:has(.booking-page) {
 
 .booking-entry .brand-crown,
 .booking-page .brand-crown {
-  color: #8fc0ff;
+  color: var(--meta-blue);
   font-size: 0.6em;
 }
 
 .booking-entry .brand-name,
 .booking-page .brand-name {
   color: var(--meta-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.01em;
@@ -93,7 +103,7 @@ body:has(.booking-page) {
 .booking-entry .header-location,
 .booking-page .header-location {
   color: var(--meta-muted);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.76rem;
   font-weight: 600;
   letter-spacing: 0;
@@ -107,7 +117,7 @@ body:has(.booking-page) {
   border-radius: var(--meta-radius-sm);
   padding: 0.55rem 0.75rem;
   color: var(--meta-muted);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.84rem;
   font-weight: 700;
   transition: background-color 150ms ease, color 150ms ease;
@@ -127,7 +137,7 @@ body:has(.booking-page) {
   gap: 0.5rem;
   margin-bottom: 3.25rem;
   color: var(--meta-subtle);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 700;
 }
@@ -176,7 +186,7 @@ body:has(.booking-page) {
 
 .booking-intro .eyebrow {
   color: var(--meta-blue);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.73rem;
   font-weight: 800;
   letter-spacing: 0.01em;
@@ -186,7 +196,7 @@ body:has(.booking-page) {
 .booking-intro h1 {
   margin: 0.55rem 0 0.8rem;
   color: var(--meta-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: clamp(2.3rem, 6vw, 4.25rem);
   font-weight: 750;
   letter-spacing: -0.055em;
@@ -201,89 +211,13 @@ body:has(.booking-page) {
   line-height: 1.45;
 }
 
-.booking-entry .service-choice-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
-  padding: 0;
-  list-style: none;
-}
+/* O bloco `service-choice-*` que ficava aqui foi removido: a lista de
+ * servicos virou a tabela com seletor "com" e botao Agendar, que mora no
+ * `application.css` com o nome `service-list`. Nenhuma view markupa mais
+ * `service-choice-card`, e manter 95 linhas de estilo para um elemento
+ * inexistente e o que faz a proxima pessoa procurar a regra no lugar errado.
+ */
 
-.booking-entry .service-choice-list > li {
-  min-width: 0;
-}
-
-.booking-entry .service-choice-card,
-.service-choice-card {
-  display: flex;
-  min-height: 7.5rem;
-  align-items: center;
-  gap: 0.9rem;
-  border: 1px solid var(--meta-line);
-  border-radius: var(--meta-radius-md);
-  padding: 1.15rem;
-  background: var(--meta-surface);
-  color: var(--meta-text);
-  box-shadow: 0 2px 8px rgba(24, 25, 26, 0.04);
-  transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
-}
-
-.booking-entry .service-choice-card:hover,
-.booking-entry .service-choice-card:focus-visible,
-.service-choice-card:hover,
-.service-choice-card:focus-visible {
-  border-color: var(--meta-blue);
-  background: #fbfdff;
-  transform: translateY(-1px);
-}
-
-.booking-entry .service-choice-card__number,
-.service-choice-card__number {
-  display: inline-grid;
-  width: 2.2rem;
-  height: 2.2rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--meta-blue-soft);
-  color: var(--meta-blue);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-
-.booking-entry .service-choice-card__body,
-.service-choice-card__body {
-  display: grid;
-  min-width: 0;
-  flex: 1;
-  gap: 0.35rem;
-}
-
-.booking-entry .service-choice-card__body strong,
-.service-choice-card__body strong {
-  color: var(--meta-ink);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.98rem;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.booking-entry .service-choice-card__body > span,
-.service-choice-card__body > span {
-  color: var(--meta-muted);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.8rem;
-}
-
-.booking-entry .service-choice-card__arrow,
-.service-choice-card__arrow {
-  flex: 0 0 auto;
-  color: var(--meta-blue);
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 1.3rem;
-  font-weight: 800;
-}
 
 .booking-selection-summary {
   display: grid;
@@ -297,14 +231,14 @@ body:has(.booking-page) {
 
 .booking-selection-summary span {
   color: var(--meta-muted);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.74rem;
   font-weight: 700;
 }
 
 .booking-selection-summary strong {
   color: var(--meta-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.9rem;
   font-weight: 800;
 }
@@ -332,7 +266,7 @@ body:has(.booking-page) {
 .booking-page .choice-card--link:hover .choice-card__body,
 .booking-page .choice-card--link:focus-visible .choice-card__body {
   border-color: var(--meta-blue);
-  background: #fbfdff;
+  background: var(--meta-blue-soft);
 }
 
 .booking-page .choice-card__avatar {
@@ -341,14 +275,14 @@ body:has(.booking-page) {
   border-radius: 50%;
   background: var(--meta-blue-soft);
   color: var(--meta-blue);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 1.1rem;
   font-weight: 800;
 }
 
 .booking-page .choice-card__body strong {
   color: var(--meta-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.95rem;
   font-weight: 800;
 }
@@ -367,7 +301,7 @@ body:has(.booking-page) {
 
 .booking-page .booking-form,
 .booking-page .form-section {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
 }
 
 .booking-page .form-section {
@@ -402,7 +336,7 @@ body:has(.booking-page) {
 }
 
 .booking-page .form-alert {
-  border: 1px solid #f2b8b5;
+  border: 1px solid var(--meta-danger);
   border-radius: var(--meta-radius-sm);
   padding: 0.9rem 1rem;
   background: var(--meta-danger-soft);
@@ -418,7 +352,7 @@ body:has(.booking-page) {
 .booking-page .field-hint,
 .booking-page .booking-footnote {
   color: var(--meta-muted);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.76rem;
 }
 
@@ -431,7 +365,7 @@ body:has(.booking-page) {
   padding: 0.7rem 0.8rem;
   background: var(--meta-surface);
   color: var(--meta-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.92rem;
 }
 
@@ -459,7 +393,7 @@ body:has(.booking-page) {
   background: var(--meta-surface);
   color: var(--meta-text);
   cursor: pointer;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.88rem;
   font-weight: 800;
   transition: border-color 150ms ease, background-color 150ms ease;
@@ -492,7 +426,7 @@ body:has(.booking-page) {
   padding: 0.8rem 1.1rem;
   background: var(--meta-blue);
   color: #fff;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.92rem;
   font-weight: 800;
   line-height: 1.1;
@@ -523,7 +457,7 @@ body:has(.booking-page) {
   padding: 1.5rem;
   background: var(--meta-surface);
   color: var(--meta-muted);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.85rem;
 }
 
@@ -545,7 +479,7 @@ body:has(.booking-page) {
 
 .booking-page .confirmation-card .eyebrow {
   color: var(--meta-blue);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.73rem;
   font-weight: 800;
   letter-spacing: 0.01em;
@@ -555,7 +489,7 @@ body:has(.booking-page) {
 .booking-page .confirmation-card h1 {
   margin: 0.55rem 0 0.9rem;
   color: var(--meta-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 750;
   letter-spacing: -0.05em;
@@ -623,7 +557,7 @@ body:has(.booking-page) {
   gap: 0.5rem;
   margin-top: 3rem;
   color: var(--meta-muted);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0;

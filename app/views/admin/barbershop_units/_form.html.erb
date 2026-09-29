@@ -1,0 +1,49 @@
+<%= form_with model: [:admin, @barbershop_unit], class: "admin-form" do |form| %>
+  <% if @barbershop_unit.errors.any? %>
+    <div class="admin-alert admin-alert--error" id="error_explanation" role="alert">
+      <strong><%= pluralize(@barbershop_unit.errors.count, "erro") %> impediram esta unidade de ser salva:</strong>
+      <ul>
+        <% @barbershop_unit.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="admin-form__group">
+    <%= form.label :name, "Nome da unidade" %>
+    <%= form.text_field :name, required: true, autofocus: true, autocomplete: "off" %>
+    <span class="field-hint">Ex.: Centro, Jardim, Shopping.</span>
+  </div>
+
+  <div class="admin-form__group">
+    <%= form.label :slug, "Endereço na URL" %>
+    <%= form.text_field :slug, required: true %>
+    <span class="field-hint">O cliente acessa /barbearia/unidades/<strong>este-texto</strong>. Único dentro da barbearia.</span>
+  </div>
+
+  <fieldset class="unit-schedule">
+    <legend>Horário de funcionamento</legend>
+    <p class="field-hint">O cliente só vê horários dentro desta janela, e o último agendamento precisa terminar antes do fechamento. Dia sem horário aparece como agenda vazia.</p>
+
+    <% Admin::BarbershopUnitsController::WEEK_DAYS.each do |chave, nome| %>
+      <% janela = (@barbershop_unit.opening_hours || {})[chave] || {} %>
+      <div class="unit-day">
+        <span class="unit-day__name"><%= nome %></span>
+        <label class="unit-day__field">
+          <span>Abre</span>
+          <input type="time" name="barbershop_unit[opening_hours][<%= chave %>][open]" value="<%= janela['open'] %>">
+        </label>
+        <label class="unit-day__field">
+          <span>Fecha</span>
+          <input type="time" name="barbershop_unit[opening_hours][<%= chave %>][close]" value="<%= janela['close'] %>">
+        </label>
+      </div>
+    <% end %>
+  </fieldset>
+
+  <div class="admin-form__actions">
+    <%= form.submit @barbershop_unit.new_record? ? "Criar unidade" : "Salvar alterações", class: "admin-button" %>
+    <%= link_to "Cancelar", admin_barbershop_units_path, class: "admin-button admin-button--quiet" %>
+  </div>
+<% end %>

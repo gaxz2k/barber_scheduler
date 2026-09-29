@@ -38,17 +38,121 @@ RSpec:
   Enabled: true
 
 # --- Ajustes de casa -------------------------------------------------------
+#
+# `MultipleExpectations` e `ExampleLength` são excluídos por arquivo, e não
+# desligados. Nos specs de isolamento a segunda asserção não é um segundo
+# fato: "não grava" e "recusa porque é de outra barbearia" são o mesmo
+# comportamento visto de dois ângulos, e separá-las em dois exemplos custaria
+# duas montagens de cenário para provar a mesma coisa. A regra continua valendo
+# em todo o resto da suíte.
+
 RSpec/ExampleLength:
   Exclude:
     - "spec/models/appointment_spec.rb"
+    - "spec/requests/booking_unit_url_spec.rb"
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/barbershop_unit_spec.rb"
+    - "spec/models/opening_hours_spec.rb"
+    # O cadastro monta a casa, o login, a travessia de host e o painel. Cada
+    # passo é o mesmo cenário visto de um ângulo, e separá-los custaria quatro
+    # cadastros para provar uma coisa só: o dono entra na casa que criou.
+    - "spec/requests/barbershop_signup_spec.rb"
+    # O cenário de prontidão monta barbearia, unidade, serviço e profissional
+    # antes de perguntar o que falta. Quebrar isso em helpers tornaria o exemplo
+    # mais curto e ilegível: o que se prova é que os três juntos completam a
+    # prontidão, e o exemplo inteiro é o enunciado.
+    - "spec/models/barbershop_setup_readiness_spec.rb"
+    # O painel afirma pronto OU incompleto, e prova os dois lados do mesmo
+    # template: com a asserção positiva sozinha, uma home que não mostra nada
+    # quando falta também passaria.
+    - "spec/requests/admin/setup_readiness_spec.rb"
+    # O mesmo vale no CRUD: cadastrar e conferir o que foi gravado é uma única
+    # ação vista de dois ângulos.
+    - "spec/requests/admin/barbershop_units_spec.rb"
+    # O caminho do agendamento é uma cadeia e cada exemplo percorre um trecho
+    # inteiro dela, com requisição no meio: quebrar mediria método, não
+    # comportamento.
+    - "spec/requests/booking_unit_propagation_spec.rb"
+    # O caminho fundido monta um POST inteiro — serviço, unidade, profissional,
+    # horário, cliente — e confere o que foi gravado. Quebrar em duas
+    # expectativas mediria o RSpec, não o agendamento.
+    - "spec/requests/merged_booking_spec.rb"
     - "spec/services/**/*"
 
 Rails/SkipsModelValidations:
   Exclude:
     - "spec/models/appointment_spec.rb"
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/barbershop_unit_spec.rb"
     - "spec/requests/appointments_spec.rb"
 
 RSpec/MultipleExpectations:
   Exclude:
     - "spec/models/appointment_spec.rb"
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/barbershop_unit_spec.rb"
+    - "spec/models/opening_hours_spec.rb"
+    - "spec/models/barbershop_setup_readiness_spec.rb"
+    - "spec/requests/admin/setup_readiness_spec.rb"
+    - "spec/requests/admin/barbershop_units_spec.rb"
+    - "spec/requests/booking_unit_propagation_spec.rb"
+    - "spec/requests/merged_booking_spec.rb"
+    # O cadastro precisa checar o mesmo efeito por dois lados: o que a tela
+    # diz E o que o banco gravou. Um sem o outro passa: a tela pode estar
+    # correta com a casa criada, e o banco errado sem ninguém ver.
+    - "spec/requests/barbershop_signup_spec.rb"
+    # A marca tem três leituras do mesmo fato — monograma, nome curto e
+    # `title` — e a segunda expectativa confere que a marca antiga sumiu. São
+    # um exemplo, não três. A regra continua valendo no resto da suíte.
+    - "spec/requests/brand_identity_spec.rb"
     - "spec/services/**/*"
+
+# Os specs de unidade montam cenário com várias entidades — barbearia, duas
+# unidades, serviço, cliente, profissional — e um `let` por entidade passa do
+# limite. Reduzi-los pioraria a legibilidade sem melhorar a cobertura.
+RSpec/MultipleMemoizedHelpers:
+  Exclude:
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/opening_hours_spec.rb"
+    - "spec/requests/booking_unit_url_spec.rb"
+    - "spec/requests/booking_unit_propagation_spec.rb"
+    # O caminho fundido monta um POST com serviço, unidade, profissional,
+    # horário e cliente. Um `let` de hash também passaria do limite, e deixaria
+    # os exemplos lendo `cenario[:unidade]` em vez de `unidade`.
+    - "spec/requests/merged_booking_spec.rb"
+    - "spec/services/appointments/scheduler_unit_spec.rb"
+
+# O caminho do agendamento é uma cadeia, e cada exemplo percorre um trecho
+# inteiro dela: montar barbearia, unidade, serviço e profissional, fazer a
+# requisição e conferir o link. O que se prova em cada exemplo é a propagação
+# de ponta a ponta, e quebrar isso em passos isolados mediria método em vez de
+# comportamento. Por isso `booking_unit_propagation_spec.rb` está isento de
+# `ExampleLength` e `MultipleExpectations` nas seções acima.
+
+# `Appointments::Scheduler, "unidade obrigatória"` nomeia o serviço e a regra
+# testada. O caminho do arquivo já diz qual serviço é. O mesmo vale para
+# `Barbershop, "prontidão para atendimento"`: o arquivo diz qual model, e o
+# segundo argumento do `describe` é a regra de negócio coberta, não um método.
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - "spec/services/appointments/scheduler_unit_spec.rb"
+    - "spec/models/barbershop_setup_readiness_spec.rb"
+
+RSpec/DescribeMethod:
+  Exclude:
+    - "spec/services/appointments/scheduler_unit_spec.rb"
+    - "spec/models/barbershop_setup_readiness_spec.rb"
+
+RSpec/InstanceVariable:
+  Exclude:
+    # `test_unit_for` é memoizado por barbearia de propósito: a unidade precisa
+    # ser a mesma entre exemplos do mesmo arquivo, senão cada exemplo gravaria
+    # uma unidade nova e o próprio cenário mudaria entre eles.
+    - "spec/rails_helper.rb"
+
+# O spec de unidade descreve comportamento do par Barbershop/BarbershopUnit e
+# não de uma classe só, então `describe` recebe a descrição em vez da classe.
+RSpec/DescribeClass:
+  Exclude:
+    - "spec/models/appointment_unit_spec.rb"
+    - "spec/models/barbershop_unit_spec.rb"

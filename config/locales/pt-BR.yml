@@ -40,6 +40,14 @@ pt-BR:
       destroy:
         success: "Foto removida com sucesso."
         failure: "Falha ao remover foto."
+    barbershop_units:
+      create:
+        success: "Unidade cadastrada com sucesso."
+        failure: "Falha ao cadastrar unidade."
+      update:
+        success: "Unidade atualizada com sucesso."
+        failure: "Falha ao atualizar unidade."
+      not_found: "Unidade não encontrada."
   appointments:
     create:
       success: "Agendamento criado com sucesso."
@@ -64,6 +72,11 @@ pt-BR:
       already_signed_out: "Sessão encerrada com sucesso."
   activerecord:
     attributes:
+      barbershop:
+        slug:
+          # Aparece no formulário de configuração da barbearia, para o
+          # administrador entender por que o slug foi recusado.
+          invalid: "só pode conter letras minúsculas, números e hífens"
       appointment:
         # `status` é um enum, e o Rails resolve enums por
         # `activerecord.attributes.<model>.<enum>` com pluralização, ou seja,
@@ -82,3 +95,14 @@ pt-BR:
           completed:
             one: "Concluído"
             other: "Concluído"
+
+  barbershops:
+    criada: "Barbearia criada. Cadastre o expediente da unidade para começar a atender."
+    errors:
+      nome_obrigatorio: "Informe o nome da barbearia."
+      slug_curto: "O endereço público precisa ter ao menos 3 caracteres."
+      slug_em_uso: "Esse endereço público já está em uso."
+      email_obrigatorio: "Informe o e-mail do responsável."
+      email_em_uso: "Esse e-mail já tem cadastro."
+      senha_curta: "A senha precisa ter ao menos 8 caracteres."
+      senha_nao_bate: "A confirmação da senha não bate."

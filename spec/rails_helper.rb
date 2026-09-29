@@ -13,11 +13,154 @@ require 'factory_bot_rails'
 require 'shoulda-matchers'
 require 'mock_redis'
 
+# Matchers de tenant e qualquer outro arquivo em spec/support.
+Rails.root.glob('spec/support/**/*.rb').sort.each { |file| require file }
+
 Sidekiq::Testing.fake!
+
+# Contexto de tenant para os testes.
+#
+# Todo model com TenantScoped nasce ligado à barbearia de Current. Num request
+# spec isso vem do host da requisição; num model spec não há requisição, e o
+# registro ficaria órfã. Este módulo cria uma barbearia por exemplo e a liga em
+# Current, para que os specs existentes continuem testando o que já testavam —
+# `Professional.create!(name: "X")` segue funcionando — e passem a carregar
+# também o vínculo com a barbearia.
+#
+# O reset no fim é obrigatório. Sem ele, a barbearia do exemplo anterior vaza
+# para o seguinte, que é a forma mais sutil de um teste de isolamento passar
+# errado.
+module TenantTestHelpers
+  # O slug é único por exemplo: o hook de limpeza roda no fim da suíte, não
+  # entre exemplos, e um slug fixo esbarraria no índice único no segundo
+  # exemplo.
+  def test_barbershop
+    @test_barbershop ||= Barbershop.create!(
+      name: "Barbearia Teste",
+      slug: "barbearia-teste-#{SecureRandom.hex(4)}"
+    )
+  end
+
+  # Uma segunda barbearia, para os exemplos que provam o isolamento.
+  def other_barbershop
+    @other_barbershop ||= Barbershop.create!(
+      name: "Outra Barbearia",
+      slug: "outra-barbearia-#{SecureRandom.hex(4)}"
+    )
+  end
+
+  def switch_tenant_to(barbershop)
+    Current.barbershop = barbershop
+  end
+
+  # `Model.last` depois de uma requisição lê o escopo padrão, e o escopo padrão
+  # depende de Current — que o RequestStore::Middleware já limpou. Estas leituras acontecem
+  # dentro do tenant explicitamente, sem depender do estado global.
+  def tenant_records(model_class, tenant = nil)
+    model_class.for_barbershop(tenant || test_barbershop)
+  end
+
+  # Executa um bloco com Current ligada à barbearia, e restaura ao final. Para
+  # quando o exemplo precisa *criar* registros depois de uma requisição, e não
+  # apenas lê-los: a validação de TenantScoped olha Current, então só passar
+  # `barbershop:` no new não basta.
+  def within_tenant(barbershop = test_barbershop)
+    anterior = Current.barbershop
+    Current.barbershop = barbershop
+    yield
+  ensure
+    Current.barbershop = anterior
+  end
+
+  # Cria um Appointment válido, já com a unidade da barbearia em contexto.
+  #
+  # Existe porque a unidade é obrigatória e vários specs montam uma agenda para
+  # exercitar outra coisa — slots, duração, cache. Cada um deles declararia a
+  # mesma unidade, e o que precisam provar não é a unidade.
+  #
+  # A unidade vem da barbearia que está em `Current`, e não de `test_barbershop`
+  # fixo: o spec de isolamento cria duas barbearias e agenda na A, e usar a
+  # unidade de `test_barbershop` faria a validação recusar o agendamento como
+  # pertencente a outra barbearia.
+  def create_test_appointment!(**attributes)
+    alvo = Current.barbershop || test_barbershop
+    within_tenant(alvo) do
+      Appointment.create!(**attributes, barbershop_unit: attributes[:barbershop_unit] || test_unit_for(alvo))
+    end
+  end
+
+  # A unidade principal de uma barbearia, memoizada por barbearia, já com um
+  # expediente definido.
+  #
+  # O expediente 08:00–22:00 em todos os dias existe porque a disponibilidade
+  # passou a depender do horário de funcionamento. Sem ele, todo spec que
+  # verifica slots recebe uma agenda vazia e falha por um motivo que não é o
+  # que está testando. A janela é larga de propósito: o que esses specs
+  # precisam provar é duração, grade e conflito, e não o limite do expediente.
+  #
+  # A gravação acontece dentro de `within_tenant` porque a unidade é
+  # tenant-scoped: lida fora do contexto, ela não aparece.
+  def test_unit_for(barbershop)
+    @test_units ||= {}
+    @test_units[barbershop.id] ||= within_tenant(barbershop) do
+      unit = barbershop.unidades.order(:id).first
+      expediente = (0..6).to_h { |dia| [ dia.to_s, { "open" => "08:00", "close" => "22:00" } ] }
+      unit.update!(opening_hours: expediente)
+      unit
+    end
+  end
+
+  # O host que a requisição deve usar para resolver a barbearia pelo subdomínio.
+  def tenant_host(barbershop = test_barbershop)
+    "#{barbershop.slug}.example.com"
+  end
+
+  # Um admin amarrado a uma barbearia.
+  #
+  # Existe porque o painel exige as duas coisas: a flag `admin` E o vínculo com
+  # a loja que a requisição resolveu (ver `User#atende_esta_barbershop?`).
+  # `User.create!(admin: true)` sem `barbershop_id` faz sentido no banco — é o
+  # estado de uma conta recém-criada, ainda sem loja — mas não serve para
+  # entrar em painel nenhum, e um spec que faz isso está testando o redirecionamento
+  # de não-admin por acidente, nunca o painel.
+  def create_admin_for(barbershop = test_barbershop, email: nil)
+    User.create!(
+      email: email || "admin-#{barbershop.id}-#{SecureRandom.hex(4)}@example.com",
+      password: "password123",
+      admin: true,
+      barbershop_id: barbershop.id
+    )
+  end
+end
 
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
   config.include Shoulda::Matchers::ActiveRecord
+  config.include TenantTestHelpers
+
+  # Cada exemplo começa e termina com uma Current limpa. O contexto é montado
+  # no before, e não no around, porque um `let` lazy roda dentro do exemplo e
+  # já precisa de Current de pé para criar o registro.
+  config.around do |example|
+    Current.reset
+    example.run
+  ensure
+    Current.reset
+  end
+
+  config.before do
+    Current.barbershop = test_barbershop
+  end
+
+  # O host padrão das requisições de teste é o subdomínio da barbearia de
+  # teste, e não `www.example.com`: a resolução de tenant acontece no host, e
+  # `www.example.com` não tem subdomínio que identifique ninguém — todas as
+  # requisições dariam 404. Configurar aqui é melhor do que passar o header em
+  # cada spec, porque um request spec que esquece o header passa a falhar em vez
+  # de silenciosamente testar contra a raiz.
+  config.before(type: :request) do
+    host! tenant_host
+  end
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
