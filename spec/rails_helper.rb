@@ -114,6 +114,23 @@ module TenantTestHelpers
   def tenant_host(barbershop = test_barbershop)
     "#{barbershop.slug}.example.com"
   end
+
+  # Um admin amarrado a uma barbearia.
+  #
+  # Existe porque o painel exige as duas coisas: a flag `admin` E o vínculo com
+  # a loja que a requisição resolveu (ver `User#atende_esta_barbershop?`).
+  # `User.create!(admin: true)` sem `barbershop_id` faz sentido no banco — é o
+  # estado de uma conta recém-criada, ainda sem loja — mas não serve para
+  # entrar em painel nenhum, e um spec que faz isso está testando o redirecionamento
+  # de não-admin por acidente, nunca o painel.
+  def create_admin_for(barbershop = test_barbershop, email: nil)
+    User.create!(
+      email: email || "admin-#{barbershop.id}-#{SecureRandom.hex(4)}@example.com",
+      password: "password123",
+      admin: true,
+      barbershop_id: barbershop.id
+    )
+  end
 end
 
 RSpec.configure do |config|

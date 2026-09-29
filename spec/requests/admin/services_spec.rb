@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Admin::Services", type: :request do
-  let(:admin) { User.create!(email: "admin@example.com", password: "password123", admin: true) }
+  let(:admin) { create_admin_for }
   let(:service) { Service.create!(name: "Corte", duration_minutes: 30) }
   let(:professional) { Professional.create!(name: "Profissional Teste") }
   let(:client) { Client.create!(name: "Cliente Teste", phone: "11999999999") }

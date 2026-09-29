@@ -10,7 +10,7 @@ RSpec.describe "Painel administrativo de barbearia incompleta", type: :request d
   let!(:barbearia) { Barbershop.create!(name: "Barbearia Incompleta", slug: "incompleta-#{SecureRandom.hex(4)}") }
   let(:unidade) { within_tenant(barbearia) { barbearia.unidades.order(:id).first } }
 
-  let(:admin) { User.create!(email: "admin-setup@example.com", password: "password123", admin: true) }
+  let!(:admin) { create_admin_for(barbearia) }
 
   before { sign_in admin }
 

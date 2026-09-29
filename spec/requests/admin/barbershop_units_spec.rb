@@ -7,7 +7,7 @@ require "rails_helper"
 # são o mesmo.
 RSpec.describe "Administração de unidades", type: :request do
   let!(:barbearia) { Barbershop.create!(name: "Barbearia Unidades", slug: "unidades-#{SecureRandom.hex(4)}") }
-  let!(:admin) { User.create!(email: "admin-unidades@example.com", password: "password123", admin: true) }
+  let!(:admin) { create_admin_for(barbearia) }
   let(:unidade) { within_tenant(barbearia) { barbearia.unidades.order(:id).first } }
 
   before { sign_in admin }

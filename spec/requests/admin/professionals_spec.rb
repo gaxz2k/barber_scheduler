@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Admin::Professionals", type: :request do
-  let(:admin) { User.create!(email: "admin@example.com", password: "password123", admin: true) }
+  let(:admin) { create_admin_for }
   let(:professional) { Professional.create!(name: "Profissional Teste") }
 
   before { sign_in admin }

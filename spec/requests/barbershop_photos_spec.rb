@@ -2,7 +2,7 @@ require 'cgi'
 require 'rails_helper'
 
 RSpec.describe 'Barbershop photos', type: :request do
-  let(:admin) { User.create!(email: 'admin@example.com', password: 'password123', admin: true) }
+  let(:admin) { create_admin_for }
   let(:regular_user) { User.create!(email: 'user@example.com', password: 'password123') }
 
   before do
