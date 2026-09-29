@@ -2,6 +2,13 @@ Rails.application.routes.draw do
   devise_for :users
   root to: "appointments#index"
 
+  # A criação de uma barbearia. Fica antes de tudo porque é a única rota do
+  # sistema que roda sem tenant: a requisição chega sem host de barbearia e sem
+  # cookie, e é ela que produz o primeiro tenant. Por isso o controller não
+  # herda de `ApplicationController` — o `around_action :use_current_barbershop`
+  # do pai levantaria `RecordNotFound` antes de a tela aparecer.
+  resources :barbershops, only: [ :new, :create ]
+
   # Desvio de desenvolvimento para abrir uma barbearia sem subdomínio.
   #
   # `/t/barbearia-exemplo` serve a mesma tela que `barbearia-exemplo.localhost`,

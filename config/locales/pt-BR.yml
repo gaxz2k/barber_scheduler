@@ -95,3 +95,14 @@ pt-BR:
           completed:
             one: "Concluído"
             other: "Concluído"
+
+  barbershops:
+    criada: "Barbearia criada. Cadastre o expediente da unidade para começar a atender."
+    errors:
+      nome_obrigatorio: "Informe o nome da barbearia."
+      slug_curto: "O endereço público precisa ter ao menos 3 caracteres."
+      slug_em_uso: "Esse endereço público já está em uso."
+      email_obrigatorio: "Informe o e-mail do responsável."
+      email_em_uso: "Esse e-mail já tem cadastro."
+      senha_curta: "A senha precisa ter ao menos 8 caracteres."
+      senha_nao_bate: "A confirmação da senha não bate."

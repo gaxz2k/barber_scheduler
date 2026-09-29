@@ -80,9 +80,13 @@ Rails.application.configure do
   #
   # `.localhost` resolve para 127.0.0.1 em todo navegador moderno, sem editar
   # /etc/hosts — por isso é `.localhost` e não `.test` ou `.local`.
+  #
+  # O `localhost` sem subdomínio é o host do cadastro de barbearia: é a única
+  # tela do sistema que roda sem tenant, porque é ela que produz o primeiro. O
+  # `SubdomainResolver` não acha ninguém em `localhost` e a requisição chega ao
+  # controller — que herda de `ActionController::Base` justamente por isso.
   config.hosts << /.*\.localhost/
-  config.hosts << "senhor-r.localhost"
-  config.hosts << "exemplo.localhost"
+  config.hosts << "localhost"
   config.hosts << IPAddr.new("0.0.0.0/0")
   # A demonstração também é aberta de fora, por `slug.<ip>`, e o `0.0.0.0/0`
   # acima não cobre isso: ele casa com o IP puro, e o host com subdomínio é
