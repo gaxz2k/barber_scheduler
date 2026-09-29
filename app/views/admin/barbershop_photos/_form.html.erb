@@ -41,7 +41,7 @@
   <% if photo.persisted? && photo.image.attached? && photo.image.blob&.persisted? %>
     <div class="admin-current-image">
       <span>Imagem atual</span>
-      <%= image_tag photo.image, alt: photo.caption.presence || "Foto da Barbearia Senhor R" %>
+      <%= image_tag photo.image, alt: photo.caption.presence || "Foto da #{Current.barbershop.name}" %>
     </div>
   <% end %>
 

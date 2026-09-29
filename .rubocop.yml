@@ -53,6 +53,10 @@ RSpec/ExampleLength:
     - "spec/models/appointment_unit_spec.rb"
     - "spec/models/barbershop_unit_spec.rb"
     - "spec/models/opening_hours_spec.rb"
+    # O cadastro monta a casa, o login, a travessia de host e o painel. Cada
+    # passo é o mesmo cenário visto de um ângulo, e separá-los custaria quatro
+    # cadastros para provar uma coisa só: o dono entra na casa que criou.
+    - "spec/requests/barbershop_signup_spec.rb"
     # O cenário de prontidão monta barbearia, unidade, serviço e profissional
     # antes de perguntar o que falta. Quebrar isso em helpers tornaria o exemplo
     # mais curto e ilegível: o que se prova é que os três juntos completam a
@@ -93,6 +97,14 @@ RSpec/MultipleExpectations:
     - "spec/requests/admin/barbershop_units_spec.rb"
     - "spec/requests/booking_unit_propagation_spec.rb"
     - "spec/requests/merged_booking_spec.rb"
+    # O cadastro precisa checar o mesmo efeito por dois lados: o que a tela
+    # diz E o que o banco gravou. Um sem o outro passa: a tela pode estar
+    # correta com a casa criada, e o banco errado sem ninguém ver.
+    - "spec/requests/barbershop_signup_spec.rb"
+    # A marca tem três leituras do mesmo fato — monograma, nome curto e
+    # `title` — e a segunda expectativa confere que a marca antiga sumiu. São
+    # um exemplo, não três. A regra continua valendo no resto da suíte.
+    - "spec/requests/brand_identity_spec.rb"
     - "spec/services/**/*"
 
 # Os specs de unidade montam cenário com várias entidades — barbearia, duas

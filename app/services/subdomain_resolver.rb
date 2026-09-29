@@ -9,7 +9,7 @@
 class SubdomainResolver
   # Em desenvolvimento o host base precisa ser um domínio que o browser
   # resolva para 127.0.0.1 sem configuração: `localhost` já faz isso, e
-  # `senhor-r.localhost` também, que é o que permite abrir duas barbearias em
+  # `slug.localhost` também, que é o que permite abrir duas barbearias em
   # abas diferentes na mesma máquina.
   DEVELOPMENT_ROOT_HOST = "localhost"
   TEST_ROOT_HOST = "example.com"

@@ -2,27 +2,25 @@
 
 <main class="site-shell booking-page">
   <header class="customer-header">
-    <%= link_to root_path, class: "brand-lockup", aria: { label: "#{Current.barbershop.name}, início" } do %>
-      <span class="brand-mark" aria-hidden="true"><%= Current.barbershop.name.to_s.first(2).upcase %></span>
-      <span>
-        <span class="brand-name"><%= Current.barbershop.tagline.presence || "Barbearia" %></span>
-        <span class="brand-name brand-name--strong"><%= Current.barbershop.name %></span>
-      </span>
-    <% end %>
+    <%= render "shared/brand" %>
     <%= link_to @selected_service ? "Trocar serviço" : "Voltar", root_path, class: "back-link" %>
   </header>
 
-  <%= booking_progress(booking_steps(@booking_step)) %>
+  <%= booking_progress(booking_steps(@booking_step, com_unidade: @booking_step == :unit, unidade_ativa: @booking_step == :unit)) %>
 
   <%# O card estreito começa com a faixa dourada. É a assinatura do tratamento,
       e é o que separa a leitura de "formulário" da leitura de "página". %>
   <div class="booking-flow">
     <div class="booking-flow__head">
-      <% if @booking_step == :service %>
+      <% case @booking_step %>
+      <% when :unit %>
+        Escolha onde quer ser atendido
+      <% when :service %>
         Escolha um serviço
       <% else %>
         Escolha quem vai cuidar de você
       <% end %>
+
       <%= link_to "Voltar",
                   (params[:service] ? new_appointment_path(unidade_slug: params[:unidade_slug]) : root_path),
                   class: "button button--secondary" %>
@@ -51,6 +49,40 @@
           <% end %>
         </ul>
       </div>
+    <% end %>
+
+    <%# A escolha de unidade aparece aqui, e não só na home, porque um
+        `unidade_slug` inválido na URL é indistinguível de "não escolhido" para
+        `set_barbershop_unit`. Sem este bloco, o cliente que clica num link de
+        serviço com unidade trocada veria a lista de serviços da casa toda e só
+        descobriria o problema ao tentar confirmar, depois de digitar nome e
+        telefone. A lista de unidades da home e esta são o mesmo conjunto: as
+        duas usam `unidades_com_expediente`, que é o filtro que esconde a loja
+        que ainda não pode atender. %>
+    <% if @booking_step == :unit %>
+      <% if @booking_units.any? %>
+        <ul class="service-choice-list">
+          <% @booking_units.each_with_index do |unidade, index| %>
+            <li>
+              <%= link_to new_appointment_path(unidade_slug: unidade.slug,
+                                               service: params[:service],
+                                               professional: params[:professional]),
+                          class: "service-choice-card" do %>
+                <span class="service-choice-card__number"><%= format("%02d", index + 1) %></span>
+                <span class="service-choice-card__body">
+                  <strong><%= unidade.name %></strong>
+                  <span><%= unidade.address.presence || "Unidade da #{Current.barbershop.name}" %></span>
+                </span>
+                <span class="service-choice-card__arrow" aria-hidden="true">&rarr;</span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="booking-intro">
+          Nenhuma unidade está atendendo agora. Tente outra hora ou fale com a barbearia.
+        </p>
+      <% end %>
     <% end %>
 
     <% if @booking_step == :service %>
@@ -110,7 +142,7 @@
           <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
         </div>
       <% end %>
-    <% else %>
+    <% elsif @selected_service %>
       <%# Profissional e horário numa tela só.
           Escolher quem e escolher quando eram duas páginas, e a segunda só
           existia para mostrar a agenda de quem já tinha sido escolhido. Com a

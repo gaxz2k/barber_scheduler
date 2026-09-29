@@ -33,13 +33,22 @@ require Rails.root.join("db/seeds/support/demo_photo_factory")
 
 # ── A barbearia ─────────────────────────────────────────────────────────────
 #
-# O nome é "Studio Navalha" e não a Barbearia Senhor R de propósito: a vitrine
-# precisa parecer a barbearia de outro lugar, e não o registro de quem
-# desenvolve. Endereço genérico e telefone na faixa 9 de São Paulo, que é
-# reservada para ficção.
+# O nome é "Studio Navalha" e o slug é "barbearia-exemplo" porque a vitrine
+# precisa parecer a barbearia de outro lugar, e não o registro de quem desenvolve.
+# Endereço genérico e telefone na faixa 9 de São Paulo, que é reservada para
+# ficção.
+#
+# O `tagline` fica vazio de propósito. A home imprime o tagline acima do nome,
+# e o "Studio" do nome já diz o que a casa é — com "Barbearia" em cima, a marca
+# virava "Barbearia / Studio Navalha", que é a forma genérica que o usuário
+# pediu para tirar. Uma casa que quiser dizer outra coisa preenche o campo.
+#
+# O `find_or_create_by!` só roda o bloco na primeira vez, então trocar este
+# `tagline` não limpa a base de quem já rodou o seed. É o comportamento certo
+# para um seed idempotente: ele não sobrescreve dado de operação.
 demo = Barbershop.find_or_create_by!(slug: "barbearia-exemplo") do |shop|
   shop.name = "Studio Navalha"
-  shop.tagline = "Barbearia"
+  shop.tagline = nil
   shop.address = "Rua das Flores, 120 · Centro · São Paulo · SP"
   shop.phone = "(11) 98888-1200"
   shop.whatsapp = "(11) 98888-1200"

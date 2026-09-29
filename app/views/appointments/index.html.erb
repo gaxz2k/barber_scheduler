@@ -53,7 +53,7 @@
       onde fica, e como falar com alguém se não quiser agendar. %>
   <header class="customer-header customer-header--identity">
     <div class="barbershop-identity">
-      <span class="brand-mark" aria-hidden="true"><%= Current.barbershop.name.to_s.first(2).upcase %></span>
+      <span class="brand-mark" aria-hidden="true"><%= Current.barbershop.monograma %></span>
       <div>
         <% if Current.barbershop.tagline.present? %>
           <span class="brand-name"><%= Current.barbershop.tagline %></span>

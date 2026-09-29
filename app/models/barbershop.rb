@@ -83,12 +83,76 @@ class Barbershop < ApplicationRecord
     missing_setup.empty?
   end
 
+  # O monograma da marca. A vitrine é "Studio Navalha" e o layout antigo
+  # imprimia "Sr" fixo, que era a marca do barbershop original vazando para
+  # todo tenant. Derivar do nome é o que mantém a marca coesa sem exigir
+  # upload de logo em toda barbearia nova: as iniciais das duas primeiras
+  # palavras com sentido, ou as duas primeiras letras quando só há uma.
+  #
+  # "Sentido" é o filtro: "Casa do Navio" tem quatro palavras e a segunda é uma
+  # preposição, então pegar as duas primeiras dava "CD" — o C da Casa e o D do
+  # "do". Pular conectivos e artigos é o que faz o monograma cair em "CN".
+  def monograma
+    palavras = palavras_com_sentido
+    # Uma palavra só não tem segunda inicial para formar uma sigla: "Espaço"
+    # vira "E", e um monograma de uma letra não é sigla, é inicial. Nesses casos
+    # as duas primeiras letras da palavra são melhores ("ES") e é o que o
+    # "Sr" fixo fazia.
+    return name.to_s.first(2).upcase if palavras.length < 2
+
+    palavras.first(2).filter_map { |p| p[0] }.join.upcase
+  end
+
+  # As palavras do nome que carregam sentido, na ordem em que aparecem.
+  #
+  # "Casa do Navio" precisa devolver "CN" e não "CD". Preposição e artigo não
+  # são iniciais de nada: quem lê um monograma procura a palavra que nomeia, e
+  # "do" não nomeia. O mesmo vale para `nome_curto`, que já precisava tratar
+  # conectivos para não devolver "da Vila" — as duas leituras usam a mesma
+  # lista, e é por isso que ela é um método e não duas cópias.
+  def palavras_com_sentido
+    name.to_s.split(/\s+/).reject { |p| CONECTIVOS.include?(p.downcase) }
+  end
+
+  # O nome sem o qualificador de tipo ("Barbearia", "Studio"), para o cabeçalho
+  # público. "Studio Navalha" não precisa repetir "Barbearia" logo acima.
+  def nome_curto
+    return name if name.to_s.split(/\s+/).length < 2
+
+    # O qualificador pode ocupar mais de uma palavra ("Studio de Cabelo", "Salão
+    # da Vila"), então o corte é posicional: procura a primeira palavra que
+    # não seja parte de um qualificador conhecido e joga fora o prefixo até
+    # ali. Filtrar palavra a palavra isoladamente daria "de Cabelo" e "da Vila",
+    # que é pior do que não cortar nada.
+    primeiro = name.to_s.split(/\s+/).index { |p| !qualificador?(p) }
+    return name if primeiro.nil? || primeiro.zero?
+
+    name.to_s.split(/\s+/).drop(primeiro).join(" ")
+  end
+
+  # As preposições e artigos que não são inicial de nada nem parte de um nome.
+  # Servem a duas leituras: `monograma` pula para não pegar o D de "Casa do
+  # Navio", e `nome_curto` pula para não devolver "da Vila" em "Salão da Vila".
+  # Uma lista só porque são a mesma gramática; duas listas divergiriam no
+  # primeiro nome que usasse uma palavra de cada.
+  CONECTIVOS = %w[de da do das dos o a os as].freeze
+  private_constant :CONECTIVOS
+
+  def qualificador?(palavra)
+    normalizada = palavra.downcase
+    QUALIFICADORES.include?(normalizada) || CONECTIVOS.include?(normalizada)
+  end
+  private :qualificador?
+
+  QUALIFICADORES = %w[barbearia barbearias studio salao salão].freeze
+  private_constant :QUALIFICADORES
+
   def to_param
     slug
   end
 
   # Busca pelo slug exato. É o que a resolução de subdomínio usa, e por isso
-  # não aceita o slug parcial: "senior-r" não pode devolver a "senhor-r-filial".
+  # não aceita o slug parcial: "casa-alfa" não pode devolver a "casa-alfa-filial".
   class << self
     def for_host(slug)
       return nil if slug.blank?

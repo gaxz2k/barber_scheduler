@@ -9,19 +9,19 @@ RSpec.describe SubdomainResolver do
   # Nomes de host que a aplicação aceita em produção: um subdomínio de cliente
   # mais o domínio base, e os hosts de desenvolvimento.
   let(:app_host) { "barbearia.app" }
-  let(:dev_root) { "senhor-r.localhost" }
+  let(:dev_root) { "casa-alfa.localhost" }
 
   describe ".call" do
     it "acha a barbearia pelo subdomínio" do
-      barbershop = Barbershop.create!(name: "Senhor R", slug: "senhor-r")
+      barbershop = Barbershop.create!(name: "Casa Alfa", slug: "casa-alfa")
 
-      achado = described_class.new("senhor-r.#{app_host}", app_host).call
+      achado = described_class.new("casa-alfa.#{app_host}", app_host).call
 
       expect(achado).to eq(barbershop)
     end
 
     it "acha a barbearia em localhost de desenvolvimento" do
-      barbershop = Barbershop.create!(name: "Senhor R", slug: "senhor-r")
+      barbershop = Barbershop.create!(name: "Casa Alfa", slug: "casa-alfa")
 
       achado = described_class.new(dev_root, dev_host).call
 
@@ -29,7 +29,7 @@ RSpec.describe SubdomainResolver do
     end
 
     it "devolve nil para um subdomínio que não existe" do
-      Barbershop.create!(name: "Senhor R", slug: "senhor-r")
+      Barbershop.create!(name: "Casa Alfa", slug: "casa-alfa")
 
       achado = described_class.new("inexistente.#{app_host}", app_host).call
 
@@ -40,7 +40,7 @@ RSpec.describe SubdomainResolver do
     end
 
     it "devolve nil para a raiz sem subdomínio em produção" do
-      Barbershop.create!(name: "Senhor R", slug: "senhor-r")
+      Barbershop.create!(name: "Casa Alfa", slug: "casa-alfa")
 
       achado = described_class.new(app_host, app_host).call
 
@@ -60,21 +60,21 @@ RSpec.describe SubdomainResolver do
     end
 
     it "ignora a porta ao resolver o subdomínio" do
-      barbershop = Barbershop.create!(name: "Senhor R", slug: "senhor-r")
+      barbershop = Barbershop.create!(name: "Casa Alfa", slug: "casa-alfa")
 
-      achado = described_class.new("senhor-r.#{app_host}:3000", app_host).call
+      achado = described_class.new("casa-alfa.#{app_host}:3000", app_host).call
 
       expect(achado).to eq(barbershop)
     end
 
     it "não deixa o subdomínio de outra barbershop escapar por prefixo" do
-      Barbershop.create!(name: "Senhor R", slug: "senhor-r")
-      alvo = Barbershop.create!(name: "Senhor R Filial", slug: "senhor-r-filial")
+      Barbershop.create!(name: "Casa Alfa", slug: "casa-alfa")
+      alvo = Barbershop.create!(name: "Casa Central Filial", slug: "casa-alfa-filial")
 
-      achado = described_class.new("senhor-r-filial.#{app_host}", app_host).call
+      achado = described_class.new("casa-alfa-filial.#{app_host}", app_host).call
 
       expect(achado).to eq(alvo)
-      expect(achado).not_to eq(Barbershop.find_by(slug: "senhor-r"))
+      expect(achado).not_to eq(Barbershop.find_by(slug: "casa-alfa"))
     end
   end
 

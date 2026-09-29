@@ -17,6 +17,15 @@ class AppointmentsController < ApplicationController
   before_action :set_booking_collections, only: [ :index, :new, :create, :availability ]
   before_action :set_booking_errors, only: [ :new, :create ]
   before_action :set_barbershop_unit, only: [ :index, :new, :create, :availability ]
+  # A lista de unidades atende a home e a tela de agendamento, e precisa ficar
+  # pronta nas duas. Ela morava no corpo de `index` e, quando `booking_step`
+  # passou a ter a etapa `:unit` — para o caso de `unidade_slug` inválido, que
+  # `set_barbershop_unit` devolve `nil` igual a "não escolhido" — a tela do `new`
+  # passou a receber `@booking_units` nil e a quebrar com `any?` em nil.
+  #
+  # Só aparece quando a URL não traz unidade: com `unidade_slug` a escolha já
+  # está feita, e repetir a lista seria pedir a mesma resposta duas vezes.
+  before_action :set_booking_units, only: [ :index, :new, :create ]
   # A agenda é lida pela view em toda renderização de `new`, e nem todo caminho
   # passa por `prepare_booking` — um erro de validação monta `@appointment` à
   # mão. Sem este piso, a view receberia nil e quebraria ao chamar `each`, com
@@ -27,14 +36,6 @@ class AppointmentsController < ApplicationController
     @booking_step = :service
     @barbershop_photos = BarbershopPhoto.published.limit(BarbershopPhoto::MAX_PUBLISHED_PHOTOS)
     @ultimo_agendamento = ultimo_agendamento
-    # Na raiz não há unidade na URL, e é a raiz que o cliente chega. A lista de
-    # unidades é o que falta para ele escolher onde quer ser atendido: sem
-    # esta etapa, todo link de serviço levaria a uma URL sem `unidade_slug` e o
-    # agendamento seria recusado no fim do caminho.
-    #
-    # Só aparece quando a URL não traz unidade. Com `unidade_slug` a escolha já
-    # está feita, e repetir a lista seria pedir a mesma resposta duas vezes.
-    @booking_units = @barbershop_unit.blank? ? unidades_com_expediente : []
   end
 
   def new
@@ -241,6 +242,13 @@ class AppointmentsController < ApplicationController
     @barbershop_unit = BarbershopUnit.find_by(barbershop_id: Current.barbershop&.id, slug: slug)
   end
 
+  # As unidades que podem receber o cliente agora: as que têm expediente em
+  # algum dia. Uma loja sem horário não aparece nem para ser escolhida, porque
+  # escolhê-la só adiaria a recusa do agendamento até o fim do caminho.
+  def set_booking_units
+    @booking_units = @barbershop_unit.blank? ? unidades_com_expediente : []
+  end
+
   def set_booking_collections
     @services = Service.order(:name)
     @professionals = Professional.order(:name)
@@ -325,6 +333,13 @@ class AppointmentsController < ApplicationController
   # escolhido, e mostrava uma lista de horários sem foto e sem a comparação
   # que o cliente fez para chegar ali.
   def booking_step
+    # A unidade vem primeiro, e é a única etapa que pode faltar mesmo com a
+    # URL já escolhida: um `unidade_slug` inválido devolve `nil` de
+    # `set_barbershop_unit`, e sem esta guarda a tela caía direto na lista de
+    # serviços. O cliente veria serviços de uma unidade que ele não escolheu, e
+    # o agendamento seria recusado só no fim do caminho — depois de preencher
+    # nome e telefone.
+    return :unit if @barbershop_unit.blank? && unidades_com_expediente.many?
     return :service if @selected_service.blank?
 
     :professional
