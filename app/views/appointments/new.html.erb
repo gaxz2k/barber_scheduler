@@ -158,6 +158,19 @@
       <div class="booking-selection-summary">
         <span>Serviço escolhido</span>
         <strong><%= @selected_service.name %> · <%= @selected_service.duration_minutes %> min</strong>
+        <% if @selected_extra_services.any? %>
+          <span>
+            + <%= @selected_extra_services.map(&:name).join(", ") %>
+          </span>
+        <% end %>
+        <% if @selected_extra_services.any? || @selected_service.price_cents.to_i.positive? %>
+          <span class="booking-selection-summary__total">
+            Total: <%= booking_total_duration_minutes %> min
+            <% if booking_total_price_cents.positive? %>
+              · <%= number_to_currency(booking_total_price_cents / 100.0) %>
+            <% end %>
+          </span>
+        <% end %>
         <% if @selected_professional %>
           <%# A escolha saiu do "com" da lista de serviços, e a tela mostra só
               a agenda de quem foi escolhido. O link de volta refaz a comparação
@@ -170,6 +183,34 @@
           </span>
         <% end %>
       </div>
+
+      <% if (@services - [ @selected_service ]).any? %>
+        <fieldset class="form-section">
+          <legend><span class="form-step">+</span> Adicionar serviço (opcional)</legend>
+          <%= form_with url: new_appointment_path(service: @selected_service.id,
+                                                  profissional: params[:professional],
+                                                  date: @selected_date&.iso8601,
+                                                  unidade_slug: params[:unidade_slug]),
+                        method: :get, class: "booking-inline-form", data: { turbo: false } do %>
+            <% (@services - [ @selected_service ]).each do |extra| %>
+              <label class="admin-toggle">
+                <%= check_box_tag "extra_service_ids[]", extra.id,
+                      @selected_extra_services.map(&:id).include?(extra.id) %>
+                <span>
+                  <strong><%= extra.name %></strong>
+                  <small>
+                    <%= extra.duration_minutes %> min
+                    <% if extra.price_cents.to_i.positive? %>
+                      · <%= number_to_currency(extra.price_cents / 100.0) %>
+                    <% end %>
+                  </small>
+                </span>
+              </label>
+            <% end %>
+            <%= submit_tag "Atualizar resumo", class: "button button--secondary" %>
+          <% end %>
+        </fieldset>
+      <% end %>
 
       <fieldset class="form-section">
         <legend><span class="form-step">01</span> Escolha a data</legend>
@@ -184,6 +225,9 @@
               max: (Date.current + 1.year).iso8601,
               required: true,
               class: "select-field" %>
+          <% @selected_extra_services.each do |extra| %>
+            <%= hidden_field_tag "extra_service_ids[]", extra.id, multiple: true %>
+          <% end %>
           <%= form.submit "Ver agenda", class: "button button--secondary" %>
         <% end %>
       </fieldset>
@@ -200,6 +244,9 @@
               data válidos" tendo escolhido tudo. %>
           <%= form.hidden_field :service_id, value: @selected_service.id %>
           <%= form.hidden_field :date, value: @selected_date&.iso8601 %>
+          <% @selected_extra_services.each do |extra| %>
+            <%= hidden_field_tag "appointment[extra_service_ids][]", extra.id, multiple: true %>
+          <% end %>
 
           <fieldset class="form-section">
             <legend><span class="form-step">02</span> Escolha o profissional e o horário</legend>

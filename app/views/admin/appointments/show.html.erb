@@ -6,6 +6,21 @@
 
   <div class="admin-detail-row"><span>Profissional</span><span><%= @appointment.professional.name %></span></div>
   <div class="admin-detail-row"><span>Serviço</span><span><%= @appointment.service.name %></span></div>
+  <% if @appointment.extra_services.any? %>
+    <div class="admin-detail-row">
+      <span>Serviços extras</span>
+      <span><%= @appointment.extra_services.map(&:name).join(", ") %></span>
+    </div>
+    <div class="admin-detail-row">
+      <span>Total</span>
+      <span>
+        <%= @appointment.total_duration_minutes %> min
+        <% if @appointment.total_price_cents.positive? %>
+          · <%= number_to_currency(@appointment.total_price_cents / 100.0) %>
+        <% end %>
+      </span>
+    </div>
+  <% end %>
   <div class="admin-detail-row"><span>Início</span><span><%= l(@appointment.start_at, format: :long) %></span></div>
   <div class="admin-detail-row"><span>Fim</span><span><%= l(@appointment.end_at, format: :long) %></span></div>
   <div class="admin-detail-row"><span>Status</span><span class="admin-badge"><%= @appointment.status_label %></span></div>

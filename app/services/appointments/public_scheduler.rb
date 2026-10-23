@@ -4,11 +4,12 @@ module Appointments
       new(...).call
     end
 
-    def initialize(name:, phone:, professional:, service:, start_at:, barbershop_unit:, customer_note: nil)
+    def initialize(name:, phone:, professional:, service:, start_at:, barbershop_unit:, customer_note: nil, extra_services: [])
       @name = name.to_s.strip
       @phone = phone.to_s.gsub(/\D/, "")
       @professional = professional
       @service = service
+      @extra_services = Array(extra_services).compact
       @start_at = start_at
       @barbershop_unit = barbershop_unit
       @customer_note = customer_note.presence
@@ -31,7 +32,8 @@ module Appointments
           service: @service,
           start_at: @start_at,
           barbershop_unit: @barbershop_unit,
-          customer_note: @customer_note
+          customer_note: @customer_note,
+          extra_services: @extra_services
         )
         raise ActiveRecord::Rollback unless scheduler_result.persisted?
       end

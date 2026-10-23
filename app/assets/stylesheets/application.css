@@ -1009,6 +1009,11 @@ strong,
   font-weight: 800;
 }
 
+.booking-selection-summary__total {
+  font-weight: 800;
+  color: var(--gold-deep);
+}
+
 .professional-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

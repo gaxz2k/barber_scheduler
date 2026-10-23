@@ -156,3 +156,8 @@ RSpec/DescribeClass:
   Exclude:
     - "spec/models/appointment_unit_spec.rb"
     - "spec/models/barbershop_unit_spec.rb"
+    # O serviço é testado em combinação com serviços extras — o par
+    # (Scheduler, extras) e (Calculator, extras), não a classe isolada — e o
+    # `describe` nomeia o cenário, como em `scheduler_unit_spec.rb`.
+    - "spec/services/appointments/scheduler_multiple_services_spec.rb"
+    - "spec/services/available_slots/calculator_multiple_services_spec.rb"
