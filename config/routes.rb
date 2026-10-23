@@ -27,6 +27,13 @@ Rails.application.routes.draw do
   # a tela de uma barbearia.
   unless Rails.env.production?
     get "/t/:slug", to: "appointments#index", as: :tenant_path
+
+    # A vitrine da fundação visual (fase 1 do redesign): tokens, componentes,
+    # ícones e ilustrações, lado a lado, fora de qualquer tenant. Mesma regra
+    # do desvio acima — só existe fora de produção, porque é ferramenta de
+    # quem constrói a tela, não tela que um cliente de barbearia deveria
+    # encontrar.
+    get "/style-guide", to: "style_guide#index", as: :style_guide
   end
 
   namespace :admin do

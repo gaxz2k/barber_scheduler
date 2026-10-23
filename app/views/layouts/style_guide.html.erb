@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title>Guia de estilo — fundação visual</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%# Layout mínimo e isolado de propósito: só carrega os dois arquivos
+        novos (tokens + componentes), nunca o `application.css` antigo, para
+        a aprovação visual não misturar as duas identidades na mesma tela. %>
+    <%= stylesheet_link_tag "design_tokens", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "design_components", "data-turbo-track": "reload" %>
+    <style>
+      /* Estilos exclusivos desta página de vitrine — não são componente
+         reutilizável, só a grade que organiza a demonstração. */
+      body {
+        margin: 0;
+        font-family: var(--dt-font-body);
+        color: var(--dt-ink);
+        background: var(--dt-ice-50);
+      }
+
+      .sg-section {
+        padding: var(--dt-space-7) var(--dt-space-6);
+        max-width: 72rem;
+        margin: 0 auto;
+      }
+
+      .sg-section h2 {
+        font-family: var(--dt-font-display);
+        font-size: var(--dt-text-2xl);
+        margin-bottom: var(--dt-space-5);
+      }
+
+      .sg-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: var(--dt-space-4);
+      }
+
+      .sg-swatch {
+        border-radius: var(--dt-radius-md);
+        padding: var(--dt-space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--dt-space-1);
+        box-shadow: var(--dt-shadow-card);
+      }
+
+      .sg-swatch__name {
+        font-weight: var(--dt-weight-bold);
+        font-size: var(--dt-text-sm);
+      }
+
+      .sg-swatch__hex {
+        font-family: var(--dt-font-mono);
+        font-size: var(--dt-text-xs);
+      }
+
+      .sg-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--dt-space-4);
+        align-items: center;
+        margin-bottom: var(--dt-space-4);
+      }
+
+      .sg-icon-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--dt-space-2);
+        padding: var(--dt-space-4);
+        background: var(--dt-ice-0);
+        border: 1px solid var(--dt-line);
+        border-radius: var(--dt-radius-md);
+        font-size: var(--dt-text-xs);
+        color: var(--dt-ink-soft);
+      }
+    </style>
+  </head>
+  <body data-theme="style-guide">
+    <%= yield %>
+  </body>
+</html>
