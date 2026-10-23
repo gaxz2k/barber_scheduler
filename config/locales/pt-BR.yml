@@ -48,6 +48,10 @@ pt-BR:
         success: "Unidade atualizada com sucesso."
         failure: "Falha ao atualizar unidade."
       not_found: "Unidade não encontrada."
+    shop_settings:
+      update:
+        success: "Configuração salva com sucesso."
+        failure: "Falha ao salvar a configuração."
   appointments:
     create:
       success: "Agendamento criado com sucesso."

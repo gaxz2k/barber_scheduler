@@ -31,11 +31,18 @@ class AppointmentsController < ApplicationController
   # mão. Sem este piso, a view receberia nil e quebraria ao chamar `each`, com
   # um NoMethodError no lugar do erro que o cliente deveria ler.
   before_action :set_agenda_padrao, only: [ :new, :create ]
+  # O agendamento online pode ser pausado pelo dono. `index` continua
+  # renderizando — é a vitrine, e o cliente precisa ver o aviso e o contato —
+  # mas o fluxo em si (`new`, `create`, `availability`) é recusado com 423
+  # Locked: a loja existe e está ligada, só esta funcionalidade está
+  # temporariamente fora do ar, que é exatamente o que o código HTTP descreve.
+  before_action :ensure_online_booking_enabled!, only: [ :new, :create, :availability ]
 
   def index
     @booking_step = :service
     @barbershop_photos = BarbershopPhoto.published.limit(BarbershopPhoto::MAX_PUBLISHED_PHOTOS)
     @ultimo_agendamento = ultimo_agendamento
+    @online_booking_open = Current.barbershop.online_booking_open?
   end
 
   def new
@@ -194,6 +201,31 @@ class AppointmentsController < ApplicationController
     BarbershopUnit.for_barbershop(Current.barbershop)
                   .select(&:serves_on_any_day?)
                   .sort_by(&:name)
+  end
+
+  # Recusa o fluxo de agendamento quando o dono pausou o agendamento online.
+  #
+  # 423 Locked, e não 403 ou 503: a barbearia existe e está ligada, o
+  # bloqueio é intencional e específico desta funcionalidade — exatamente o
+  # que o código descreve. `availability` é consumido por JS (fetch) e
+  # devolve JSON; `new`/`create` são navegação normal e devolvem a mesma tela
+  # de erro que qualquer outro `render :new`.
+  def ensure_online_booking_enabled!
+    return if Current.barbershop.online_booking_open?
+
+    mensagem = Current.barbershop.online_booking_pause_message
+
+    if action_name == "availability"
+      render json: { error: mensagem }, status: :locked
+    else
+      @booking_step = :paused
+      @appointment = Appointment.new
+      @appointment.errors.add(:base, mensagem)
+      @available_slots = []
+      @agenda_por_profissional = []
+      @booking_errors = [ mensagem ]
+      render :new, status: :locked
+    end
   end
 
   # O último agendamento do cliente, para oferecer o atalho de refazer.

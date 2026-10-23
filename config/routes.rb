@@ -38,6 +38,7 @@ Rails.application.routes.draw do
     # A unidade é onde o horário de funcionamento se cadastra, e é por ela que
     # `missing_setup` aponta quando o expediente falta.
     resources :barbershop_units, only: [ :index, :new, :create, :edit, :update ]
+    resource :shop_setting, only: [ :edit, :update ]
   end
 
   get "appointments/confirmation/:token", to: "appointments#confirmation", as: :appointment_confirmation

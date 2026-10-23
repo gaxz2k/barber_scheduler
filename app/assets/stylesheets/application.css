@@ -314,6 +314,15 @@ strong,
   margin-bottom: 0.35rem;
 }
 
+/* O aviso de pausa reutiliza a moldura do aviso de antecedência, mas com
+ * borda sólida e cor de alerta: é uma restrição ativa do dono, e não uma
+ * regra permanente do fluxo — a diferença visual evita que o cliente leia
+ * "pausado" com o mesmo peso de "24 horas de antecedência". */
+.booking-notice--alert {
+  border-style: solid;
+  border-color: var(--ink-soft);
+}
+
 /* ── A lista de serviços com o seletor "COM" ────────────────────────────
  *
  * A referência traz uma lista, com "com" (quem faz) à esquerda e "AGENDAR"
