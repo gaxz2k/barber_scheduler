@@ -52,6 +52,35 @@ RSpec.describe Appointment, type: :model do
       expect(appointment.confirmation_expires_at).to be_present
     end
 
+    it "accepts an optional note for the professional" do
+      appointment = described_class.create!(
+        professional: professional,
+        client: client,
+        service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
+        start_at: start_at,
+        end_at: start_at + Scheduling::SLOT_DURATION,
+        customer_note: "Chegar 10 minutos antes"
+      )
+
+      expect(appointment.customer_note).to eq("Chegar 10 minutos antes")
+    end
+
+    it "rejects a note over 280 characters" do
+      appointment = described_class.new(
+        professional: professional,
+        client: client,
+        service: service,
+        barbershop_unit: test_unit_for(test_barbershop),
+        start_at: start_at,
+        end_at: start_at + Scheduling::SLOT_DURATION,
+        customer_note: "a" * 281
+      )
+
+      expect(appointment).not_to be_valid
+      expect(appointment.errors[:customer_note]).to include("é muito longo (máximo: 280 caracteres)")
+    end
+
     it "revokes the confirmation when the appointment becomes terminal" do
       appointment = described_class.create!(
         professional: professional,

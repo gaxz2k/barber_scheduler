@@ -364,6 +364,32 @@ RSpec.describe "Customer booking experience", type: :request do
       expect(cliente.name).to eq("Maria da Silva")
     end
 
+    it "stores the optional note for the professional" do
+      service
+      professional
+      params = valid_params
+      params[:appointment][:customer_note] = "Chegarei alguns minutos atrasado"
+
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
+
+      expect(response).to have_http_status(:redirect)
+      agendamento = within_tenant { tenant_records(Appointment).last }
+      expect(agendamento.customer_note).to eq("Chegarei alguns minutos atrasado")
+    end
+
+    it "rejects a note over 280 characters without creating the appointment" do
+      service
+      professional
+      params = valid_params
+      params[:appointment][:customer_note] = "a" * 281
+
+      expect {
+        post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
+      }.not_to change_tenant_count(Appointment)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
     it "shows validation errors without creating a client" do
       service
       professional

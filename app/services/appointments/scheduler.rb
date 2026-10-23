@@ -15,12 +15,13 @@ module Appointments
     # A unidade do profissional não é usada como fonte: o profissional pode
     # atender em várias unidades, e quem sabe onde o cliente vai é a escolha
     # dele, não o cadastro do profissional.
-    def initialize(client:, professional:, service:, start_at:, barbershop_unit:, **_ignored)
+    def initialize(client:, professional:, service:, start_at:, barbershop_unit:, customer_note: nil, **_ignored)
       @client = client
       @professional = professional
       @service = service
       @start_at = start_at
       @barbershop_unit = barbershop_unit
+      @customer_note = customer_note
     end
 
     def call
@@ -65,7 +66,8 @@ module Appointments
         service: @service,
         barbershop_unit: @barbershop_unit,
         start_at: @start_at,
-        end_at: end_at
+        end_at: end_at,
+        customer_note: @customer_note
       )
 
       unless Scheduling.valid_slot?(@start_at)

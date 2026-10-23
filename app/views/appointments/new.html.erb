@@ -276,6 +276,12 @@
                   required: true,
                   autocomplete: "tel",
                   placeholder: "(19) 99999-8888" %>
+            <%= form.label :customer_note, "Mensagem para o profissional (opcional)", class: "field-label-spaced" %>
+            <%= form.text_area :customer_note,
+                  value: params.dig(:appointment, :customer_note),
+                  maxlength: 280,
+                  rows: 3,
+                  placeholder: "Alguma preferência ou observação para o atendimento?" %>
           </fieldset>
 
           <%= form.submit "Confirmar agendamento", class: "button button--primary button--large button--full" %>
