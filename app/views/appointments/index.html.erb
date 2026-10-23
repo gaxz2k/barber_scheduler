@@ -79,6 +79,17 @@
 
   <%= booking_progress(booking_steps(:unit, com_unidade: @booking_units.any?, unidade_ativa: @booking_units.any?)) %>
 
+  <% unless @online_booking_open %>
+    <div class="booking-notice booking-notice--alert" role="status">
+      <strong>Agendamento online pausado</strong>
+      <%= Current.barbershop.online_booking_pause_message %>
+      <% if Current.barbershop.whatsapp_link.present? %>
+        Fale com a equipe pelo
+        <%= link_to "WhatsApp", Current.barbershop.whatsapp_link, rel: "noopener" %>.
+      <% end %>
+    </div>
+  <% end %>
+
   <% if @booking_units.any? %>
     <% if @ultimo_agendamento.present? %>
       <div class="booking-again">

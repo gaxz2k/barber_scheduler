@@ -23,6 +23,7 @@ class Barbershop < ApplicationRecord
   has_many :appointments, dependent: :restrict_with_error
   has_many :barbershop_photos, dependent: :restrict_with_error
   has_many :users, dependent: :nullify
+  has_one :shop_setting, dependent: :destroy
 
   has_one_attached :logo
 
@@ -187,6 +188,18 @@ class Barbershop < ApplicationRecord
 
     completo = numero.start_with?(CODIGO_DO_PAIS) ? numero : "#{CODIGO_DO_PAIS}#{numero}"
     "https://wa.me/#{completo}"
+  end
+
+  # Uma barbearia sem `shop_setting` ainda nunca abriu a tela de
+  # configurações, e o padrão é aceitar agendamento — pausar é um ato
+  # explícito do dono, não o estado em que o sistema nasce.
+  def online_booking_open?
+    shop_setting.nil? || shop_setting.online_booking_enabled
+  end
+
+  def online_booking_pause_message
+    shop_setting&.online_booking_message.presence ||
+      "Agendamento online pausado no momento. Fale com a equipe para marcar seu horário."
   end
 
   private

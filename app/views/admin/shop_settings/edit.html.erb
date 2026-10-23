@@ -1,0 +1,37 @@
+<% content_for :title, "Agendamento online | Admin" %>
+
+<section class="admin-detail-card">
+  <div class="admin-kicker">Configurações</div>
+  <h1>Agendamento online</h1>
+
+  <%= form_with model: @shop_setting, url: admin_shop_setting_path, method: :patch, class: "admin-form" do |form| %>
+    <% if @shop_setting.errors.any? %>
+      <div class="admin-alert admin-alert--error" id="error_explanation" role="alert">
+        <strong><%= pluralize(@shop_setting.errors.count, "erro") %> impediram a configuração de ser salva:</strong>
+        <ul>
+          <% @shop_setting.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <label class="admin-toggle">
+      <%= form.check_box :online_booking_enabled %>
+      <span>
+        <strong>Aceitar agendamento online</strong>
+        <small>Desmarque para pausar temporariamente novos agendamentos pela vitrine.</small>
+      </span>
+    </label>
+
+    <div class="admin-form__group">
+      <%= form.label :online_booking_message, "Mensagem exibida quando o agendamento estiver pausado" %>
+      <%= form.text_area :online_booking_message, rows: 3,
+            placeholder: "Agendamento online pausado no momento. Fale com a equipe para marcar seu horário." %>
+    </div>
+
+    <div class="admin-form__actions">
+      <%= form.submit "Salvar", class: "admin-button" %>
+    </div>
+  <% end %>
+</section>
