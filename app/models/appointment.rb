@@ -12,6 +12,7 @@ class Appointment < ApplicationRecord
   before_validation :set_confirmation_expiration, on: :create
 
   validates :start_at, :end_at, presence: true
+  validates :customer_note, length: { maximum: 280 }
 
   # A agenda de uma unidade. Sem argumento devolve tudo da barbearia, que é o
   # que o painel usa; com argumento, só a unidade.

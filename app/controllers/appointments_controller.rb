@@ -100,7 +100,8 @@ class AppointmentsController < ApplicationController
                  professional: @selected_professional,
                  service: @selected_service,
                  start_at: booking_start_at,
-                 barbershop_unit: @barbershop_unit
+                 barbershop_unit: @barbershop_unit,
+                 customer_note: booking_params[:customer_note]
                )
     else
                Appointment.new.tap { |appointment| appointment.errors.add(:base, "Escolha um horário disponível.") }
@@ -396,7 +397,9 @@ class AppointmentsController < ApplicationController
     appointment_params = params[:appointment]
     return ActionController::Parameters.new unless appointment_params.is_a?(ActionController::Parameters)
 
-    appointment_params.permit(:service_id, :professional_id, :date, :start_at, :client_name, :client_phone)
+    appointment_params.permit(
+      :service_id, :professional_id, :date, :start_at, :client_name, :client_phone, :customer_note
+    )
   end
 
   # Separa o `profissional_id|horario` que a tela fundida monta.
