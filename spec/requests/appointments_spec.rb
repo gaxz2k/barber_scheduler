@@ -49,6 +49,24 @@ RSpec.describe "Appointments", type: :request do
 
       expect(response).to have_http_status(:success)
     end
+
+    it "keeps the professional in the URL when the date form is rendered" do
+      # Regressão: o form de troca de data usava a chave `profissional:` (pt)
+      # em vez de `professional:` (en, o nome real do parâmetro lido pelo
+      # controller). A URL gerada nunca carregava o profissional escolhido
+      # ao trocar de data, e a tela voltava a mostrar a agenda de todo mundo.
+      get new_appointment_path(service: service.id, professional: professional.id,
+                                unidade_slug: test_unit_for(test_barbershop).slug)
+
+      expect(response.body).to include("professional=#{professional.id}")
+    end
+
+    it "never writes the typo'd pt parameter name on the date form" do
+      get new_appointment_path(service: service.id, professional: professional.id,
+                                unidade_slug: test_unit_for(test_barbershop).slug)
+
+      expect(response.body).not_to include("profissional=#{professional.id}")
+    end
   end
 
   describe "POST /appointments" do

@@ -381,6 +381,25 @@
   border: 1px solid var(--dt-line);
 }
 
+/* O avatar redondo da listagem de profissionais no admin — mesmo padrão do
+ * `agenda-card__photo` público, só menor, porque aqui ele divide a linha
+ * com nome e ações em vez de ser o elemento mais alto do cartão. */
+.admin-table__avatar {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.admin-table__avatar--placeholder {
+  background: var(--dt-petrol-100);
+  color: var(--dt-petrol-700);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
 /* === Unidades: horário de funcionamento ===================================== */
 .unit-schedule {
   border: 1px solid var(--dt-line);

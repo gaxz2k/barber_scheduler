@@ -21,6 +21,7 @@
     <table class="table">
       <thead>
         <tr>
+          <th><span class="visually-hidden">Foto</span></th>
           <th>Profissional</th>
           <th><span class="visually-hidden">Ações</span></th>
         </tr>
@@ -28,6 +29,14 @@
       <tbody>
         <% @professionals.each do |professional| %>
           <tr>
+            <td>
+              <% if professional.photo? %>
+                <%= image_tag professional.photo_blob, alt: professional.name,
+                      class: "admin-table__avatar", loading: "lazy" %>
+              <% else %>
+                <span class="admin-table__avatar admin-table__avatar--placeholder" aria-hidden="true"><%= professional.name.first %></span>
+              <% end %>
+            </td>
             <td><strong><%= professional.name %></strong></td>
             <td>
               <div class="table__actions">
