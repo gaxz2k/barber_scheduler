@@ -1,29 +1,32 @@
 <% content_for :title, "Seu agendamento | #{Current.barbershop.name}" %>
 
 <main class="site-shell booking-page">
-  <header class="customer-header">
-    <%= render "shared/brand" %>
-    <span class="header-location">Código de confirmação</span>
-  </header>
+  <%# A tela de sucesso reaproveita o mesmo cabeçalho do card único — logo,
+      nome, endereço/telefone e os botões de WhatsApp/ligar — igual à
+      referência (a confirmação reabre o mesmo cabeçalho do agendamento, só
+      com a mensagem de status no lugar das etapas). %>
+  <div class="booking-flow">
+    <%= render "shared/booking_card_header" %>
 
-  <section class="confirmation-card">
-    <div class="eyebrow"><%= confirmation_eyebrow %></div>
-    <h1><%= confirmation_title %></h1>
-    <p><%= confirmation_message %></p>
+    <section class="confirmation-card">
+      <div class="eyebrow"><%= confirmation_eyebrow %></div>
+      <h1><%= confirmation_title %></h1>
+      <p><%= confirmation_message %></p>
 
-    <dl class="confirmation-details">
-      <%# Sem nome e telefone completos: a página é aberta por um link que vive no
-          e-mail do cliente por 48 horas, e quem tiver o link vê tudo. Os últimos
-          dígitos do telefone bastam para o cliente se reconhecer. %>
-      <div><dt>Telefone</dt><dd><%= @appointment.client.masked_phone %></dd></div>
-      <div><dt>Profissional</dt><dd><%= @appointment.professional.name %></dd></div>
-      <div><dt>Serviço</dt><dd><%= @appointment.service.name %></dd></div>
-      <div><dt>Início</dt><dd><%= l(@appointment.start_at, format: :long) %></dd></div>
-      <div><dt>Término</dt><dd><%= l(@appointment.end_at, format: :long) %></dd></div>
-      <div><dt>Status</dt><dd><span class="status-pill status-pill--<%= @appointment.status %>"><%= @appointment.status_label %></span></dd></div>
-    </dl>
+      <dl class="confirmation-details">
+        <%# Sem nome e telefone completos: a página é aberta por um link que vive no
+            e-mail do cliente por 48 horas, e quem tiver o link vê tudo. Os últimos
+            dígitos do telefone bastam para o cliente se reconhecer. %>
+        <div><dt>Telefone</dt><dd><%= @appointment.client.masked_phone %></dd></div>
+        <div><dt>Profissional</dt><dd><%= @appointment.professional.name %></dd></div>
+        <div><dt>Serviço</dt><dd><%= @appointment.service.name %></dd></div>
+        <div><dt>Início</dt><dd><%= l(@appointment.start_at, format: :long) %></dd></div>
+        <div><dt>Término</dt><dd><%= l(@appointment.end_at, format: :long) %></dd></div>
+        <div><dt>Status</dt><dd><span class="status-pill status-pill--<%= @appointment.status %>"><%= @appointment.status_label %></span></dd></div>
+      </dl>
 
-    <p class="field-hint">Quando o link de calendário e o WhatsApp estiverem disponíveis, eles aparecerão aqui.</p>
-    <%= link_to "Fazer outro agendamento", root_path, class: "button button--primary button--large" %>
-  </section>
+      <p class="field-hint">Quando o link de calendário e o WhatsApp estiverem disponíveis, eles aparecerão aqui.</p>
+      <%= link_to "Fazer outro agendamento", root_path, class: "button button--primary button--large" %>
+    </section>
+  </div>
 </main>

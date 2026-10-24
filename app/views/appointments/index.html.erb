@@ -51,125 +51,63 @@
     </div>
   <% end %>
 
-  <%# A identificação da barbearia fica abaixo da galeria, e é o bloco que
-      responde às três perguntas que um cliente tem ao abrir a página: quem é,
-      onde fica, e como falar com alguém se não quiser agendar. %>
-  <header class="customer-header customer-header--identity">
-    <div class="barbershop-identity">
-      <span class="brand-mark" aria-hidden="true"><%= Current.barbershop.monograma %></span>
-      <div>
-        <% if Current.barbershop.tagline.present? %>
-          <span class="brand-name"><%= Current.barbershop.tagline %></span>
-        <% end %>
-        <h1 class="brand-name brand-name--strong"><%= Current.barbershop.name %></h1>
-      </div>
-    </div>
+  <%# A partir daqui a home é a ETAPA 1 do mesmo card único que `new.html.erb`
+      usa para as etapas seguintes — ver o comentário no topo daquele arquivo
+      sobre a arquitetura "um card, três etapas" vinda da referência
+      SimplesAgenda. A home continua sendo uma URL própria (ela faz o papel de
+      landing/vitrine, com a galeria acima), mas o card de agendamento em si
+      é visualmente o mesmo bloco, e clicar em "Agendar" aqui leva para dentro
+      do card único em `/appointments/new`, já na etapa certa. %>
+  <div class="booking-flow booking-flow--entry">
+    <%= render "shared/booking_card_header" %>
 
-    <ul class="barbershop-contact">
-      <% if Current.barbershop.address.present? %>
-        <li><span class="barbershop-contact__label">Endereço</span><span><%= Current.barbershop.address %></span></li>
-      <% end %>
-      <% if Current.barbershop.whatsapp_link.present? %>
-        <li>
-          <span class="barbershop-contact__label">WhatsApp</span>
-          <a href="<%= Current.barbershop.whatsapp_link %>" rel="noopener">
-            <%= icon_tag(:whatsapp, size: 16) %>
-            <%= Current.barbershop.whatsapp %>
-          </a>
-        </li>
-      <% end %>
-    </ul>
-  </header>
+    <%= booking_progress(booking_steps(:unit, com_unidade: @booking_units.any?, unidade_ativa: @booking_units.any?)) %>
 
-  <%= booking_progress(booking_steps(:unit, com_unidade: @booking_units.any?, unidade_ativa: @booking_units.any?)) %>
-
-  <% unless @online_booking_open %>
-    <div class="booking-notice booking-notice--alert" role="status">
-      <%= icon_tag(:lock) %>
-      <div>
-        <strong>Agendamento online pausado</strong>
-        <%= Current.barbershop.online_booking_pause_message %>
-        <% if Current.barbershop.whatsapp_link.present? %>
-          Fale com a equipe pelo
-          <%= link_to "WhatsApp", Current.barbershop.whatsapp_link, rel: "noopener" %>.
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-
-  <% if @booking_units.any? %>
-    <% if @ultimo_agendamento.present? %>
-      <div class="booking-again">
-        <p class="booking-again__text">
-          Você tem um horário marcado com <strong><%= @ultimo_agendamento.professional.name %></strong>
-          em <%= l(@ultimo_agendamento.start_at.to_date, format: :long) %>,
-          às <%= @ultimo_agendamento.start_at.strftime("%H:%M") %>.
-        </p>
-        <%= link_to new_appointment_path(service: @ultimo_agendamento.service_id,
-                                        professional: @ultimo_agendamento.professional_id,
-                                        date: @ultimo_agendamento.start_at.to_date.iso8601,
-                                        unidade_slug: @ultimo_agendamento.barbershop_unit&.slug),
-                    class: "button button--secondary", data: { turbo: false } do %>
-          Reagendar
-        <% end %>
+    <% unless @online_booking_open %>
+      <div class="booking-notice booking-notice--alert" role="status">
+        <%= icon_tag(:lock) %>
+        <div>
+          <strong>Agendamento online pausado</strong>
+          <%= Current.barbershop.online_booking_pause_message %>
+          <% if Current.barbershop.whatsapp_link.present? %>
+            Fale com a equipe pelo
+            <%= link_to "WhatsApp", Current.barbershop.whatsapp_link, rel: "noopener" %>.
+          <% end %>
+        </div>
       </div>
     <% end %>
 
-    <%# A etapa da unidade só existe quando a barbearia tem mais de uma loja
-        onde o cliente possa agendar. Com uma unidade só, perguntar "onde você
-        quer ser atendido" é uma pergunta com uma resposta, e a tela mostraria
-        uma escolha que não é escolha. %>
-    <section class="booking-intro" aria-labelledby="booking-unit-title">
-      <div class="eyebrow">Seu próximo cuidado começa aqui</div>
-      <h1 id="booking-unit-title">Escolha onde quer ser atendido</h1>
-      <p>Cada unidade tem seu próprio horário de funcionamento.</p>
-    </section>
+    <%# O aviso de antecedência fica logo abaixo do cabeçalho, antes de
+        qualquer escolha — é a mesma posição da referência (política de
+        atraso/cancelamento em destaque de alerta no topo do card), com o
+        texto que o projeto já usava. %>
+    <div class="booking-notice">
+      <%= icon_tag(:clock) %>
+      <div>
+        <strong>Importante</strong>
+        O agendamento precisa de <strong>24 horas de antecedência</strong>, e o
+        horário só é garantido depois da confirmação.
+      </div>
+    </div>
 
-    <ul class="service-choice-list" aria-label="Unidades disponíveis">
-      <% @booking_units.each_with_index do |unit, index| %>
-        <li>
-          <%= link_to unidade_path(unit), class: "service-choice-card", data: { turbo: false } do %>
-            <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
-            <span class="service-choice-card__body">
-              <strong><%= unit.name %></strong>
-              <span><%= unit.address.presence || "Unidade da #{Current.barbershop.name}" %></span>
-            </span>
-            <span class="service-choice-card__arrow" aria-hidden="true">→</span>
-          <% end %>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <section class="booking-intro" aria-labelledby="booking-title">
-      <div class="eyebrow">Seu próximo cuidado começa aqui</div>
-      <h1 id="booking-title">Escolha um serviço</h1>
-      <p>Escolha o cuidado ideal e avançamos juntos até o seu horário.</p>
-    </section>
-  <% end %>
+    <% if @booking_units.any? %>
+      <%# A etapa da unidade só existe quando a barbearia tem mais de uma loja
+          onde o cliente possa agendar. Com uma unidade só, perguntar "onde você
+          quer ser atendido" é uma pergunta com uma resposta, e a tela mostraria
+          uma escolha que não é escolha. %>
+      <section class="booking-intro" aria-labelledby="booking-unit-title">
+        <h2 id="booking-unit-title">Escolha onde quer ser atendido</h2>
+        <p>Cada unidade tem seu próprio horário de funcionamento.</p>
+      </section>
 
-  <% if @booking_units.empty? %>
-    <% if @services.any? %>
-      <ul class="service-choice-list" aria-label="Serviços disponíveis">
-        <% @services.each_with_index do |service, index| %>
+      <ul class="service-choice-list" aria-label="Unidades disponíveis">
+        <% @booking_units.each_with_index do |unit, index| %>
           <li>
-            <%# A unidade vai na URL do link, e não como campo: é ela que decide
-                os horários da etapa de horário, e ela também precisa sobreviver
-                ao `create`. Um link sem `unidade_slug` leva o cliente até o
-                último botão para ele receber "Escolha a unidade" — a escolha
-                existe na URL justamente para não poder ser perdida entre as
-                etapas. %>
-            <%= link_to new_appointment_path(service: service.id, unidade_slug: params[:unidade_slug]),
-                        class: "service-choice-card", data: { turbo: false } do %>
+            <%= link_to unidade_path(unit), class: "service-choice-card", data: { turbo: false } do %>
               <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
               <span class="service-choice-card__body">
-                <strong><%= service.name %></strong>
-                <span><%= service.duration_minutes %> min</span>
-                <%# O preço e a duração são dois fatos independentes: um serviço
-                    sem preço cadastrado mostra só a duração, e não uma linha
-                    com "R$ " vazia no lugar. %>
-                <% if service.price_label.present? %>
-                  <span class="service-choice-card__price"><%= service.price_label %></span>
-                <% end %>
+                <strong><%= unit.name %></strong>
+                <span><%= unit.address.presence || "Unidade da #{Current.barbershop.name}" %></span>
               </span>
               <span class="service-choice-card__arrow" aria-hidden="true">→</span>
             <% end %>
@@ -177,13 +115,38 @@
         <% end %>
       </ul>
     <% else %>
-      <div class="customer-empty-state" role="status">
-        <%= empty_state_illustration(:empty_list) %>
-        <strong>Ainda não há serviços cadastrados.</strong>
-        <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
-      </div>
+      <%# Atalho de recompra: o último agendamento (pending/confirmed) do
+          cliente, oferecido no topo da lista de serviços — antes da lista
+          completa, como na referência. Ver a nota de decisão de design no
+          controller sobre a ausência de um sistema de login/identificação de
+          cliente: este atalho usa o último agendamento da BARBEARIA (não do
+          navegador), que já existia antes desta tarefa; não introduzimos
+          autenticação de cliente nem cookie novo para "lembrar" o visitante. %>
+      <% if @ultimo_agendamento.present? %>
+        <div class="booking-again">
+          <p class="booking-again__text">
+            Último agendamento: <strong><%= @ultimo_agendamento.service.name %></strong>
+            com <strong><%= @ultimo_agendamento.professional.name %></strong>
+            em <%= l(@ultimo_agendamento.start_at.to_date, format: :long) %>,
+            às <%= @ultimo_agendamento.start_at.strftime("%H:%M") %>.
+          </p>
+          <%= link_to new_appointment_path(service: @ultimo_agendamento.service_id,
+                                          professional: @ultimo_agendamento.professional_id,
+                                          date: @ultimo_agendamento.start_at.to_date.iso8601,
+                                          unidade_slug: @ultimo_agendamento.barbershop_unit&.slug),
+                      class: "button button--secondary booking-again__action", data: { turbo: false } do %>
+            Agendar de novo
+          <% end %>
+        </div>
+      <% end %>
+
+      <section class="booking-intro" aria-labelledby="booking-title">
+        <h2 id="booking-title">Escolha um serviço</h2>
+      </section>
+
+      <%= render "appointments/service_rows", services: @services, professionals: @professionals, mode: :choose %>
     <% end %>
-  <% end %>
+  </div>
 
   <footer class="customer-footer">
     <span><%= Current.barbershop.name %></span>

@@ -1,17 +1,41 @@
 <% content_for :title, "Novo agendamento | #{Current.barbershop.name}" %>
 
 <main class="site-shell booking-page">
-  <header class="customer-header">
-    <%= render "shared/brand" %>
-    <%= link_to @selected_service ? "Trocar serviço" : "Voltar", root_path, class: "back-link" %>
-  </header>
+  <%# === Card único, três etapas internas ========================================
+      Arquitetura inspirada no concorrente SimplesAgenda (ver o contexto da
+      tarefa): em vez de uma tela por etapa, as três etapas do agendamento —
+      serviço, data/horário, confirmação — moram dentro do MESMO cartão
+      (`.booking-flow`), e alternam visibilidade por CSS/Stimulus.
 
-  <%= booking_progress(booking_steps(@booking_step, com_unidade: @booking_step == :unit, unidade_ativa: @booking_step == :unit)) %>
+      Sem JavaScript, o cartão inteiro é exibido empilhado: a etapa de serviço
+      (`data-step="service"`) mostra só a lista de serviços porque é só isso
+      que o controller manda nesta resposta; já dentro da etapa seguinte,
+      `data-step="professional"`, as duas sub-telas (data/horário e
+      confirmação) aparecem uma embaixo da outra — era exatamente a tela
+      fundida que já existia, e continua funcionando sozinha, sem nenhum JS.
+      Isto é o que preserva a regra do projeto de que o agendamento se
+      completa sem JavaScript (ver a skill `barber-scheduler-js-toolchain`): o
+      HTML sozinho já é a experiência completa, só mais longa.
 
-  <%# O card estreito começa com a faixa petróleo com fio coral. É a
-      assinatura do tratamento (ver `design_tokens.css`), e é o que separa a
-      leitura de "formulário" da leitura de "página". %>
-  <div class="booking-flow">
+      Com JavaScript, `booking_wizard_controller.js` faz duas coisas, e só
+      duas:
+        1. Intercepta cliques em link e submits de formulário GET internos ao
+           cartão (todos já carregam `data-turbo="false"`, que aqui dobra como
+           o marcador "isto é uma transição de etapa"), busca a mesma URL via
+           `fetch`, e troca o HTML deste `.booking-flow` pelo do cartão da
+           resposta — a mesma troca de servidor de sempre, só que sem recarregar
+           a página. `history.pushState` mantém a URL e o botão Voltar do
+           navegador coerentes com a etapa mostrada.
+        2. Dentro da etapa fundida, alterna a visibilidade de
+           "data/horário" vs. "confirmação" por CSS puro (mostrar uma, escobar
+           a outra) quando um horário é escolhido — sem nenhuma requisição,
+           porque os dois blocos já estão nesta mesma resposta.
+
+      Nenhuma rota, controller ou parâmetro mudou: toda troca de etapa usa as
+      URLs que `AppointmentsController` já aceita (`new_appointment_path` com
+      `service`/`professional`/`date`/`extra_service_ids[]`). %>
+  <div class="booking-flow" data-controller="booking-wizard" data-step="<%= @booking_step %>"
+       data-action="click->booking-wizard#interceptLink submit->booking-wizard#interceptForm">
     <div class="booking-flow__head">
       <% case @booking_step %>
       <% when :unit %>
@@ -26,8 +50,13 @@
 
       <%= link_to "Voltar",
                   (params[:service] ? new_appointment_path(unidade_slug: params[:unidade_slug]) : root_path),
-                  class: "button button--secondary" %>
+                  class: "button button--secondary",
+                  data: (params[:service] ? { turbo: false, step_link: true } : { turbo: false }) %>
     </div>
+
+    <%= render "shared/booking_card_header" %>
+
+    <%= booking_progress(booking_steps(@booking_step, com_unidade: @booking_step == :unit, unidade_ativa: @booking_step == :unit)) %>
 
     <%# O aviso fica antes de qualquer escolha, e não depois da confirmação:
         quem descobre a regra da antecedência só no e-mail de confirmação já
@@ -73,7 +102,7 @@
               <%= link_to new_appointment_path(unidade_slug: unidade.slug,
                                                service: params[:service],
                                                professional: params[:professional]),
-                          class: "service-choice-card" do %>
+                          class: "service-choice-card", data: { turbo: false, step_link: true } do %>
                 <span class="service-choice-card__number"><%= format("%02d", index + 1) %></span>
                 <span class="service-choice-card__body">
                   <strong><%= unidade.name %></strong>
@@ -92,63 +121,11 @@
     <% end %>
 
     <% if @booking_step == :service %>
-      <% if @services.any? %>
-        <%# A lista segue a referência que o usuário mandou: nome do serviço,
-            "com" para escolher quem faz, e AGENDAR.
-
-            O "com" começa em "Nenhum selecionado" de propósito. Escolher
-            serviço e profissional na mesma linha é o atalho, e não a
-            obrigação: quem não quiser decidir agora clica em AGENDAR e vê a
-            agenda de todo mundo. O servidor revalida o par contra a agenda
-            real de qualquer jeito, então o atalho não abre porta para
-            combinação inválida. %>
-        <div class="service-list" data-controller="service-agendar">
-          <div class="service-list__head">Escolha um serviço</div>
-          <% @services.each do |service| %>
-            <div class="service-row" data-service-agendar-row>
-              <span class="service-row__body">
-                <span class="service-row__name"><%= service.name %></span>
-                <span class="service-row__meta">
-                  <span><%= service.duration_minutes %> min</span>
-                  <% if service.price_cents.to_i.positive? %>
-                    <span class="service-row__price"><%= number_to_currency(service.price_cents / 100.0) %></span>
-                  <% end %>
-                </span>
-              </span>
-
-              <span class="service-row__action">
-                <% if @professionals.any? %>
-                  <label class="sr-only" for="com-<%= service.id %>">Com quem para <%= service.name %></label>
-                  <select id="com-<%= service.id %>" class="service-row__select"
-                          data-action="change->service-agendar#selectProfessional">
-                    <option value="">Nenhum selecionado</option>
-                    <% @professionals.each do |profissional| %>
-                      <option value="<%= profissional.id %>"><%= profissional.name %></option>
-                    <% end %>
-                  </select>
-                <% end %>
-
-                <%# O `href` do botão é reescrito pelo Stimulus quando o "com"
-                    muda. Sem isso o profissional escolhido não chegaria ao
-                    servidor e o atalho seria decorativo. `data-turbo="false"`
-                    porque a troca precisa recarregar: é a URL que carrega a
-                    escolha. %>
-                <%= link_to "Agendar",
-                            new_appointment_path(service: service.id, unidade_slug: params[:unidade_slug]),
-                            class: "service-row__go",
-                            id: "agendar-#{service.id}",
-                            data: { turbo: false, service_agendar_target: "link" } %>
-              </span>
-            </div>
-          <% end %>
-        </div>
-      <% else %>
-        <div class="customer-empty-state" role="status">
-          <%= empty_state_illustration(:empty_list) %>
-          <strong>Ainda não há serviços cadastrados.</strong>
-          <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
-        </div>
-      <% end %>
+      <%# ETAPA 1 do cartão: lista densa de serviços, igual à da home — ver
+          `appointments/_service_rows`. É a mesma etapa 1 da referência
+          SimplesAgenda, só alcançada por esta URL quando o cliente chega aqui
+          sem um serviço na querystring (ex.: voltou de outra etapa). %>
+      <%= render "appointments/service_rows", services: @services, professionals: @professionals, mode: :choose %>
     <% elsif @selected_service %>
       <%# Profissional e horário numa tela só.
           Escolher quem e escolher quando eram duas páginas, e a segunda só
@@ -164,13 +141,36 @@
         <span>Serviço escolhido</span>
         <strong><%= @selected_service.name %> · <%= @selected_service.duration_minutes %> min</strong>
         <% if @selected_extra_services.any? %>
-          <span>
-            + <%= @selected_extra_services.map(&:name).join(", ") %>
-          </span>
+          <%# A lista de serviços já escolhidos, com botão de remover
+              individual — o pedido explícito da referência. Cada "Remover" é
+              um link comum (`data-turbo="false"`) para a mesma tela, só com
+              aquele id fora de `extra_service_ids[]`: o servidor recalcula a
+              agenda para a duração nova, exatamente como já fazia quando um
+              extra era desmarcado no formulário antigo. %>
+          <ul class="chosen-extra-list" aria-label="Serviços adicionados">
+            <% @selected_extra_services.each do |extra| %>
+              <li>
+                <span><%= extra.name %></span>
+                <%= link_to "Remover",
+                            new_appointment_path(service: @selected_service.id,
+                                                 professional: params[:professional],
+                                                 date: @selected_date&.iso8601,
+                                                 unidade_slug: params[:unidade_slug],
+                                                 extra_service_ids: (@selected_extra_services.map(&:id) - [ extra.id ])),
+                            class: "chosen-extra-list__remove", data: { turbo: false, step_link: true },
+                            aria: { label: "Remover #{extra.name}" } %>
+              </li>
+            <% end %>
+          </ul>
         <% end %>
         <% if @selected_extra_services.any? || @selected_service.price_cents.to_i.positive? %>
           <span class="booking-selection-summary__total">
-            Total: <%= booking_total_duration_minutes %> min
+            <%# `.to_i` só na exibição: `booking_total_duration_minutes` pode
+                devolver float quando há extras (round_up_to_slot arredonda
+                para o próximo múltiplo do intervalo de slot), e "90.0 min"
+                lido em voz alta soa a erro de conta — o valor já é inteiro na
+                prática, só o tipo Ruby que não é. %>
+            Total: <%= booking_total_duration_minutes.to_i %> min
             <% if booking_total_price_cents.positive? %>
               · <%= number_to_currency(booking_total_price_cents / 100.0) %>
             <% end %>
@@ -184,37 +184,29 @@
             Com <strong><%= @selected_professional.name %></strong>
             <%= link_to "ver todos",
                         new_appointment_path(service: @selected_service.id, unidade_slug: params[:unidade_slug]),
-                        class: "booking-selection-summary__change", data: { turbo: false } %>
+                        class: "booking-selection-summary__change", data: { turbo: false, step_link: true } %>
           </span>
         <% end %>
       </div>
 
-      <% if (@services - [ @selected_service ]).any? %>
-        <fieldset class="form-section">
-          <legend><span class="form-step">+</span> Adicionar serviço (opcional)</legend>
-          <%= form_with url: new_appointment_path(service: @selected_service.id,
-                                                  profissional: params[:professional],
-                                                  date: @selected_date&.iso8601,
-                                                  unidade_slug: params[:unidade_slug]),
-                        method: :get, class: "booking-inline-form", data: { turbo: false } do %>
-            <% (@services - [ @selected_service ]).each do |extra| %>
-              <label class="admin-toggle">
-                <%= check_box_tag "extra_service_ids[]", extra.id,
-                      @selected_extra_services.map(&:id).include?(extra.id) %>
-                <span>
-                  <strong><%= extra.name %></strong>
-                  <small>
-                    <%= extra.duration_minutes %> min
-                    <% if extra.price_cents.to_i.positive? %>
-                      · <%= number_to_currency(extra.price_cents / 100.0) %>
-                    <% end %>
-                  </small>
-                </span>
-              </label>
-            <% end %>
-            <%= submit_tag "Atualizar resumo", class: "button button--secondary" %>
-          <% end %>
-        </fieldset>
+      <%# A lista de serviços restantes, para o botão "+ Adicionar serviço" da
+          etapa de confirmação revelar. Escondida por CSS quando há JS (fica
+          atrás do botão); sem JS, aparece sempre aqui — é a mesma posição que
+          o fieldset "Adicionar serviço (opcional)" ocupava antes, só com a
+          lista densa em vez de checkboxes. %>
+      <% outros_servicos = @services - [ @selected_service ] - @selected_extra_services %>
+      <% if outros_servicos.any? %>
+        <section class="add-service-panel" data-booking-wizard-target="addServicePanel" hidden>
+          <div class="add-service-panel__head">
+            <span>Adicionar outro serviço</span>
+            <button type="button" class="button button--secondary button--sm"
+                    data-action="click->booking-wizard#hideAddService">Cancelar</button>
+          </div>
+          <%= render "appointments/service_rows", services: outros_servicos, professionals: [], mode: :add_extra,
+                      base_booking_params: { service: @selected_service.id, professional: params[:professional],
+                                             date: @selected_date&.iso8601, unidade_slug: params[:unidade_slug] },
+                      current_extra_ids: @selected_extra_services.map(&:id) %>
+        </section>
       <% end %>
 
       <fieldset class="form-section">
@@ -222,7 +214,7 @@
         <%= form_with url: new_appointment_path(service: @selected_service.id,
                                                 profissional: params[:professional],
                                                 unidade_slug: params[:unidade_slug]),
-                      method: :get, class: "booking-inline-form", data: { turbo: false } do |form| %>
+                      method: :get, class: "booking-inline-form", data: { turbo: false, step_link: true } do |form| %>
           <%= form.label :date, "Data" %>
           <%= form.date_field :date,
               value: @selected_date&.iso8601,
@@ -253,92 +245,119 @@
             <%= hidden_field_tag "appointment[extra_service_ids][]", extra.id, multiple: true %>
           <% end %>
 
-          <fieldset class="form-section">
-            <legend><span class="form-step">02</span> Escolha o profissional e o horário</legend>
-            <%# A instrução está no `aria-describedby` do formulário, e não em
-                um parágrafo visível: escolher entre grades de quatro pessoas
-                é o ponto onde a dúvida real aparece ("é um horário por
-                profissional?"), e o texto precisa estar onde a leitura de tela
-                já está passando. %>
-            <p class="sr-only" id="agenda-orientacao">
-              Cada profissional tem a própria agenda. Escolha o horário que quiser dentro da agenda de quem vai atender.
-            </p>
+          <%# Etapa 2: profissional e horário. Fica visível por padrão (sem
+              JS, é a mesma tela fundida de sempre); com JS, some assim que um
+              horário é escolhido, revelando a confirmação abaixo — ver
+              `booking_wizard_controller.js#revealConfirm`. %>
+          <div class="step-panel" data-booking-wizard-target="schedulePanel">
+            <fieldset class="form-section">
+              <legend><span class="form-step">02</span> Escolha o profissional e o horário</legend>
+              <%# A instrução está no `aria-describedby` do formulário, e não em
+                  um parágrafo visível: escolher entre grades de quatro pessoas
+                  é o ponto onde a dúvida real aparece ("é um horário por
+                  profissional?"), e o texto precisa estar onde a leitura de tela
+                  já está passando. %>
+              <p class="sr-only" id="agenda-orientacao">
+                Cada profissional tem a própria agenda. Escolha o horário que quiser dentro da agenda de quem vai atender.
+              </p>
 
-            <% if @agenda_por_profissional.empty? %>
-              <div class="form-alert" role="status">Nenhum profissional tem horário livre nesta data. Escolha outro dia.</div>
-            <% else %>
-              <div class="agenda-list">
-                <% @agenda_por_profissional.each do |agenda| %>
-                  <section class="agenda-card" aria-labelledby="agenda-<%= agenda.professional.id %>">
-                    <h3 class="agenda-card__name" id="agenda-<%= agenda.professional.id %>">
-                      <%# A foto substitui a inicial quando existe, e a inicial
-                          fica como alternativa. O `loading="lazy"` não é
-                          detalhe: são quatro fotos por tela, e sem ele a página
-                          baixa todas para mostrar a primeira dobra. %>
-                      <% if agenda.professional.photo? %>
-                        <%= image_tag agenda.professional.photo_blob,
-                                      class: "agenda-card__photo",
-                                      alt: agenda.professional.name,
-                                      loading: "lazy",
-                                      width: 44, height: 44 %>
-                      <% else %>
-                        <span class="choice-card__avatar" aria-hidden="true"><%= agenda.professional.name.first %></span>
-                      <% end %>
-                      <%= agenda.professional.name %>
-                    </h3>
-
-                    <% if agenda.slots.any? %>
-                      <%# O `value` do radio carrega o profissional junto com o
-                          horário, e não em campo separado. O par (quem, quando) é
-                          uma escolha só, e dois campos independentes
-                          permitiriam combinar o horário da Ana com o nome da
-                          Bruno. Isso NÃO é confiar no cliente: o `create`
-                          revalida o par contra a agenda real daquele profissional
-                          e recusa a combinação que não existe. O que se evita é
-                          o pedido válido parecer inválido, e o inválido passar
-                          por engano de quem montou o formulário. %>
-                      <div class="slot-grid" role="radiogroup" aria-label="Horários de <%= agenda.professional.name %>">
-                        <% agenda.slots.each do |slot| %>
-                          <label class="slot-card">
-                            <%= form.radio_button :start_at, "#{agenda.professional.id}|#{slot.iso8601}",
-                                  required: true, class: "choice-input",
-                                  checked: slot_preselecionado?(agenda.professional, slot) %>
-                            <span><%= slot.strftime("%H:%M") %></span>
-                          </label>
+              <% if @agenda_por_profissional.empty? %>
+                <div class="form-alert" role="status">Nenhum profissional tem horário livre nesta data. Escolha outro dia.</div>
+              <% else %>
+                <div class="agenda-list">
+                  <% @agenda_por_profissional.each do |agenda| %>
+                    <section class="agenda-card" aria-labelledby="agenda-<%= agenda.professional.id %>">
+                      <h3 class="agenda-card__name" id="agenda-<%= agenda.professional.id %>">
+                        <%# A foto substitui a inicial quando existe, e a inicial
+                            fica como alternativa. O `loading="lazy"` não é
+                            detalhe: são quatro fotos por tela, e sem ele a página
+                            baixa todas para mostrar a primeira dobra. %>
+                        <% if agenda.professional.photo? %>
+                          <%= image_tag agenda.professional.photo_blob,
+                                        class: "agenda-card__photo",
+                                        alt: agenda.professional.name,
+                                        loading: "lazy",
+                                        width: 44, height: 44 %>
+                        <% else %>
+                          <span class="choice-card__avatar" aria-hidden="true"><%= agenda.professional.name.first %></span>
                         <% end %>
-                      </div>
-                    <% else %>
-                      <p class="agenda-card__empty">Sem horários livres nesta data.</p>
-                    <% end %>
-                  </section>
-                <% end %>
-              </div>
-            <% end %>
-          </fieldset>
+                        <%= agenda.professional.name %>
+                      </h3>
 
-          <fieldset class="form-section">
-            <legend><span class="form-step">03</span> Seus dados</legend>
-            <%= form.label :client_name, "Nome" %>
-            <%= form.text_field :client_name,
-                  value: params.dig(:appointment, :client_name),
-                  required: true,
-                  autocomplete: "name",
-                  placeholder: "Como podemos te chamar?" %>
-            <%= form.label :client_phone, "Telefone", class: "field-label-spaced" %>
-            <%= form.telephone_field :client_phone,
-                  value: params.dig(:appointment, :client_phone),
-                  required: true,
-                  autocomplete: "tel",
-                  placeholder: "(19) 99999-8888" %>
-            <%= form.label :customer_note, "Mensagem para o profissional (opcional)", class: "field-label-spaced" %>
-            <%= form.text_area :customer_note,
-                  value: params.dig(:appointment, :customer_note),
-                  maxlength: 280,
-                  rows: 3,
-                  placeholder: "Alguma preferência ou observação para o atendimento?" %>
-          </fieldset>
+                      <% if agenda.slots.any? %>
+                        <%# O `value` do radio carrega o profissional junto com o
+                            horário, e não em campo separado. O par (quem, quando) é
+                            uma escolha só, e dois campos independentes
+                            permitiriam combinar o horário da Ana com o nome da
+                            Bruno. Isso NÃO é confiar no cliente: o `create`
+                            revalida o par contra a agenda real daquele profissional
+                            e recusa a combinação que não existe. O que se evita é
+                            o pedido válido parecer inválido, e o inválido passar
+                            por engano de quem montou o formulário. %>
+                        <div class="slot-grid" role="radiogroup" aria-label="Horários de <%= agenda.professional.name %>"
+                             data-action="change->booking-wizard#revealConfirm">
+                          <% agenda.slots.each do |slot| %>
+                            <label class="slot-card">
+                              <%= form.radio_button :start_at, "#{agenda.professional.id}|#{slot.iso8601}",
+                                    required: true, class: "choice-input",
+                                    checked: slot_preselecionado?(agenda.professional, slot) %>
+                              <span><%= slot.strftime("%H:%M") %></span>
+                            </label>
+                          <% end %>
+                        </div>
+                      <% else %>
+                        <p class="agenda-card__empty">Sem horários livres nesta data.</p>
+                      <% end %>
+                    </section>
+                  <% end %>
+                </div>
+              <% end %>
+            </fieldset>
+          </div>
 
-          <%= form.submit "Confirmar agendamento", class: "button button--primary button--large button--full" %>
+          <%# ETAPA 3 do cartão: confirmação. Sem JS, fica empilhada logo abaixo
+              da etapa 2 — é a mesma tela fundida de sempre. Com JS, só aparece
+              depois de um horário escolhido (`revealConfirm`), e some de novo
+              se o cliente clicar "Trocar horário". %>
+          <div class="step-panel" data-booking-wizard-target="confirmPanel" hidden>
+            <div class="booking-flow__head booking-flow__head--inline">
+              <span>Confirmação</span>
+              <button type="button" class="button button--secondary button--sm"
+                      data-action="click->booking-wizard#hideConfirm">Trocar horário</button>
+            </div>
+
+            <fieldset class="form-section">
+              <legend><span class="form-step">+</span> Mais de um serviço?</legend>
+              <button type="button" class="button button--secondary button--full"
+                      data-action="click->booking-wizard#showAddService">
+                + Adicionar serviço
+              </button>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-step">03</span> Seus dados</legend>
+              <%= form.label :client_name, "Nome" %>
+              <%= form.text_field :client_name,
+                    value: params.dig(:appointment, :client_name),
+                    required: true,
+                    autocomplete: "name",
+                    placeholder: "Como podemos te chamar?" %>
+              <%= form.label :client_phone, "Telefone", class: "field-label-spaced" %>
+              <%= form.telephone_field :client_phone,
+                    value: params.dig(:appointment, :client_phone),
+                    required: true,
+                    autocomplete: "tel",
+                    placeholder: "(19) 99999-8888" %>
+              <%= form.label :customer_note, "Mensagem para o profissional (opcional)", class: "field-label-spaced" %>
+              <%= form.text_area :customer_note,
+                    value: params.dig(:appointment, :customer_note),
+                    maxlength: 280,
+                    rows: 3,
+                    placeholder: "Alguma preferência ou observação para o atendimento?" %>
+            </fieldset>
+
+            <%= form.submit "Confirmar agendamento", class: "button button--primary button--large button--full" %>
+          </div>
         <% end %>
       <% else %>
         <div class="customer-empty-state" role="status">
