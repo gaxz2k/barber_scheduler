@@ -1,0 +1,37 @@
+<%# Cabeçalho do card único de agendamento, no estilo da referência SimplesAgenda:
+    logo circular, nome em destaque, endereço/telefone em cinza abaixo, e dois
+    botões circulares de ação rápida (WhatsApp e ligar) lado a lado.
+
+    Vive em partial porque as duas telas que abrem e fecham o fluxo dentro do
+    MESMO card — a etapa 1 em `new.html.erb` e o recibo em `show.html.erb` —
+    precisam do mesmo cabeçalho. Repetir o markup nas duas seria a quinta cópia
+    da mesma ideia que `shared/_brand` já evitou para o monograma sozinho; aqui
+    o bloco é maior (endereço, telefone, dois botões), então merece o próprio
+    partial em vez de inchar `_brand`, que o login também usa e não precisa de
+    nada disso. %>
+<header class="booking-card-header">
+  <span class="booking-card-header__logo" aria-hidden="true"><%= Current.barbershop.monograma %></span>
+  <h1 class="booking-card-header__name"><%= Current.barbershop.name %></h1>
+  <% if Current.barbershop.address.present? || Current.barbershop.phone.present? %>
+    <p class="booking-card-header__meta">
+      <%= [ Current.barbershop.address, Current.barbershop.phone ].compact_blank.join(" · ") %>
+    </p>
+  <% end %>
+
+  <% if Current.barbershop.whatsapp_link.present? || Current.barbershop.phone.present? %>
+    <div class="booking-card-header__actions">
+      <% if Current.barbershop.whatsapp_link.present? %>
+        <%= link_to Current.barbershop.whatsapp_link, class: "booking-card-header__action", rel: "noopener",
+                    aria: { label: "Falar no WhatsApp com #{Current.barbershop.name}" } do %>
+          <%= icon_tag(:whatsapp, size: 20) %>
+        <% end %>
+      <% end %>
+      <% if Current.barbershop.phone.present? %>
+        <%= link_to "tel:#{Current.barbershop.phone.gsub(/\D/, '')}", class: "booking-card-header__action",
+                    aria: { label: "Ligar para #{Current.barbershop.name}" } do %>
+          <%= icon_tag(:phone, size: 20) %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</header>

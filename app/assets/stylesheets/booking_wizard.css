@@ -601,6 +601,182 @@ body:has(.booking-page) {
   color: var(--dt-ice-0);
 }
 
+/* Variante do cabeçalho usada DENTRO da etapa de confirmação ("Confirmação" +
+ * "Trocar horário"), e não no topo do cartão: ali não é a faixa petróleo de
+ * assinatura (o cartão já abriu com ela), é só um título de seção com uma
+ * ação secundária ao lado — por isso usa as cores normais do cartão, não as
+ * invertidas da faixa escura. */
+.booking-flow__head--inline {
+  margin: 0 0 1.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--dt-line-soft);
+  padding: 0 0 0.9rem;
+  background: transparent;
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
+  font-size: 1.05rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-flow__head--inline .button--secondary {
+  background: var(--dt-ice-0);
+  border-color: var(--dt-petrol-500);
+  color: var(--dt-petrol-700);
+}
+
+.booking-flow__head--inline .button--secondary:hover {
+  background: var(--dt-petrol-100);
+  border-color: var(--dt-petrol-700);
+  color: var(--dt-petrol-700);
+}
+
+/* === Cabeçalho da marca dentro do card único =================================
+ * Logo circular + nome + endereço/telefone + dois botões circulares de ação
+ * rápida (WhatsApp, ligar), lado a lado — a estrutura da referência
+ * SimplesAgenda, com as cores da identidade "litoral urbano". Usado na home
+ * (topo do cartão de agendamento), na etapa 1-3 do `new.html.erb` e na tela
+ * de sucesso em `show.html.erb`: as três reaproveitam o mesmo partial
+ * (`shared/_booking_card_header`), e esta é a única regra de estilo dele. */
+.booking-card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.booking-card-header__logo {
+  display: inline-grid;
+  width: 3.2rem;
+  height: 3.2rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--dt-petrol-900);
+  color: var(--dt-ice-0);
+  font-family: var(--dt-font-display);
+  font-size: 1.1rem;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: -0.03em;
+}
+
+.booking-card-header__name {
+  margin: 0.4rem 0 0;
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
+  font-size: 1.35rem;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: -0.02em;
+}
+
+.booking-card-header__meta {
+  margin: 0;
+  color: var(--dt-ink-soft);
+  font-size: 0.82rem;
+}
+
+.booking-card-header__actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+/* Botões circulares de 44px (toque mínimo) para WhatsApp/ligar — ação rápida
+ * que não precisa de rótulo de texto, só do ícone e do `aria-label`. */
+.booking-card-header__action {
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--dt-petrol-500);
+  border-radius: 50%;
+  background: var(--dt-ice-0);
+  color: var(--dt-petrol-700);
+  transition: background-color var(--dt-transition-fast), border-color var(--dt-transition-fast);
+}
+
+.booking-card-header__action:hover,
+.booking-card-header__action:focus-visible {
+  background: var(--dt-petrol-100);
+  border-color: var(--dt-petrol-700);
+}
+
+/* === Serviços já adicionados ao agendamento (etapa de confirmação) ==========
+ * A lista que a referência pede: cada serviço extra escolhido aparece com um
+ * botão "Remover" individual, sem perder o que já foi escolhido — o link de
+ * remoção é uma navegação comum (`step-link`), que o servidor já sabia
+ * recalcular antes desta tarefa. */
+.chosen-extra-list {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chosen-extra-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+}
+
+.chosen-extra-list__remove {
+  color: var(--dt-danger-700);
+  font-size: 0.74rem;
+  font-weight: var(--dt-weight-bold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chosen-extra-list__remove:hover,
+.chosen-extra-list__remove:focus-visible {
+  color: var(--dt-danger-500);
+}
+
+/* === Painel "+ Adicionar serviço" ============================================
+ * Mesma lista densa de serviço (`.service-list`), só com um cabeçalho próprio
+ * com "Cancelar" para voltar à confirmação sem perder o que já estava
+ * preenchido — ver `booking_wizard_controller.js#hideAddService`. */
+.add-service-panel {
+  margin-bottom: 1.5rem;
+}
+
+.add-service-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.add-service-panel__head > span {
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
+  font-size: 0.95rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+/* === Painéis que alternam dentro da etapa fundida (data/horário vs.
+ * confirmação) =================================================================
+ * `[hidden]` já é nativo do navegador — aqui só garantimos o espaçamento
+ * entre os blocos quando ambos aparecem ao mesmo tempo (sem JavaScript, onde
+ * nenhum painel fica escondido e a tela volta a ser a fundida de sempre). */
+.step-panel + .step-panel {
+  margin-top: 1.5rem;
+}
+
+/* `[aria-busy="true"]` é posto no cartão durante a troca de etapa via fetch
+ * (ver `booking_wizard_controller.js#navigate`). A opacidade reduzida é o
+ * único feedback visual — curto o bastante (a troca é uma requisição GET
+ * simples) para não precisar de um spinner dedicado. */
+.booking-flow[aria-busy="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+
 /* === Lista de serviços com o seletor "com" ================================= */
 .service-list {
   display: grid;
@@ -1254,6 +1430,25 @@ body:has(.booking-page) {
 
   .barbershop-carousel__viewport {
     aspect-ratio: 4 / 3;
+  }
+
+  /* Em telas estreitas o seletor de profissional some junto do preço na
+     mesma linha que o nome — o grid de duas colunas (`1fr auto`) nunca
+     quebra, só encolhe até sobrepor texto. Empilhar em coluna é o mesmo
+     ajuste que o resto do cartão já faz abaixo de 760px. */
+  .service-row {
+    grid-template-columns: 1fr;
+    row-gap: 0.6rem;
+  }
+
+  .service-row__action {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .service-row__select {
+    max-width: none;
+    flex: 1 1 auto;
   }
 }
 
