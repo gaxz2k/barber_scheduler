@@ -41,8 +41,11 @@
       <div class="barbershop-carousel__status" aria-live="polite" aria-atomic="true" data-barbershop-carousel-target="status"></div>
     </section>
   <% else %>
+    <%# A ilustração troca o ícone de texto solto (✦) pela peça de estado
+        vazio da fundação visual nova — a mensagem continua a mesma, só a
+        moldura visual muda. %>
     <div class="barbershop-carousel barbershop-carousel--empty" role="status">
-      <div class="barbershop-carousel__empty-icon" aria-hidden="true">✦</div>
+      <%= empty_state_illustration(:no_gallery_photos) %>
       <strong>Novas fotos em breve</strong>
       <span>Estamos preparando um tour do espaço da <%= Current.barbershop.name %>.</span>
     </div>
@@ -70,6 +73,7 @@
         <li>
           <span class="barbershop-contact__label">WhatsApp</span>
           <a href="<%= Current.barbershop.whatsapp_link %>" rel="noopener">
+            <%= icon_tag(:whatsapp, size: 16) %>
             <%= Current.barbershop.whatsapp %>
           </a>
         </li>
@@ -81,12 +85,15 @@
 
   <% unless @online_booking_open %>
     <div class="booking-notice booking-notice--alert" role="status">
-      <strong>Agendamento online pausado</strong>
-      <%= Current.barbershop.online_booking_pause_message %>
-      <% if Current.barbershop.whatsapp_link.present? %>
-        Fale com a equipe pelo
-        <%= link_to "WhatsApp", Current.barbershop.whatsapp_link, rel: "noopener" %>.
-      <% end %>
+      <%= icon_tag(:lock) %>
+      <div>
+        <strong>Agendamento online pausado</strong>
+        <%= Current.barbershop.online_booking_pause_message %>
+        <% if Current.barbershop.whatsapp_link.present? %>
+          Fale com a equipe pelo
+          <%= link_to "WhatsApp", Current.barbershop.whatsapp_link, rel: "noopener" %>.
+        <% end %>
+      </div>
     </div>
   <% end %>
 
@@ -171,6 +178,7 @@
       </ul>
     <% else %>
       <div class="customer-empty-state" role="status">
+        <%= empty_state_illustration(:empty_list) %>
         <strong>Ainda não há serviços cadastrados.</strong>
         <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
       </div>

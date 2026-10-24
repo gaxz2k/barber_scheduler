@@ -20,7 +20,7 @@
       <div><dt>Serviço</dt><dd><%= @appointment.service.name %></dd></div>
       <div><dt>Início</dt><dd><%= l(@appointment.start_at, format: :long) %></dd></div>
       <div><dt>Término</dt><dd><%= l(@appointment.end_at, format: :long) %></dd></div>
-      <div><dt>Status</dt><dd><span class="admin-badge"><%= @appointment.status_label %></span></dd></div>
+      <div><dt>Status</dt><dd><span class="status-pill status-pill--<%= @appointment.status %>"><%= @appointment.status_label %></span></dd></div>
     </dl>
 
     <p class="field-hint">Quando o link de calendário e o WhatsApp estiverem disponíveis, eles aparecerão aqui.</p>

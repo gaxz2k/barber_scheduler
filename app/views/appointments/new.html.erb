@@ -8,8 +8,9 @@
 
   <%= booking_progress(booking_steps(@booking_step, com_unidade: @booking_step == :unit, unidade_ativa: @booking_step == :unit)) %>
 
-  <%# O card estreito começa com a faixa dourada. É a assinatura do tratamento,
-      e é o que separa a leitura de "formulário" da leitura de "página". %>
+  <%# O card estreito começa com a faixa petróleo com fio coral. É a
+      assinatura do tratamento (ver `design_tokens.css`), e é o que separa a
+      leitura de "formulário" da leitura de "página". %>
   <div class="booking-flow">
     <div class="booking-flow__head">
       <% case @booking_step %>
@@ -33,13 +34,16 @@
         gastou o gesto. O texto é o que o projeto de fato faz — agendamento
         de hoje para amanhã, com no mínimo 24h. %>
     <div class="booking-notice">
-      <strong>Importante</strong>
-      O agendamento precisa de <strong>24 horas de antecedência</strong>, e o
-      horário só é garantido depois da confirmação.
-      <% if Current.barbershop.whatsapp_link.present? %>
-        Dúvidas? Fale com a equipe pelo
-        <%= link_to "WhatsApp", Current.barbershop.whatsapp_link, rel: "noopener" %>.
-      <% end %>
+      <%= icon_tag(:clock) %>
+      <div>
+        <strong>Importante</strong>
+        O agendamento precisa de <strong>24 horas de antecedência</strong>, e o
+        horário só é garantido depois da confirmação.
+        <% if Current.barbershop.whatsapp_link.present? %>
+          Dúvidas? Fale com a equipe pelo
+          <%= link_to "WhatsApp", Current.barbershop.whatsapp_link, rel: "noopener" %>.
+        <% end %>
+      </div>
     </div>
 
     <% if @booking_errors.present? || @appointment.errors.any? %>
@@ -140,6 +144,7 @@
         </div>
       <% else %>
         <div class="customer-empty-state" role="status">
+          <%= empty_state_illustration(:empty_list) %>
           <strong>Ainda não há serviços cadastrados.</strong>
           <span>Assim que os serviços forem cadastrados, eles aparecerão aqui.</span>
         </div>
@@ -290,6 +295,7 @@
         <% end %>
       <% else %>
         <div class="customer-empty-state" role="status">
+          <%= empty_state_illustration(:no_professionals) %>
           <strong>Ainda não há profissionais disponíveis.</strong>
           <span>Assim que o time for cadastrado, os profissionais aparecerão aqui.</span>
         </div>

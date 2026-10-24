@@ -1,43 +1,43 @@
 /*
- * Ajustes do fluxo público de agendamento.
+ * Ajustes do fluxo público de agendamento — identidade "litoral urbano".
  *
- * Este arquivo já foi a paleta inteira do produto, com as cores hardcoded e o
- * prefixo `--meta-*`. A paleta agora vive em `:root`, no `application.css`,
- * e as regras daqui apontam para lá com `var()`. Manter duas paletas foi o que
- * fez o botão sair azul depois da troca para dourado: o `application.css` foi
- * atualizado, este aqui não, e o `--meta-blue` antigo continuava vencendo
- * porque tinha especificidade de escopo.
+ * Fase 2 do redesign: este arquivo parou de duplicar a paleta do
+ * `application.css` (preto + dourado, "Studio Navalha") e passou a ler
+ * direto de `design_tokens.css` (`--dt-*`), que é carregado antes deste no
+ * layout. Não existe mais uma segunda camada de variáveis `--meta-*`
+ * fazendo ponte entre dois sistemas de cor: só havia motivo para a ponte
+ * enquanto as duas identidades precisavam coexistir, e esta fase é
+ * exatamente o momento em que o fluxo público deixa de precisar da antiga.
  *
- * Os nomes `--meta-*` continuam por compatibilidade com as regras mais
- * abaixo deste arquivo e com o que o JavaScript do wizard lê. Renomear seria
- * mexer em 700 linhas para ganhar só consistência de nome.
+ * `application.css` continua intacto e continua valendo para o admin e para
+ * o login — os dois seguem fora do escopo desta fase. Por isso cada regra
+ * aqui é escopada em `.booking-entry`/`.booking-page` (as duas telas
+ * públicas) e nunca em seletor solto: uma regra sem esse escopo vazaria a
+ * paleta nova para o painel administrativo antes da hora.
+ *
+ * Papel de cada cor, para quem for estender este arquivo:
+ *   --dt-petrol-*  → estrutura, seleção e "onde você está" (bordas em foco,
+ *                    horário escolhido, etapa ativa, agenda). É a cor de
+ *                    "confiança/precisão de agenda" que os tokens descrevem.
+ *   --dt-coral-*   → a decisão que avança o cliente (botão primário, setas
+ *                    de cartão, link "Agendar", destaque de etapa). Se o
+ *                    coral aparecer em algo que não leva a uma ação, ele
+ *                    perdeu o papel — a mesma regra que os tokens escrevem
+ *                    para o botão.
+ *   --dt-success/warning/danger-* → só nos estados de agendamento
+ *                    (pendente/confirmado/cancelado) e no aviso de pausa,
+ *                    nunca como decoração.
  */
 
 .booking-entry,
 .booking-page {
-  --meta-ink: var(--ink);
-  --meta-text: var(--ink);
-  --meta-muted: var(--ink-soft);
-  --meta-subtle: var(--ink-soft);
-  --meta-canvas: var(--cream);
-  --meta-surface: var(--paper);
-  --meta-surface-alt: var(--paper-deep);
-  --meta-line: var(--line);
-  --meta-line-soft: var(--line-soft);
-  --meta-blue: var(--gold);
-  --meta-blue-hover: var(--gold-deep);
-  --meta-blue-soft: var(--paper-deep);
-  --meta-success: var(--green);
-  --meta-danger: var(--danger);
-  --meta-danger-soft: var(--danger-soft);
-  --meta-radius-sm: var(--radius-sm);
-  --meta-radius-md: var(--radius-md);
-  --meta-radius-lg: var(--radius-lg);
+  font-family: var(--dt-font-body);
+  color: var(--dt-ink);
 }
 
 body:has(.booking-entry),
 body:has(.booking-page) {
-  background: var(--meta-canvas);
+  background: var(--dt-ice-50);
 }
 
 .booking-entry,
@@ -45,50 +45,44 @@ body:has(.booking-page) {
   width: min(100% - 2rem, 64rem);
   min-height: 100vh;
   padding: 1.5rem 0 3rem;
-  background: var(--meta-canvas);
-  color: var(--meta-text);
+  background: var(--dt-ice-50);
 }
 
 .booking-entry .customer-header,
 .booking-page .customer-header {
   min-height: 3.5rem;
   margin-bottom: 2.5rem;
-  border-bottom: 1px solid var(--meta-line-soft);
+  border-bottom: 1px solid var(--dt-line-soft);
   padding-bottom: 1.25rem;
 }
 
 .booking-entry .brand-lockup,
 .booking-page .brand-lockup {
   gap: 0.7rem;
-  color: var(--meta-ink);
+  color: var(--dt-ink);
 }
 
+/* O monograma muda de preto+dourado para petróleo+branco: a mesma forma
+ * (círculo, iniciais) com a cor estrutural da identidade nova. */
 .booking-entry .brand-mark,
 .booking-page .brand-mark {
   width: 2.4rem;
   height: 2.4rem;
   border: 0;
   border-radius: 50%;
-  background: var(--meta-ink);
-  color: #fff;
-  font-family: var(--font-body);
+  background: var(--dt-petrol-900);
+  color: var(--dt-ice-0);
+  font-family: var(--dt-font-display);
   font-size: 0.95rem;
-  font-weight: 800;
+  font-weight: var(--dt-weight-bold);
   letter-spacing: -0.04em;
-}
-
-.booking-entry .brand-crown,
-.booking-page .brand-crown {
-  color: var(--meta-blue);
-  font-size: 0.6em;
 }
 
 .booking-entry .brand-name,
 .booking-page .brand-name {
-  color: var(--meta-ink);
-  font-family: var(--font-body);
+  color: var(--dt-ink);
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: var(--dt-weight-bold);
   letter-spacing: 0.01em;
   line-height: 1.1;
   text-transform: none;
@@ -97,49 +91,50 @@ body:has(.booking-page) {
 .booking-entry .brand-name--strong,
 .booking-page .brand-name--strong {
   font-size: 0.92rem;
-  font-weight: 800;
+  font-weight: var(--dt-weight-bold);
 }
 
 .booking-entry .header-location,
 .booking-page .header-location {
-  color: var(--meta-muted);
-  font-family: var(--font-body);
+  color: var(--dt-ink-soft);
   font-size: 0.76rem;
-  font-weight: 600;
+  font-weight: var(--dt-weight-medium);
   letter-spacing: 0;
   text-transform: none;
 }
 
 .booking-page .back-link {
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   display: inline-flex;
   align-items: center;
-  border-radius: var(--meta-radius-sm);
+  border-radius: var(--dt-radius-sm);
   padding: 0.55rem 0.75rem;
-  color: var(--meta-muted);
-  font-family: var(--font-body);
+  color: var(--dt-ink-soft);
   font-size: 0.84rem;
-  font-weight: 700;
-  transition: background-color 150ms ease, color 150ms ease;
+  font-weight: var(--dt-weight-bold);
+  transition: background-color var(--dt-transition-fast), color var(--dt-transition-fast);
 }
 
 .booking-page .back-link:hover,
 .booking-page .back-link:focus-visible {
-  background: var(--meta-surface-alt);
-  color: var(--meta-ink);
+  background: var(--dt-mist-100);
+  color: var(--dt-ink);
 }
 
-/* Progress: compact, scan-friendly, and usable without a horizontal overflow. */
+/* === Barra de etapas =======================================================
+ * Compacta e sem rolagem horizontal. O círculo da etapa ativa fica em
+ * petróleo (é "onde você está", não uma decisão a tomar); o círculo das
+ * etapas concluídas fica claro com texto petróleo, e as etapas futuras ficam
+ * apagadas por opacidade — a cor já diz "aqui", a opacidade diz "ainda não". */
 .booking-progress {
   display: grid;
   grid-template-columns: auto 1fr auto 1fr auto 1fr auto;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 3.25rem;
-  color: var(--meta-subtle);
-  font-family: var(--font-body);
+  color: var(--dt-ink-faint);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: var(--dt-weight-bold);
 }
 
 .booking-progress .progress-step {
@@ -154,228 +149,570 @@ body:has(.booking-page) {
   width: 1.8rem;
   height: 1.8rem;
   place-items: center;
-  border: 1px solid var(--meta-line);
+  border: 1px solid var(--dt-line);
   border-radius: 50%;
-  background: var(--meta-surface);
-  color: var(--meta-subtle);
+  background: var(--dt-ice-0);
+  color: var(--dt-ink-faint);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: var(--dt-weight-bold);
 }
 
 .booking-progress .progress-step--active {
-  color: var(--meta-ink);
+  color: var(--dt-ink);
 }
 
 .booking-progress .progress-step--active b {
-  border-color: var(--meta-ink);
-  background: var(--meta-ink);
-  color: #fff;
+  border-color: var(--dt-petrol-900);
+  background: var(--dt-petrol-900);
+  color: var(--dt-ice-0);
 }
 
 .booking-progress .progress-line {
   min-width: 0.5rem;
   height: 1px;
-  background: var(--meta-line);
+  background: var(--dt-line);
 }
 
-/* The public booking is a Configure surface: hierarchy beats decoration. */
+/* === Introdução da tela ==================================================== */
 .booking-intro {
   max-width: 42rem;
   margin-bottom: 2rem;
 }
 
 .booking-intro .eyebrow {
-  color: var(--meta-blue);
-  font-family: var(--font-body);
+  color: var(--dt-coral-700);
   font-size: 0.73rem;
-  font-weight: 800;
+  font-weight: var(--dt-weight-bold);
   letter-spacing: 0.01em;
   text-transform: uppercase;
 }
 
 .booking-intro h1 {
   margin: 0.55rem 0 0.8rem;
-  color: var(--meta-ink);
-  font-family: var(--font-body);
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
   font-size: clamp(2.3rem, 6vw, 4.25rem);
-  font-weight: 750;
-  letter-spacing: -0.055em;
-  line-height: 1.02;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: -0.03em;
+  line-height: var(--dt-leading-tight);
 }
 
 .booking-intro p {
   max-width: 34rem;
   margin: 0;
-  color: var(--meta-muted);
+  color: var(--dt-ink-soft);
   font-size: 1rem;
-  line-height: 1.45;
+  line-height: var(--dt-leading-normal);
 }
 
-/* O bloco `service-choice-*` que ficava aqui foi removido: a lista de
- * servicos virou a tabela com seletor "com" e botao Agendar, que mora no
- * `application.css` com o nome `service-list`. Nenhuma view markupa mais
- * `service-choice-card`, e manter 95 linhas de estilo para um elemento
- * inexistente e o que faz a proxima pessoa procurar a regra no lugar errado.
- */
-
-
-.booking-selection-summary {
+/* === Lista de unidades/serviços (cartão com seta) ==========================
+ * Usada pela home (unidades e serviços sem seletor "com") e pelo bloco de
+ * escolha de unidade do wizard. A seta é coral porque ela aponta para a
+ * próxima decisão; a borda em foco/hover é petróleo, que é o tom de seleção
+ * do sistema. */
+.booking-entry .service-choice-list,
+.booking-page .service-choice-list {
   display: grid;
-  gap: 0.2rem;
-  margin-bottom: 1.25rem;
-  border: 1px solid var(--meta-line-soft);
-  border-radius: var(--meta-radius-md);
-  padding: 1rem 1.1rem;
-  background: var(--meta-surface);
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.booking-selection-summary span {
-  color: var(--meta-muted);
-  font-family: var(--font-body);
-  font-size: 0.74rem;
-  font-weight: 700;
+.booking-entry .service-choice-card,
+.booking-page .service-choice-card {
+  display: flex;
+  min-height: 5.25rem;
+  align-items: center;
+  gap: 0.9rem;
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-lg);
+  padding: 1.1rem 1.15rem;
+  background: var(--dt-ice-0);
+  color: var(--dt-ink);
+  text-decoration: none;
+  box-shadow: var(--dt-shadow-card);
+  transition: border-color var(--dt-transition-base), transform var(--dt-transition-base);
 }
 
-.booking-selection-summary strong {
-  color: var(--meta-ink);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 800;
-}
-
-.booking-page .choice-card--link {
-  display: block;
-  cursor: pointer;
-}
-
-.booking-page .choice-card--link .choice-card__body {
-  min-height: 5.4rem;
-  border: 1px solid var(--meta-line);
-  border-radius: var(--meta-radius-md);
-  background: var(--meta-surface);
-  color: var(--meta-text);
-  box-shadow: 0 2px 8px rgba(24, 25, 26, 0.04);
-  transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
-}
-
-.booking-page .choice-card--link:hover,
-.booking-page .choice-card--link:focus-visible {
+.booking-entry .service-choice-card:hover,
+.booking-entry .service-choice-card:focus-visible,
+.booking-page .service-choice-card:hover,
+.booking-page .service-choice-card:focus-visible {
+  border-color: var(--dt-petrol-500);
   transform: translateY(-1px);
 }
 
-.booking-page .choice-card--link:hover .choice-card__body,
-.booking-page .choice-card--link:focus-visible .choice-card__body {
-  border-color: var(--meta-blue);
-  background: var(--meta-blue-soft);
-}
-
-.booking-page .choice-card__avatar {
-  width: 2.8rem;
-  height: 2.8rem;
+.booking-entry .service-choice-card__number,
+.booking-page .service-choice-card__number {
+  display: inline-grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  flex: 0 0 auto;
+  place-items: center;
   border-radius: 50%;
-  background: var(--meta-blue-soft);
-  color: var(--meta-blue);
-  font-family: var(--font-body);
-  font-size: 1.1rem;
-  font-weight: 800;
+  background: var(--dt-petrol-100);
+  color: var(--dt-petrol-700);
+  font-size: 0.72rem;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: 0.04em;
 }
 
-.booking-page .choice-card__body strong {
-  color: var(--meta-ink);
-  font-family: var(--font-body);
+.booking-entry .service-choice-card__body,
+.booking-page .service-choice-card__body {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 0.3rem;
+}
+
+.booking-entry .service-choice-card__body strong,
+.booking-page .service-choice-card__body strong {
+  font-family: var(--dt-font-display);
+  font-size: 1.02rem;
+  font-weight: var(--dt-weight-bold);
+  line-height: 1.25;
+}
+
+.booking-entry .service-choice-card__body > span,
+.booking-page .service-choice-card__body > span {
+  color: var(--dt-ink-soft);
+  font-size: 0.82rem;
+  line-height: var(--dt-leading-normal);
+}
+
+.booking-entry .service-choice-card__price,
+.booking-page .service-choice-card__price {
+  color: var(--dt-ink);
+  font-size: 1.05rem;
+  font-weight: var(--dt-weight-bold);
+  justify-self: end;
+}
+
+.booking-entry .service-choice-card__arrow,
+.booking-page .service-choice-card__arrow {
+  flex: 0 0 auto;
+  color: var(--dt-coral-500);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* === Faixa "reagendar o último horário" ==================================== */
+.booking-again {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-md);
+  padding: 0.9rem 1.1rem;
+  background: var(--dt-ice-0);
+  box-shadow: var(--dt-shadow-card);
+}
+
+.booking-again__text {
+  margin: 0;
+  color: var(--dt-ink-soft);
+  font-size: 0.85rem;
+  line-height: var(--dt-leading-normal);
+}
+
+.booking-again__text strong {
+  color: var(--dt-ink);
+}
+
+/* === Identificação da barbearia (home) ===================================== */
+.customer-header--identity {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.barbershop-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.barbershop-identity h1 {
+  margin: 0;
+  font-family: var(--dt-font-display);
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.1;
+}
+
+.barbershop-identity .brand-name {
+  display: block;
+}
+
+.barbershop-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barbershop-contact li {
+  display: grid;
+  gap: 0.1rem;
+  font-size: 0.85rem;
+}
+
+.barbershop-contact__label {
+  color: var(--dt-ink-soft);
+  font-size: 0.68rem;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.barbershop-contact a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--dt-petrol-700);
+  font-weight: var(--dt-weight-bold);
+}
+
+.barbershop-contact a svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* === Carrossel de fotos da home =============================================
+ * Mesma estrutura e comportamento da Fase 1 anterior a esta (sem botão de
+ * pausa, sem anterior/próximo — ver o comentário na view) só com a cor de
+ * fundo do viewport e da legenda trocadas para petróleo escuro em vez de
+ * preto. */
+.barbershop-carousel {
+  margin: 0 0 2.5rem;
+}
+
+.barbershop-carousel__viewport {
+  overflow: hidden;
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-lg);
+  background: var(--dt-petrol-900);
+  aspect-ratio: 16 / 7;
+  touch-action: pan-y;
+}
+
+.barbershop-carousel__track {
+  display: flex;
+  height: 100%;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.barbershop-carousel__slide {
+  position: relative;
+  flex: 0 0 auto;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.barbershop-carousel__slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.barbershop-carousel__image-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 16rem;
+}
+
+.barbershop-carousel__image-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 1.5rem;
+  background: var(--dt-mist-100);
+  color: var(--dt-ink-soft);
+  text-align: center;
+}
+
+.barbershop-carousel__image-fallback strong {
+  color: var(--dt-ink);
+}
+
+.barbershop-carousel__image-fallback[hidden] {
+  display: none;
+}
+
+.barbershop-carousel__slide figcaption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 3.2rem 1.4rem 1.2rem;
+  background: linear-gradient(transparent, rgba(11, 47, 58, 0.78));
+  color: var(--dt-ice-0);
   font-size: 0.95rem;
-  font-weight: 800;
+  font-weight: var(--dt-weight-bold);
 }
 
-.booking-page .choice-card__body small {
-  margin-top: 0.2rem;
-  color: var(--meta-muted);
+.barbershop-carousel__status {
+  min-height: 1.4rem;
+  padding-top: 0.55rem;
+  color: var(--dt-ink-soft);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+/* Estado vazio da galeria: usa o `.empty-state`/`empty_state_illustration`
+ * da Fase 1 em vez do ícone de texto solto que havia antes. A moldura é
+ * escopada aqui (e não em `design_components.css`) de propósito: carregar o
+ * arquivo de componentes inteiro no layout público vazaria `.button`,
+ * `.input` e `.admin-badge` novos para o admin e o login antes da hora —
+ * ver o comentário no topo deste arquivo. */
+.booking-entry .barbershop-carousel--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--dt-space-3);
+  min-height: 12rem;
+  padding: var(--dt-space-6) var(--dt-space-5);
+  border: 1px dashed var(--dt-line);
+  border-radius: var(--dt-radius-lg);
+  background: var(--dt-ice-0);
+  color: var(--dt-ink-soft);
+}
+
+.booking-entry .barbershop-carousel--empty svg {
+  width: 7rem;
+  height: 7rem;
+}
+
+.booking-entry .barbershop-carousel--empty strong {
+  font-family: var(--dt-font-display);
+  font-weight: var(--dt-weight-bold);
+  font-size: 1rem;
+  color: var(--dt-ink);
+}
+
+.booking-entry .barbershop-carousel--empty span {
+  font-size: 0.85rem;
+  max-width: 24rem;
+}
+
+/* === Aviso do topo do wizard ================================================
+ * O aviso de antecedência usa coral tracejado — ele não bloqueia nada, é
+ * regra permanente. O aviso de pausa usa vermelho de status sólido: é uma
+ * interrupção real e ativa do dono, e merece a mesma cor que o resto do
+ * sistema usa para "atenção", em vez de pedir ao cliente para aprender que
+ * um cinza mais escuro aqui significa algo mais grave. */
+.booking-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  border: 1px dashed var(--dt-coral-400);
+  border-radius: var(--dt-radius-sm);
+  background: var(--dt-coral-100);
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--dt-ink-soft);
+  margin-bottom: 1.5rem;
+}
+
+.booking-notice svg {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  color: var(--dt-coral-700);
+}
+
+.booking-notice strong {
+  display: block;
+  color: var(--dt-coral-700);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.booking-notice--alert {
+  border-style: solid;
+  border-color: var(--dt-danger-500);
+  background: var(--dt-danger-100);
+}
+
+.booking-notice--alert svg {
+  color: var(--dt-danger-700);
+}
+
+.booking-notice--alert strong {
+  color: var(--dt-danger-700);
+}
+
+/* === Faixa que abre o card do wizard ========================================
+ * Petróleo escuro com um fio coral no topo: a mesma assinatura visual da
+ * identidade antiga (faixa escura + fio de cor de decisão), só com as cores
+ * da paleta nova. */
+.booking-flow {
+  max-width: 34rem;
+  margin-inline: auto;
+  background: var(--dt-ice-0);
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-md);
+  box-shadow: var(--dt-shadow-soft);
+  padding: 1.75rem 1.5rem 2rem;
+}
+
+.booking-flow__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: -1.75rem -1.5rem 1.5rem;
+  border-bottom: 1px solid var(--dt-petrol-700);
+  border-top: 3px solid var(--dt-coral-500);
+  padding: 0.9rem 1.5rem;
+  background: var(--dt-petrol-900);
+  color: var(--dt-ice-0);
+}
+
+.booking-flow__head .button--secondary {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.5);
+  color: var(--dt-ice-0);
+  padding: 0.4rem 0.8rem;
+  font-size: 0.7rem;
+}
+
+.booking-flow__head .button--secondary:hover {
+  background: var(--dt-petrol-700);
+  border-color: var(--dt-petrol-700);
+  color: var(--dt-ice-0);
+}
+
+/* === Lista de serviços com o seletor "com" ================================= */
+.service-list {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--dt-line-soft);
+  border-radius: var(--dt-radius-sm);
+  overflow: hidden;
+  background: var(--dt-ice-0);
+}
+
+.service-list__head {
+  background: var(--dt-petrol-500);
+  color: var(--dt-ice-0);
+  padding: 0.6rem 1rem;
+  font-size: 0.75rem;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: 0.04em;
+}
+
+.service-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--dt-line-soft);
+}
+
+.service-row:hover {
+  background: var(--dt-ice-50);
+}
+
+.service-row__body {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.service-row__name {
+  color: var(--dt-ink);
+  font-size: 0.88rem;
+  font-weight: var(--dt-weight-bold);
+  line-height: 1.35;
+}
+
+.service-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: baseline;
+  color: var(--dt-ink-soft);
   font-size: 0.75rem;
 }
 
-.booking-page .choice-card__arrow {
-  color: var(--meta-blue);
-  font-size: 1.3rem;
-  font-weight: 800;
+.service-row__price {
+  color: var(--dt-ink);
+  font-size: 0.95rem;
+  font-weight: var(--dt-weight-bold);
+  white-space: nowrap;
 }
 
-.booking-page .booking-form,
-.booking-page .form-section {
-  font-family: var(--font-body);
-}
-
-.booking-page .form-section {
-  border: 1px solid var(--meta-line);
-  border-radius: var(--meta-radius-md);
-  padding: clamp(1rem, 2.5vw, 1.45rem);
-  background: var(--meta-surface);
-  box-shadow: 0 2px 8px rgba(24, 25, 26, 0.04);
-}
-
-.booking-page .form-section legend {
+.service-row__action {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  width: 100%;
-  margin-bottom: 1.1rem;
-  color: var(--meta-ink);
-  font-size: 0.98rem;
-  font-weight: 800;
+  gap: 0.5rem;
 }
 
-.booking-page .form-step {
-  display: inline-grid;
-  width: 1.8rem;
-  height: 1.8rem;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--meta-blue);
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 800;
+.service-row__select {
+  appearance: none;
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-sm);
+  background: var(--dt-ice-0) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2352696d' d='M0 0h10L5 6z'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
+  color: var(--dt-ink);
+  font-size: 0.78rem;
+  padding: 0.4rem 1.7rem 0.4rem 0.6rem;
+  max-width: 11rem;
+  cursor: pointer;
 }
 
-.booking-page .form-alert {
-  border: 1px solid var(--meta-danger);
-  border-radius: var(--meta-radius-sm);
-  padding: 0.9rem 1rem;
-  background: var(--meta-danger-soft);
-  color: var(--meta-danger);
-  font-size: 0.84rem;
+.service-row__select:focus-visible {
+  outline: none;
+  box-shadow: var(--dt-focus-ring);
+  border-radius: var(--dt-radius-sm);
 }
 
-.booking-page .form-alert ul {
-  margin: 0.4rem 0 0;
-  padding-left: 1rem;
+.service-row__go {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  white-space: nowrap;
+  background: var(--dt-coral-500);
+  color: var(--dt-ice-0);
+  border: 1px solid var(--dt-coral-500);
+  border-radius: var(--dt-radius-sm);
+  padding: 0.45rem 0.9rem;
+  font-size: 0.7rem;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--dt-transition-fast), border-color var(--dt-transition-fast);
 }
 
-.booking-page .field-hint,
-.booking-page .booking-footnote {
-  color: var(--meta-muted);
-  font-family: var(--font-body);
-  font-size: 0.76rem;
+.service-row__go:hover,
+.service-row__go:focus-visible {
+  background: var(--dt-coral-700);
+  border-color: var(--dt-coral-700);
 }
 
-.booking-page input:not([type="radio"]):not([type="checkbox"]),
-.booking-page select,
-.booking-page textarea {
-  min-height: 3rem;
-  border: 1px solid var(--meta-line);
-  border-radius: var(--meta-radius-sm);
-  padding: 0.7rem 0.8rem;
-  background: var(--meta-surface);
-  color: var(--meta-ink);
-  font-family: var(--font-body);
-  font-size: 0.92rem;
-}
-
-.booking-page input:not([type="radio"]):not([type="checkbox"]):focus,
-.booking-page select:focus,
-.booking-page textarea:focus {
-  border-color: var(--meta-blue);
-  box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.14);
-}
-
+/* === Grade de horários ======================================================
+ * O horário escolhido fica petróleo (é seleção/estado, não a decisão final
+ * — a decisão final é o botão "Confirmar agendamento" lá embaixo, coral). */
 .booking-page .slot-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -388,57 +725,88 @@ body:has(.booking-page) {
   display: grid;
   min-height: 3.2rem;
   place-items: center;
-  border: 1px solid var(--meta-line);
-  border-radius: var(--meta-radius-sm);
-  background: var(--meta-surface);
-  color: var(--meta-text);
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-sm);
+  background: var(--dt-ice-0);
+  color: var(--dt-ink);
   cursor: pointer;
-  font-family: var(--font-body);
   font-size: 0.88rem;
-  font-weight: 800;
-  transition: border-color 150ms ease, background-color 150ms ease;
+  font-weight: var(--dt-weight-bold);
+  transition: border-color var(--dt-transition-fast), background-color var(--dt-transition-fast);
 }
 
 .booking-page .slot-card:hover,
 .booking-page .slot-card:focus-within {
-  border-color: var(--meta-blue);
+  border-color: var(--dt-petrol-500);
 }
 
 .booking-page .slot-card:has(.choice-input:checked) {
-  border-color: var(--meta-blue);
-  background: var(--meta-blue-soft);
-  color: var(--meta-blue);
+  border-color: var(--dt-petrol-500);
+  background: var(--dt-petrol-500);
+  color: var(--dt-ice-0);
+}
+
+.booking-page .slot-card:has(.choice-input:focus-visible) {
+  outline: none;
+  box-shadow: var(--dt-focus-ring);
 }
 
 .booking-page .slot-card .choice-input:focus-visible + span {
-  outline: 3px solid rgba(8, 102, 255, 0.35);
-  outline-offset: 3px;
+  outline: none;
 }
 
+/* === Botão ==================================================================
+ * O coral fica reservado para o botão primário — a decisão que de fato
+ * avança o agendamento ("Confirmar agendamento", "Ver agenda" continua
+ * secundário/petróleo porque só troca a data, não confirma nada).
+ *
+ * Escopado em `.booking-entry`/`.booking-page` (e não só `.booking-page`):
+ * a home pública (`.booking-entry`) também usa `.button--secondary` no
+ * atalho "Reagendar", e sem o escopo duplo ela continuava herdando o
+ * dourado genérico do `.button` em `application.css`. */
+.booking-entry .button,
 .booking-page .button {
   display: inline-flex;
   min-height: 3.25rem;
   align-items: center;
   justify-content: center;
   gap: 0.55rem;
-  border: 1px solid var(--meta-blue);
-  border-radius: var(--meta-radius-sm);
+  border: 1px solid var(--dt-coral-500);
+  border-radius: var(--dt-radius-sm);
   padding: 0.8rem 1.1rem;
-  background: var(--meta-blue);
-  color: #fff;
-  font-family: var(--font-body);
+  background: var(--dt-coral-500);
+  color: var(--dt-ice-0);
   font-size: 0.92rem;
-  font-weight: 800;
+  font-weight: var(--dt-weight-bold);
   line-height: 1.1;
   text-align: center;
-  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  transition: background-color var(--dt-transition-fast), border-color var(--dt-transition-fast), transform var(--dt-transition-fast);
 }
 
+.booking-entry .button:hover,
+.booking-entry .button:focus-visible,
 .booking-page .button:hover,
 .booking-page .button:focus-visible {
-  border-color: var(--meta-blue-hover);
-  background: var(--meta-blue-hover);
+  border-color: var(--dt-coral-700);
+  background: var(--dt-coral-700);
   transform: translateY(-1px);
+}
+
+.booking-entry .button--secondary,
+.booking-page .button--secondary {
+  background: var(--dt-ice-0);
+  color: var(--dt-petrol-700);
+  border-color: var(--dt-petrol-500);
+}
+
+.booking-entry .button--secondary:hover,
+.booking-entry .button--secondary:focus-visible,
+.booking-page .button--secondary:hover,
+.booking-page .button--secondary:focus-visible {
+  background: var(--dt-petrol-100);
+  border-color: var(--dt-petrol-700);
+  color: var(--dt-petrol-700);
+  transform: none;
 }
 
 .booking-page .button--full {
@@ -450,54 +818,292 @@ body:has(.booking-page) {
   text-align: center;
 }
 
+/* === Resumo da escolha (serviço/profissional) ============================== */
+.booking-selection-summary {
+  display: grid;
+  gap: 0.2rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--dt-line-soft);
+  border-radius: var(--dt-radius-md);
+  padding: 1rem 1.1rem;
+  background: var(--dt-ice-0);
+}
+
+.booking-selection-summary span {
+  color: var(--dt-ink-soft);
+  font-size: 0.74rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-selection-summary strong {
+  color: var(--dt-ink);
+  font-size: 0.9rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-selection-summary__change {
+  color: var(--dt-petrol-700);
+  font-weight: var(--dt-weight-bold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  margin-left: 0.35rem;
+}
+
+.booking-selection-summary__change:hover {
+  color: var(--dt-petrol-900);
+}
+
+/* === Cartão "escolha o profissional" (link inteiro) ========================= */
+.booking-page .choice-card--link {
+  display: block;
+  cursor: pointer;
+}
+
+.booking-page .choice-card--link .choice-card__body {
+  min-height: 5.4rem;
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-ice-0);
+  color: var(--dt-ink);
+  box-shadow: var(--dt-shadow-card);
+  transition: border-color var(--dt-transition-base), background-color var(--dt-transition-base), transform var(--dt-transition-base);
+}
+
+.booking-page .choice-card--link:hover,
+.booking-page .choice-card--link:focus-visible {
+  transform: translateY(-1px);
+}
+
+.booking-page .choice-card--link:hover .choice-card__body,
+.booking-page .choice-card--link:focus-visible .choice-card__body {
+  border-color: var(--dt-petrol-500);
+  background: var(--dt-petrol-100);
+}
+
+.booking-page .choice-card__avatar {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 50%;
+  background: var(--dt-petrol-100);
+  color: var(--dt-petrol-700);
+  font-size: 1.1rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-page .choice-card__body strong {
+  color: var(--dt-ink);
+  font-size: 0.95rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-page .choice-card__body small {
+  margin-top: 0.2rem;
+  color: var(--dt-ink-soft);
+  font-size: 0.75rem;
+}
+
+.booking-page .choice-card__arrow {
+  color: var(--dt-coral-500);
+  font-size: 1.3rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+/* === Agenda fundida (profissional + horários) =============================== */
+.agenda-list {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.agenda-card {
+  padding: 1rem 0;
+  border-top: 1px solid var(--dt-line-soft);
+}
+
+.agenda-card:last-child {
+  border-bottom: 1px solid var(--dt-line-soft);
+}
+
+.agenda-card__name {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+  color: var(--dt-ink);
+  font-size: 0.95rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.agenda-card__empty {
+  color: var(--dt-ink-soft);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.agenda-card__photo {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--dt-petrol-100);
+}
+
+/* === Formulário ============================================================= */
+.booking-page .booking-form,
+.booking-page .form-section {
+  font-family: var(--dt-font-body);
+}
+
+.booking-page .form-section {
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-md);
+  padding: clamp(1rem, 2.5vw, 1.45rem);
+  background: var(--dt-ice-0);
+  box-shadow: var(--dt-shadow-card);
+}
+
+.booking-page .form-section legend {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  margin-bottom: 1.1rem;
+  color: var(--dt-ink);
+  font-size: 0.98rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-page .form-step {
+  display: inline-grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--dt-petrol-500);
+  color: var(--dt-ice-0);
+  font-size: 0.65rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-page .form-alert {
+  border: 1px solid var(--dt-danger-500);
+  border-radius: var(--dt-radius-sm);
+  padding: 0.9rem 1rem;
+  background: var(--dt-danger-100);
+  color: var(--dt-danger-700);
+  font-size: 0.84rem;
+}
+
+.booking-page .form-alert ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1rem;
+}
+
+.booking-page .field-hint,
+.booking-page .booking-footnote,
+.booking-page .field-label-spaced {
+  color: var(--dt-ink-soft);
+  font-size: 0.76rem;
+}
+
+.booking-page .field-label-spaced {
+  display: block;
+  margin-top: 0.9rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-page input:not([type="radio"]):not([type="checkbox"]),
+.booking-page select,
+.booking-page textarea {
+  min-height: 3rem;
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-sm);
+  padding: 0.7rem 0.8rem;
+  background: var(--dt-ice-0);
+  color: var(--dt-ink);
+  font-size: 0.92rem;
+}
+
+.booking-page input:not([type="radio"]):not([type="checkbox"]):focus,
+.booking-page select:focus,
+.booking-page textarea:focus {
+  outline: none;
+  border-color: var(--dt-petrol-500);
+  box-shadow: var(--dt-focus-ring);
+}
+
+.booking-page .select-field {
+  flex: 1;
+}
+
+.booking-inline-form {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+/* === Estados vazios ==========================================================
+ * Mesma moldura do `.empty-state` da Fase 1, escopada aqui pelo motivo já
+ * explicado no bloco do carrossel: evitar carregar `design_components.css`
+ * inteiro no layout público. */
 .booking-page .customer-empty-state,
 .booking-entry .customer-empty-state {
-  border: 1px dashed var(--meta-line);
-  border-radius: var(--meta-radius-md);
-  padding: 1.5rem;
-  background: var(--meta-surface);
-  color: var(--meta-muted);
-  font-family: var(--font-body);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--dt-space-3);
+  border: 1px dashed var(--dt-line);
+  border-radius: var(--dt-radius-md);
+  padding: var(--dt-space-6) var(--dt-space-5);
+  background: var(--dt-ice-0);
+  color: var(--dt-ink-soft);
   font-size: 0.85rem;
+}
+
+.booking-page .customer-empty-state svg,
+.booking-entry .customer-empty-state svg {
+  width: 7rem;
+  height: 7rem;
 }
 
 .booking-page .customer-empty-state strong,
 .booking-entry .customer-empty-state strong {
-  color: var(--meta-ink);
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
 }
 
-/* Confirmation */
+/* === Confirmação ============================================================= */
 .booking-page .confirmation-card {
   max-width: 42rem;
-  border: 1px solid var(--meta-line);
-  border-radius: var(--meta-radius-lg);
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-lg);
   padding: clamp(1.4rem, 4vw, 2.6rem);
-  background: var(--meta-surface);
-  color: var(--meta-text);
-  box-shadow: 0 3px 14px rgba(24, 25, 26, 0.05);
+  background: var(--dt-ice-0);
+  color: var(--dt-ink);
+  box-shadow: var(--dt-shadow-soft);
 }
 
 .booking-page .confirmation-card .eyebrow {
-  color: var(--meta-blue);
-  font-family: var(--font-body);
+  color: var(--dt-coral-700);
   font-size: 0.73rem;
-  font-weight: 800;
+  font-weight: var(--dt-weight-bold);
   letter-spacing: 0.01em;
   text-transform: uppercase;
 }
 
 .booking-page .confirmation-card h1 {
   margin: 0.55rem 0 0.9rem;
-  color: var(--meta-ink);
-  font-family: var(--font-body);
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
   font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 750;
-  letter-spacing: -0.05em;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: -0.03em;
   line-height: 1.03;
 }
 
 .booking-page .confirmation-card > p {
-  color: var(--meta-muted);
+  color: var(--dt-ink-soft);
   font-size: 0.95rem;
 }
 
@@ -505,8 +1111,8 @@ body:has(.booking-page) {
   display: grid;
   gap: 0;
   margin: 1.8rem 0;
-  border-top: 1px solid var(--meta-line-soft);
-  border-bottom: 1px solid var(--meta-line-soft);
+  border-top: 1px solid var(--dt-line-soft);
+  border-bottom: 1px solid var(--dt-line-soft);
   padding: 0;
 }
 
@@ -515,7 +1121,7 @@ body:has(.booking-page) {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  border-bottom: 1px solid var(--meta-line-soft);
+  border-bottom: 1px solid var(--dt-line-soft);
   padding: 0.85rem 0;
 }
 
@@ -524,42 +1130,67 @@ body:has(.booking-page) {
 }
 
 .booking-page .confirmation-details dt {
-  color: var(--meta-muted);
+  color: var(--dt-ink-soft);
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: var(--dt-weight-bold);
 }
 
 .booking-page .confirmation-details dd {
   margin: 0;
-  color: var(--meta-ink);
+  color: var(--dt-ink);
   font-size: 0.86rem;
-  font-weight: 800;
+  font-weight: var(--dt-weight-bold);
   text-align: right;
 }
 
-.booking-page .confirmation-details .admin-badge {
-  border-radius: 999px;
-  padding: 0.32rem 0.6rem;
-  background: var(--meta-blue-soft);
-  color: var(--meta-blue);
+/* Pílula de status do agendamento. Não reutiliza `.admin-badge` — aquele
+ * marca "isto é área do dono", e o status de um agendamento é informação
+ * para o cliente, não um selo de admin. Usa a mesma convenção de cor dos
+ * badges da Fase 1 (verde=ok, âmbar=aguardando, vermelho=atenção,
+ * cinza=encerrado), escopada aqui pelo mesmo motivo dos outros blocos. */
+.booking-page .status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: var(--dt-radius-pill);
+  padding: 0.32rem 0.7rem;
   font-size: 0.7rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-page .status-pill--pending {
+  background: var(--dt-warning-100);
+  color: var(--dt-warning-700);
+}
+
+.booking-page .status-pill--confirmed {
+  background: var(--dt-success-100);
+  color: var(--dt-success-700);
+}
+
+.booking-page .status-pill--canceled {
+  background: var(--dt-danger-100);
+  color: var(--dt-danger-700);
+}
+
+.booking-page .status-pill--completed {
+  background: var(--dt-neutral-100);
+  color: var(--dt-neutral-700);
 }
 
 .booking-page .field-hint {
   margin: 1rem 0;
-  color: var(--meta-muted);
-  font-size: 0.76rem;
 }
 
-.booking-page .customer-footer {
+.booking-page .customer-footer,
+.booking-entry .customer-footer {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
   margin-top: 3rem;
-  color: var(--meta-muted);
-  font-family: var(--font-body);
+  color: var(--dt-ink-soft);
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: var(--dt-weight-bold);
   letter-spacing: 0;
   text-transform: none;
 }
@@ -596,7 +1227,8 @@ body:has(.booking-page) {
     font-size: clamp(2.25rem, 11vw, 3.5rem);
   }
 
-  .booking-entry .service-choice-list {
+  .booking-entry .service-choice-list,
+  .booking-page .service-choice-list {
     grid-template-columns: 1fr;
   }
 
@@ -612,6 +1244,16 @@ body:has(.booking-page) {
 
   .booking-page .confirmation-details dd {
     width: 100%;
+    text-align: left;
+  }
+
+  .booking-inline-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .barbershop-carousel__viewport {
+    aspect-ratio: 4 / 3;
   }
 }
 
@@ -621,4 +1263,47 @@ body:has(.booking-page) {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* === Botão de submit (input[type="submit"]) =================================
+ * `application.css` estiliza todo `input:not([type="radio"]):not([type="checkbox"])`
+ * com aparência de campo de formulário (fundo branco, borda fina) — essa
+ * regra tem a MESMA especificidade de `.booking-page .button` (cada `:not()`
+ * conta como uma classe, igual uma classe comum), então quem ganha é quem
+ * vem depois na cascata. Sem este bloco ao final do arquivo, o
+ * `input[type="submit"].button` ("Confirmar agendamento", "Ver agenda")
+ * herdava a aparência de campo de texto em vez do botão coral/petróleo.
+ * Mantido como bloco isolado e comentado (em vez de só reordenar o bloco de
+ * botão lá em cima) para deixar explícito o motivo do desempate — mover
+ * blocos de lugar sem essa nota faria o próximo editor achar duplicata e
+ * apagar "sem querer". */
+.booking-entry input[type="submit"].button,
+.booking-page input[type="submit"].button {
+  background: var(--dt-coral-500);
+  color: var(--dt-ice-0);
+  border-color: var(--dt-coral-500);
+}
+
+.booking-entry input[type="submit"].button:hover,
+.booking-entry input[type="submit"].button:focus-visible,
+.booking-page input[type="submit"].button:hover,
+.booking-page input[type="submit"].button:focus-visible {
+  background: var(--dt-coral-700);
+  border-color: var(--dt-coral-700);
+}
+
+.booking-entry input[type="submit"].button--secondary,
+.booking-page input[type="submit"].button--secondary {
+  background: var(--dt-ice-0);
+  color: var(--dt-petrol-700);
+  border-color: var(--dt-petrol-500);
+}
+
+.booking-entry input[type="submit"].button--secondary:hover,
+.booking-entry input[type="submit"].button--secondary:focus-visible,
+.booking-page input[type="submit"].button--secondary:hover,
+.booking-page input[type="submit"].button--secondary:focus-visible {
+  background: var(--dt-petrol-100);
+  color: var(--dt-petrol-700);
+  border-color: var(--dt-petrol-700);
 }
