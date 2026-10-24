@@ -202,6 +202,19 @@
   color: var(--dt-ink);
 }
 
+/* Mesma regra para um `<label>` sem a classe explícita dentro de `.field`:
+ * o form de login do Devise (`devise/sessions/new.html.erb`) não pode levar
+ * `class:` no `form.label`, porque um spec de acessibilidade lê o HTML
+ * literal `<label for="email">` — e o Rails ordena os atributos do `<label>`
+ * em ordem alfabética, então QUALQUER atributo extra (`class="..."`) entra
+ * ANTES de `for` e quebra esse regex. O seletor por descendência cobre esse
+ * caso sem exigir a classe. */
+.field > label {
+  font-size: var(--dt-text-sm);
+  font-weight: var(--dt-weight-medium);
+  color: var(--dt-ink);
+}
+
 .field__hint {
   font-size: var(--dt-text-xs);
   color: var(--dt-ink-soft);
@@ -423,6 +436,157 @@
   border-bottom-color: var(--dt-coral-400);
 }
 
+/* === Botão de menu (mobile) ================================================
+ * Só aparece em telas estreitas (ver @media no fim do arquivo): o painel
+ * admin tem sete links, e empilhá-los todos visíveis no topo de uma tela de
+ * 375px empurraria o conteúdo para muito baixo antes do dono ver qualquer
+ * dado — por isso a nav colapsa num menu, e não num scroll horizontal, que
+ * esconderia "Sair" sem indicar que havia mais itens. */
+.nav__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--dt-radius-sm);
+  background: transparent;
+  color: var(--dt-ice-0);
+  cursor: pointer;
+}
+
+.nav__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--dt-focus-ring);
+}
+
+/* === Tabela ================================================================
+ * Equivalente, na paleta nova, ao `.admin-table` do `application.css`: linha
+ * zebrada não (a borda inferior já separa), cabeçalho em versalete e baixo
+ * contraste para não competir com o dado, ação alinhada à direita.
+ *
+ * Mobile: a escolha é rolagem horizontal com uma sombra de borda que só
+ * aparece enquanto há conteúdo escondido à direita (`background-attachment:
+ * local` com dois gradientes — truque conhecido de \"scroll shadow\" só em
+ * CSS), e não reflow em cards. Reflow exigiria reescrever `<td>` com
+ * `data-label` em quatro telas só para a mesma informação, e o ganho real
+ * para o dono — que já rola listas na tela do celular o dia inteiro — é
+ * pequeno perto do custo de manter duas formas de render da mesma tabela. */
+.table-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--dt-space-5);
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-lg);
+  background: var(--dt-ice-0);
+  box-shadow: var(--dt-shadow-card);
+  background-image:
+    linear-gradient(to right, var(--dt-ice-0) 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(to right, rgba(11, 47, 58, 0.12), rgba(11, 47, 58, 0)) 100% 0;
+  background-repeat: no-repeat;
+  background-size: 2rem 100%, 1rem 100%;
+  background-attachment: local, scroll;
+}
+
+.table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: var(--dt-text-sm);
+}
+
+.table th {
+  border-bottom: 1px solid var(--dt-line);
+  padding: var(--dt-space-3) var(--dt-space-4);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-xs);
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.table td {
+  border-bottom: 1px solid var(--dt-line-soft);
+  padding: var(--dt-space-4);
+  vertical-align: middle;
+  color: var(--dt-ink);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table tbody tr:hover {
+  background: var(--dt-ice-50);
+}
+
+.table__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--dt-space-2);
+}
+
+.table__actions form {
+  display: inline;
+}
+
+/* === Utilitário de acessibilidade ==========================================
+ * Mesma regra de `application.css`, duplicada aqui de propósito: os dois
+ * arquivos nunca são carregados juntos na mesma página (ver cabeçalho deste
+ * arquivo e de `design_tokens.css`), então não há risco de uma regra
+ * sobrescrever a outra — só o de uma tela carregar sem a classe se ela
+ * existisse num só lugar. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* === Cartão de alternância ==================================================
+ * Para um `checkbox` que liga/desliga uma funcionalidade inteira (agendamento
+ * online, publicar foto no carrossel) — não é uma opção de formulário comum,
+ * é uma decisão com texto de apoio, por isso ganha moldura própria em vez do
+ * `.checkbox` simples. */
+.toggle-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-space-3);
+  padding: var(--dt-space-4);
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-ice-50);
+  cursor: pointer;
+}
+
+.toggle-card input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+  accent-color: var(--dt-petrol-500);
+  flex-shrink: 0;
+}
+
+.toggle-card input:focus-visible {
+  outline: none;
+  box-shadow: var(--dt-focus-ring);
+  border-radius: var(--dt-radius-sm);
+}
+
+.toggle-card strong {
+  display: block;
+  color: var(--dt-ink);
+  font-size: var(--dt-text-base);
+}
+
+.toggle-card small {
+  display: block;
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+  margin-top: var(--dt-space-1);
+}
+
 /* === Estado vazio ===========================================================
  * Moldura comum para as ilustrações de `empty_states` — centraliza o SVG, o
  * título e o texto de apoio, e deixa um espaço opcional para uma ação
@@ -455,4 +619,52 @@
   font-size: var(--dt-text-sm);
   max-width: 24rem;
   margin: 0;
+}
+
+/* === Responsivo: nav em tela estreita ======================================
+ * Abaixo de 760px (celular, uso entre um corte e outro) a nav esconde a
+ * lista de links e mostra o botão hambúrguer; `.nav__links--open` é alternado
+ * por Stimulus (ver `nav_toggle_controller.js`) e não por `:target`/`:has`,
+ * porque o painel já usa Stimulus para todo outro comportamento interativo e
+ * um segundo mecanismo só para este menu seria inconsistência sem motivo. */
+@media (max-width: 760px) {
+  .nav__toggle {
+    display: inline-flex;
+  }
+
+  .nav--admin .nav__links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: var(--dt-space-2) var(--dt-space-4) var(--dt-space-4);
+    background: var(--dt-petrol-900);
+    border-bottom: 1px solid var(--dt-petrol-700);
+    box-shadow: var(--dt-shadow-soft);
+  }
+
+  .nav--admin {
+    position: relative;
+  }
+
+  .nav--admin .nav__links--open {
+    display: flex;
+  }
+
+  .nav--admin .nav__link {
+    padding: var(--dt-space-3) 0;
+    border-bottom: 1px solid var(--dt-petrol-700);
+  }
+
+  .nav--admin .nav__link--active {
+    border-bottom-color: var(--dt-coral-400);
+  }
+
+  .nav--admin form {
+    margin-top: var(--dt-space-2);
+  }
 }

@@ -1,22 +1,25 @@
-<%= form_with model: [:admin, professional], class: "admin-form" do |form| %>
+<%= form_with model: [:admin, professional] do |form| %>
   <% if professional.errors.any? %>
-    <div class="admin-alert admin-alert--error" id="error_explanation" role="alert">
-      <strong><%= pluralize(professional.errors.count, "erro") %> impediram este profissional de ser salvo:</strong>
-      <ul>
-        <% professional.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+    <div class="alert alert--danger" id="error_explanation" role="alert">
+      <%= icon_tag(:x) %>
+      <div>
+        <strong><%= pluralize(professional.errors.count, "erro") %> impediram este profissional de ser salvo:</strong>
+        <ul>
+          <% professional.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
     </div>
   <% end %>
 
-  <div class="admin-form__group">
-    <%= form.label :name, "Nome do profissional" %>
-    <%= form.text_field :name, required: true, autofocus: true %>
+  <div class="field">
+    <%= form.label :name, "Nome do profissional", class: "field__label" %>
+    <%= form.text_field :name, required: true, autofocus: true, class: "input#{' input--error' if professional.errors[:name].any?}" %>
   </div>
 
   <div class="admin-form__actions">
-    <%= form.submit professional.new_record? ? "Criar profissional" : "Salvar alterações", class: "admin-button" %>
-    <%= link_to "Cancelar", admin_professionals_path, class: "admin-button admin-button--quiet" %>
+    <%= form.submit professional.new_record? ? "Criar profissional" : "Salvar alterações", class: "button button--primary" %>
+    <%= link_to "Cancelar", admin_professionals_path, class: "button button--ghost" %>
   </div>
 <% end %>

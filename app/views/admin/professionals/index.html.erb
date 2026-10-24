@@ -1,19 +1,24 @@
 <% content_for :title, "Profissionais | Admin" %>
 
-<section class="admin-header-row">
+<section class="admin-page-header">
   <div>
     <div class="admin-kicker">Equipe</div>
     <h1 class="admin-page-title">Profissionais</h1>
     <p class="admin-page-description">Mantenha o time da barbearia e os profissionais disponíveis para atendimento.</p>
   </div>
-  <%= link_to "Novo profissional", new_admin_professional_path, class: "admin-button" %>
+  <%= link_to "Novo profissional", new_admin_professional_path, class: "button button--primary" %>
 </section>
 
-<div class="admin-table-wrap">
-  <% if @professionals.empty? %>
-    <div class="admin-empty">Nenhum profissional cadastrado.</div>
-  <% else %>
-    <table class="admin-table">
+<% if @professionals.empty? %>
+  <div class="empty-state card">
+    <%= empty_state_illustration(:no_professionals) %>
+    <p class="empty-state__title">Nenhum profissional cadastrado</p>
+    <p class="empty-state__text">Cadastre o primeiro profissional para liberar os agendamentos.</p>
+    <%= link_to "Novo profissional", new_admin_professional_path, class: "button button--primary" %>
+  </div>
+<% else %>
+  <div class="table-wrap">
+    <table class="table">
       <thead>
         <tr>
           <th>Profissional</th>
@@ -25,14 +30,21 @@
           <tr>
             <td><strong><%= professional.name %></strong></td>
             <td>
-              <div class="admin-table__actions">
-                <%= link_to "Editar", edit_admin_professional_path(professional), class: "admin-button admin-button--quiet" %>
-                <%= button_to "Excluir", admin_professional_path(professional), method: :delete, class: "admin-button admin-button--danger", form: { data: { turbo_confirm: "Excluir este profissional?" } } %>
+              <div class="table__actions">
+                <%= link_to edit_admin_professional_path(professional), class: "button button--secondary button--sm", aria: { label: "Editar #{professional.name}" } do %>
+                  <%= icon_tag(:edit, size: 16) %> <span class="visually-hidden">Editar</span>
+                <% end %>
+                <%= button_to admin_professional_path(professional), method: :delete,
+                      class: "button button--danger button--sm",
+                      form: { data: { turbo_confirm: "Excluir este profissional?" } },
+                      aria: { label: "Excluir #{professional.name}" } do %>
+                  <%= icon_tag(:trash, size: 16) %> <span class="visually-hidden">Excluir</span>
+                <% end %>
               </div>
             </td>
           </tr>
         <% end %>
       </tbody>
     </table>
-  <% end %>
-</div>
+  </div>
+<% end %>

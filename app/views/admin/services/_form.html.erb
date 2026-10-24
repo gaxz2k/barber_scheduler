@@ -1,27 +1,31 @@
-<%= form_with model: [:admin, service], class: "admin-form" do |form| %>
+<%= form_with model: [:admin, service] do |form| %>
   <% if service.errors.any? %>
-    <div class="admin-alert admin-alert--error" id="error_explanation" role="alert">
-      <strong><%= pluralize(service.errors.count, "erro") %> impediram este serviço de ser salvo:</strong>
-      <ul>
-        <% service.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+    <div class="alert alert--danger" id="error_explanation" role="alert">
+      <%= icon_tag(:x) %>
+      <div>
+        <strong><%= pluralize(service.errors.count, "erro") %> impediram este serviço de ser salvo:</strong>
+        <ul>
+          <% service.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
     </div>
   <% end %>
 
-  <div class="admin-form__group">
-    <%= form.label :name, "Nome do serviço" %>
-    <%= form.text_field :name, required: true, autofocus: true %>
+  <div class="field">
+    <%= form.label :name, "Nome do serviço", class: "field__label" %>
+    <%= form.text_field :name, required: true, autofocus: true, class: "input#{' input--error' if service.errors[:name].any?}" %>
   </div>
 
-  <div class="admin-form__group">
-    <%= form.label :duration_minutes, "Duração em minutos" %>
-    <%= form.number_field :duration_minutes, required: true, min: 1, step: 1 %>
+  <div class="field">
+    <%= form.label :duration_minutes, "Duração em minutos", class: "field__label" %>
+    <%= form.number_field :duration_minutes, required: true, min: 1, step: 1,
+          class: "input#{' input--error' if service.errors[:duration_minutes].any?}" %>
   </div>
 
   <div class="admin-form__actions">
-    <%= form.submit service.new_record? ? "Criar serviço" : "Salvar alterações", class: "admin-button" %>
-    <%= link_to "Cancelar", admin_services_path, class: "admin-button admin-button--quiet" %>
+    <%= form.submit service.new_record? ? "Criar serviço" : "Salvar alterações", class: "button button--primary" %>
+    <%= link_to "Cancelar", admin_services_path, class: "button button--ghost" %>
   </div>
 <% end %>
