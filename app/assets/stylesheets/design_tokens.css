@@ -1,0 +1,137 @@
+/* Fundação de uma identidade visual nova, do zero.
+ *
+ * Direção escolhida: "Litoral urbano" — uma barbearia contemporânea de
+ * bairro, não a barbearia-clube inglesa de couro e dourado que o
+ * `application.css` descreve como "Studio Navalha". O público que agenda
+ * pelo celular, de manhã, antes do trabalho, não precisa de uma vitrine de
+ * luxo discreto: precisa ver rápido os horários livres e confirmar. A base é
+ * azul-petróleo profundo (confiança, precisão de agenda) sobre branco-gelo
+ * (claridade de app, não de salão), com um coral quente como cor de ação —
+ * a única cor que "empurra" o olho para o botão de agendar, do mesmo jeito
+ * que o dourado empurrava para a decisão na paleta anterior, mas sem o peso
+ * de joalheria. Verde e vermelho de status seguem o símbolo universal de
+ * "ok" e "atenção" em vez de inventar vocabulário novo ali, porque status de
+ * agenda é a última coisa em que vale a pena ser original.
+ *
+ * Tom: direto, contemporâneo, levemente editorial. Vibe: app de serviço
+ * urbano (mais Nubank/Resy do que clube de cavalheiros). Público: cliente
+ * que agenda pelo celular e barbeiro que confere o painel entre um corte e
+ * outro — os dois precisam ler o estado de um agendamento em menos de um
+ * segundo, por isso a paleta de status é a parte menos "de autor" de tudo.
+ *
+ * Nomes são todos novos e não reaproveitam `--gold`/`--ink`/`--cream`: nesta
+ * fase o arquivo convive com `application.css` sem o tocar, e os dois nunca
+ * devem resolver a mesma variável com valores diferentes — o prefixo `--dt-`
+ * (design tokens) é o que impede a colisão de nome enquanto as duas
+ * identidades existem lado a lado no mesmo bundle. Quando a fase 2+ aplicar
+ * esta paleta às telas reais e o `application.css` antigo for removido, o
+ * prefixo pode cair; ele existe só para a travessia. */
+:root {
+  /* --- Cor: base ------------------------------------------------------- */
+  --dt-petrol-900: #0b2f3a;
+  --dt-petrol-700: #124a5c;
+  --dt-petrol-500: #1b6a82;
+  --dt-petrol-300: #5fa3b6;
+  --dt-petrol-100: #d8ebf0;
+
+  --dt-ice-50: #f6f9fa;
+  --dt-ice-0: #ffffff;
+  --dt-mist-100: #e7eef0;
+  --dt-mist-200: #d4e0e3;
+
+  --dt-ink: #0e2024;
+  --dt-ink-soft: #52696d;
+  --dt-ink-faint: #8aa0a4;
+
+  /* --- Cor: ação (coral) ------------------------------------------------ */
+  --dt-coral-700: #c43e26;
+  --dt-coral-500: #e8572f;
+  --dt-coral-400: #ef6f49;
+  --dt-coral-100: #fde4da;
+
+  /* --- Cor: status ------------------------------------------------------
+   * Segue o símbolo universal (verde = ok, vermelho = atenção) de propósito:
+   * um agendamento confirmado não é o lugar para inventar vocabulário de
+   * cor novo, porque quem olha o painel entre um corte e outro não tem tempo
+   * de aprender uma convenção de autor. */
+  --dt-success-700: #1d6b40;
+  --dt-success-500: #2f9159;
+  --dt-success-100: #e3f5e9;
+
+  --dt-warning-700: #93600b;
+  --dt-warning-500: #c9870f;
+  --dt-warning-100: #fbf0d9;
+
+  --dt-danger-700: #8f2334;
+  --dt-danger-500: #c23349;
+  --dt-danger-100: #fbe4e7;
+
+  --dt-neutral-700: #4a5a5d;
+  --dt-neutral-500: #6f8286;
+  --dt-neutral-100: #e9eeef;
+
+  /* --- Linhas e sombras -------------------------------------------------- */
+  --dt-line: #d4e0e3;
+  --dt-line-soft: #e7eef0;
+  --dt-shadow-soft: 0 18px 40px rgba(11, 47, 58, 0.12);
+  --dt-shadow-card: 0 2px 10px rgba(11, 47, 58, 0.08);
+  --dt-shadow-focus: 0 0 0 4px rgba(27, 106, 130, 0.22);
+
+  /* --- Raio de borda ------------------------------------------------------
+   * Mais arredondado que a identidade anterior (que usava 4-10px, quase
+   * reto, como uma régua de alfaiate): aqui o raio generoso é o toque de
+   * "app de celular" em vez de "cartão de visita impresso". */
+  --dt-radius-sm: 8px;
+  --dt-radius-md: 14px;
+  --dt-radius-lg: 22px;
+  --dt-radius-pill: 999px;
+
+  /* --- Espaçamento em escala (base 4px) ---------------------------------- */
+  --dt-space-1: 0.25rem;
+  --dt-space-2: 0.5rem;
+  --dt-space-3: 0.75rem;
+  --dt-space-4: 1rem;
+  --dt-space-5: 1.5rem;
+  --dt-space-6: 2rem;
+  --dt-space-7: 3rem;
+  --dt-space-8: 4rem;
+
+  /* --- Tipografia ---------------------------------------------------------
+   * Par de fontes de sistema, sem webfont: o mesmo princípio do
+   * `application.css` continua valendo — baixar um arquivo de fonte para uma
+   * tela de agendamento custaria uma requisição bloqueante em quem só quer
+   * marcar um horário. A diferença de peso (display vs. corpo) já basta para
+   * separar título de texto sem precisar de uma segunda família. */
+  --dt-font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --dt-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --dt-font-mono: "SF Mono", "Cascadia Code", Consolas, monospace;
+
+  --dt-text-xs: 0.75rem;
+  --dt-text-sm: 0.875rem;
+  --dt-text-base: 1rem;
+  --dt-text-lg: 1.125rem;
+  --dt-text-xl: 1.375rem;
+  --dt-text-2xl: 1.75rem;
+  --dt-text-3xl: 2.25rem;
+
+  --dt-weight-regular: 400;
+  --dt-weight-medium: 500;
+  --dt-weight-bold: 700;
+
+  --dt-leading-tight: 1.2;
+  --dt-leading-normal: 1.5;
+
+  /* --- Foco e acessibilidade ----------------------------------------------
+   * Um único anel de foco, usado por todo componente interativo, para que
+   * tabular pelo teclado nunca dependa de o componente ter "lembrado" de
+   * estilizar `:focus-visible` por conta própria. */
+  --dt-focus-ring: 0 0 0 2px var(--dt-ice-0), 0 0 0 4px var(--dt-petrol-500);
+  --dt-focus-ring-danger: 0 0 0 2px var(--dt-ice-0), 0 0 0 4px var(--dt-danger-500);
+
+  /* --- Transições --------------------------------------------------------
+   * Curta e única, para toda transição de estado (hover, foco, erro): um
+   * tempo diferente por componente é o tipo de inconsistência que ninguém
+   * decide de propósito, só acontece com o tempo. */
+  --dt-transition-fast: 120ms ease;
+  --dt-transition-base: 180ms ease;
+}
