@@ -198,33 +198,11 @@ strong,
   text-transform: uppercase;
 }
 
-.button {
-  display: inline-flex;
-  min-height: 2.9rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  border: 1px solid var(--gold);
-  border-radius: var(--radius-sm);
-  padding: 0.75rem 1.1rem;
-  background: var(--gold);
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 800;
-  line-height: 1.1;
-  text-align: center;
-  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
-}
-
-.button:hover {
-  background: var(--gold-deep);
-  transform: translateY(-1px);
-}
-
-.button--primary {
-  background: var(--gold);
-  box-shadow: none;
-}
+/* `.button` e `.button--primary` não são mais definidos aqui: os dois
+ * seletores existem em `design_components.css` (tokens `--dt-*`), carregado
+ * depois desta folha no mesmo layout, então a cascata sempre resolvia para a
+ * versão nova — o par aqui embaixo nunca chegava a ser pintado. Removido
+ * para não manter uma segunda fonte de verdade morta. */
 
 .button--large {
   min-height: 3.35rem;
@@ -1563,16 +1541,9 @@ textarea:focus {
   font-size: 0.7rem;
 }
 
-.admin-badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: var(--radius-pill);
-  padding: 0.3rem 0.55rem;
-  background: #e7f0ff;
-  color: var(--gold);
-  font-size: 0.65rem;
-  font-weight: 800;
-}
+/* `.admin-badge` não é mais definido aqui: existe em `design_components.css`
+ * (tokens `--dt-*`), carregado depois no mesmo layout — mesma razão do
+ * `.button` acima. */
 
 .admin-empty {
   padding: 2rem;
@@ -1911,15 +1882,11 @@ textarea:focus {
   text-decoration: underline;
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  clip-path: inset(50%);
-}
+/* `.visually-hidden` não é mais definido aqui: existe em
+ * `design_components.css` (carregado depois) — mesma razão do `.button`
+ * acima. `.sr-only` continua local e é funcionalmente idêntica; as duas
+ * classes convivem no código hoje, não foi tocado aqui para não ampliar o
+ * escopo desta limpeza. */
 
 .flash {
   margin: 0;
