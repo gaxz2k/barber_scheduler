@@ -1,6 +1,6 @@
 <% content_for :title, "Profissional | Admin" %>
 
-<section class="admin-detail-card">
+<section class="admin-detail-card card">
   <div class="admin-kicker">Equipe</div>
   <h1><%= @professional.name %></h1>
 
@@ -8,7 +8,7 @@
   <div class="admin-detail-row"><span>Agendamentos</span><span><%= @professional.appointments.size %></span></div>
 
   <div class="admin-form__actions">
-    <%= link_to "Editar", edit_admin_professional_path(@professional), class: "admin-button" %>
-    <%= link_to "Voltar", admin_professionals_path, class: "admin-button admin-button--quiet" %>
+    <%= link_to "Editar", edit_admin_professional_path(@professional), class: "button button--primary" %>
+    <%= link_to "Voltar", admin_professionals_path, class: "button button--ghost" %>
   </div>
 </section>

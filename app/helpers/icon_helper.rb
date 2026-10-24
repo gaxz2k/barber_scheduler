@@ -37,7 +37,10 @@ module IconHelper
     # Agendamento online pausado.
     lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
     edit: '<path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="M13 7l4 4"/>',
-    trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'
+    trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+    # Menu (hambúrguer) do painel administrativo em tela estreita — ver
+    # `.nav__toggle` em design_components.css.
+    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>'
   }.freeze
 
   # Devolve o `<svg>` inline do ícone `name`. `size` é o lado em pixels (o

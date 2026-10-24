@@ -22,7 +22,18 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%= stylesheet_link_tag "application", "booking_wizard", "data-turbo-track": "reload" %>
+    <%# Ordem deliberada: tokens primeiro (variáveis), depois o CSS antigo
+        ("application", preto+dourado, usado pelo cadastro de barbearia e por
+        qualquer marcação sem classe nova), depois os componentes novos e a
+        camada do admin — carregados DEPOIS do antigo de propósito, para que
+        `.button`/`.card`/`.admin-login-card` da paleta "litoral urbano"
+        ganhem o empate de especificidade na tela de login (que usa este
+        layout, não o `admin`). `booking_wizard` continua por último porque
+        seus seletores são todos escopados em `.booking-entry`/`.booking-page`
+        e têm especificidade maior que qualquer um destes — a ordem não altera
+        o resultado ali, só aqui no login. %>
+    <%= stylesheet_link_tag "design_tokens", "application", "design_components", "admin_panel", "booking_wizard",
+                             "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <%= vite_client_tag %>
     <%= vite_javascript_tag 'application.tsx' %>

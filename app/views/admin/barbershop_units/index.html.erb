@@ -1,19 +1,24 @@
 <% content_for :title, "Unidades | Admin" %>
 
-<section class="admin-header-row">
+<section class="admin-page-header">
   <div>
     <div class="admin-kicker">Presença</div>
     <h1 class="admin-page-title">Unidades</h1>
     <p class="admin-page-description">Cada unidade tem seu próprio horário de funcionamento, e o cliente escolhe onde quer ser atendido antes de agendar.</p>
   </div>
-  <%= link_to "Nova unidade", new_admin_barbershop_unit_path, class: "admin-button" %>
+  <%= link_to "Nova unidade", new_admin_barbershop_unit_path, class: "button button--primary" %>
 </section>
 
-<div class="admin-table-wrap">
-  <% if @barbershop_units.empty? %>
-    <div class="admin-empty">Nenhuma unidade cadastrada. Crie ao menos uma para poder agendar.</div>
-  <% else %>
-    <table class="admin-table">
+<% if @barbershop_units.empty? %>
+  <div class="empty-state card">
+    <%= empty_state_illustration(:empty_list) %>
+    <p class="empty-state__title">Nenhuma unidade cadastrada</p>
+    <p class="empty-state__text">Crie ao menos uma unidade para poder agendar.</p>
+    <%= link_to "Nova unidade", new_admin_barbershop_unit_path, class: "button button--primary" %>
+  </div>
+<% else %>
+  <div class="table-wrap">
+    <table class="table">
       <thead>
         <tr>
           <th>Unidade</th>
@@ -39,17 +44,19 @@
               <% if expediente.any? %>
                 <%= expediente.join(" · ") %>
               <% else %>
-                <span class="field-hint">Sem horário — a agenda aparece vazia para o cliente</span>
+                <span class="field__hint">Sem horário — a agenda aparece vazia para o cliente</span>
               <% end %>
             </td>
             <td>
-              <div class="admin-table__actions">
-                <%= link_to "Editar", edit_admin_barbershop_unit_path(unit), class: "admin-button admin-button--quiet" %>
+              <div class="table__actions">
+                <%= link_to edit_admin_barbershop_unit_path(unit), class: "button button--secondary button--sm", aria: { label: "Editar #{unit.name}" } do %>
+                  <%= icon_tag(:edit, size: 16) %> <span class="visually-hidden">Editar</span>
+                <% end %>
               </div>
             </td>
           </tr>
         <% end %>
       </tbody>
     </table>
-  <% end %>
-</div>
+  </div>
+<% end %>

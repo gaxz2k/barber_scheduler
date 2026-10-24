@@ -1,19 +1,24 @@
 <% content_for :title, "Agendamentos | Admin" %>
 
-<section class="admin-header-row">
+<section class="admin-page-header">
   <div>
     <div class="admin-kicker">Operação diária</div>
     <h1 class="admin-page-title">Agendamentos</h1>
     <p class="admin-page-description">Consulte os horários reservados, ajuste a agenda e mantenha cada atendimento bem organizado.</p>
   </div>
-  <%= link_to "Novo agendamento", new_admin_appointment_path, class: "admin-button" %>
+  <%= link_to "Novo agendamento", new_admin_appointment_path, class: "button button--primary" %>
 </section>
 
-<div class="admin-table-wrap">
-  <% if @appointments.empty? %>
-    <div class="admin-empty">Nenhum agendamento cadastrado.</div>
-  <% else %>
-    <table class="admin-table">
+<% if @appointments.empty? %>
+  <div class="empty-state card">
+    <%= empty_state_illustration(:no_appointments) %>
+    <p class="empty-state__title">Nenhum agendamento cadastrado</p>
+    <p class="empty-state__text">Quando você ou um cliente marcar um horário, ele aparece aqui.</p>
+    <%= link_to "Novo agendamento", new_admin_appointment_path, class: "button button--primary" %>
+  </div>
+<% else %>
+  <div class="table-wrap">
+    <table class="table">
       <thead>
         <tr>
           <th>Cliente</th>
@@ -31,16 +36,23 @@
             <td><%= appointment.professional.name %></td>
             <td><%= appointment.service.name %></td>
             <td><%= l(appointment.start_at, format: :short) %></td>
-            <td><span class="admin-badge"><%= appointment.status_label %></span></td>
+            <td><span class="<%= status_badge_class(appointment.status) %>"><%= appointment.status_label %></span></td>
             <td>
-              <div class="admin-table__actions">
-                <%= link_to "Editar", edit_admin_appointment_path(appointment), class: "admin-button admin-button--quiet" %>
-                <%= button_to "Excluir", admin_appointment_path(appointment), method: :delete, class: "admin-button admin-button--danger", form: { data: { turbo_confirm: "Excluir este agendamento?" } } %>
+              <div class="table__actions">
+                <%= link_to edit_admin_appointment_path(appointment), class: "button button--secondary button--sm", aria: { label: "Editar agendamento de #{appointment.client.name}" } do %>
+                  <%= icon_tag(:edit, size: 16) %> <span class="visually-hidden">Editar</span>
+                <% end %>
+                <%= button_to admin_appointment_path(appointment), method: :delete,
+                      class: "button button--danger button--sm",
+                      form: { data: { turbo_confirm: "Excluir este agendamento?" } },
+                      aria: { label: "Excluir agendamento de #{appointment.client.name}" } do %>
+                  <%= icon_tag(:trash, size: 16) %> <span class="visually-hidden">Excluir</span>
+                <% end %>
               </div>
             </td>
           </tr>
         <% end %>
       </tbody>
     </table>
-  <% end %>
-</div>
+  </div>
+<% end %>
