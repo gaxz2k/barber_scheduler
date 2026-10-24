@@ -19,6 +19,9 @@ class Admin::HomeController < Admin::BaseController
   # que este painel administra.
   def index
     @missing_setup = Current.barbershop&.missing_setup || []
+    # Controller fino: todo o cálculo (e o isolamento de falha por indicador)
+    # vive em Admin::DashboardMetrics — a view só lê o resultado pronto.
+    @metrics = Admin::DashboardMetrics.new.call
   end
 
   helper_method :setup_label, :setup_path
