@@ -8,7 +8,7 @@
     <h1>Entrar no painel</h1>
     <p>Use suas credenciais administrativas para operar a barbearia.</p>
 
-    <%= form_with url: session_path(resource_name), method: :post, class: "admin-login-form" do |form| %>
+    <%= form_with url: session_path(resource_name), method: :post, scope: resource_name, class: "admin-login-form" do |form| %>
       <div class="field">
         <%= form.label :email, "E-mail" %>
         <%= form.email_field :email, autofocus: true, autocomplete: "email", required: true, class: "input" %>
