@@ -1,28 +1,30 @@
 <% cores = [
-  ["Petróleo 900", "--dt-petrol-900", "#0b2f3a", "escuro"],
-  ["Petróleo 700", "--dt-petrol-700", "#124a5c", "escuro"],
-  ["Petróleo 500", "--dt-petrol-500", "#1b6a82", "escuro"],
-  ["Petróleo 300", "--dt-petrol-300", "#5fa3b6", "claro"],
-  ["Petróleo 100", "--dt-petrol-100", "#d8ebf0", "claro"],
-  ["Coral 700", "--dt-coral-700", "#c43e26", "escuro"],
-  ["Coral 500", "--dt-coral-500", "#e8572f", "escuro"],
-  ["Coral 100", "--dt-coral-100", "#fde4da", "claro"],
-  ["Sucesso 500", "--dt-success-500", "#2f9159", "escuro"],
-  ["Alerta 500", "--dt-warning-500", "#c9870f", "escuro"],
-  ["Perigo 500", "--dt-danger-500", "#c23349", "escuro"],
-  ["Gelo 50", "--dt-ice-50", "#f6f9fa", "claro"],
-  ["Névoa 100", "--dt-mist-100", "#e7eef0", "claro"],
-  ["Tinta", "--dt-ink", "#0e2024", "escuro"]
+  ["Midnight", "--dt-petrol-900", "#111111", "escuro"],
+  ["Charcoal", "--dt-petrol-700", "#242424", "escuro"],
+  ["Focus Ring", "--dt-petrol-500", "#3b82f6", "escuro"],
+  ["Traço fino", "--dt-petrol-300", "#c7c7c7", "claro"],
+  ["Light Gray", "--dt-petrol-100", "#f5f5f5", "claro"],
+  ["Link Blue (hover)", "--dt-coral-700", "#0077cc", "escuro"],
+  ["Link Blue", "--dt-coral-500", "#0099ff", "escuro"],
+  ["Link Blue (tinta)", "--dt-coral-100", "#e6f4ff", "claro"],
+  ["Sucesso 500", "--dt-success-500", "#4d8a68", "escuro"],
+  ["Alerta 500", "--dt-warning-500", "#b08a3f", "escuro"],
+  ["Perigo 500", "--dt-danger-500", "#a14545", "escuro"],
+  ["Branco", "--dt-ice-50", "#fafafa", "claro"],
+  ["Névoa 100", "--dt-mist-100", "#f5f5f5", "claro"],
+  ["Charcoal (texto)", "--dt-ink", "#242424", "escuro"]
 ] %>
 
 <section class="sg-section">
-  <h1 style="font-family: var(--dt-font-display); font-size: var(--dt-text-3xl); margin-bottom: 0;">
-    Guia de estilo — fundação visual
+  <h1 style="font-family: var(--dt-font-display); font-size: var(--dt-text-3xl); font-weight: var(--dt-weight-bold); letter-spacing: var(--dt-tracking-display); margin-bottom: 0;">
+    Guia de estilo — prévia Cal.com
   </h1>
   <p style="color: var(--dt-ink-soft); max-width: 40rem;">
-    Fase 1 do redesign: tokens e componentes novos, antes de qualquer tela
-    real ser tocada. Paleta "litoral urbano" — petróleo + coral — no lugar
-    do preto e dourado do Studio Navalha.
+    Prévia isolada (fase 2 do redesign, dev-only): identidade visual inspirada
+    no design system real do Cal.com — restrição monocromática
+    (preto/branco/cinza), cor reservada só a links e estados semânticos.
+    Nenhuma tela real do fluxo público ou admin foi tocada; esta página
+    existe para aprovação visual antes de qualquer aplicação.
   </p>
 </section>
 
@@ -122,6 +124,15 @@
       <label class="radio"><input type="radio" name="sg-radio"> Tarde</label>
     </div>
   </div>
+</section>
+
+<section class="sg-section">
+  <h2>Links</h2>
+  <p style="max-width: 36rem;">
+    O único lugar fora dos estados semânticos onde cor aparece de verdade:
+    <a class="link" href="#">leia a política de cancelamento</a> antes de
+    confirmar o horário. Cor como exceção, não como decoração.
+  </p>
 </section>
 
 <section class="sg-section">

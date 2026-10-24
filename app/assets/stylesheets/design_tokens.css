@@ -1,110 +1,151 @@
-/* Fundação de uma identidade visual nova, do zero.
+/* Fundação de uma identidade visual nova — fase 2: referência real.
  *
- * Direção escolhida: "Litoral urbano" — uma barbearia contemporânea de
- * bairro, não a barbearia-clube inglesa de couro e dourado que o
- * `application.css` descreve como "Studio Navalha". O público que agenda
- * pelo celular, de manhã, antes do trabalho, não precisa de uma vitrine de
- * luxo discreto: precisa ver rápido os horários livres e confirmar. A base é
- * azul-petróleo profundo (confiança, precisão de agenda) sobre branco-gelo
- * (claridade de app, não de salão), com um coral quente como cor de ação —
- * a única cor que "empurra" o olho para o botão de agendar, do mesmo jeito
- * que o dourado empurrava para a decisão na paleta anterior, mas sem o peso
- * de joalheria. Verde e vermelho de status seguem o símbolo universal de
- * "ok" e "atenção" em vez de inventar vocabulário novo ali, porque status de
- * agenda é a última coisa em que vale a pena ser original.
+ * A primeira tentativa ("litoral urbano", petróleo + coral) foi avaliada
+ * pelo usuário como genérica, "parece feito por IA" — paleta e tipografia
+ * sem lastro em nenhum produto real. Esta fase substitui a direção por uma
+ * cópia deliberada e documentada do design system do Cal.com
+ * (cal.com), um produto de agendamento de verdade: restrição monocromática
+ * (preto/branco/cinza), onde cor é tratada como substância rara, reservada
+ * só para links e estados semânticos (sucesso/erro/aviso).
  *
- * Tom: direto, contemporâneo, levemente editorial. Vibe: app de serviço
- * urbano (mais Nubank/Resy do que clube de cavalheiros). Público: cliente
- * que agenda pelo celular e barbeiro que confere o painel entre um corte e
- * outro — os dois precisam ler o estado de um agendamento em menos de um
- * segundo, por isso a paleta de status é a parte menos "de autor" de tudo.
+ * Esta é só uma PRÉVIA isolada, carregada apenas pela página /style-guide
+ * (ver `app/views/layouts/style_guide.html.erb`). Nenhuma view real
+ * (appointments/*, admin/*, devise/*, application.html.erb, admin.html.erb)
+ * consome este arquivo ainda — ele convive com `application.css` sem o
+ * tocar. Os NOMES das variáveis `--dt-*` são os mesmos da fase 1 de
+ * propósito: quando uma fase futura aprovar esta prévia e aplicar aos
+ * templates reais, nenhum componente quebra por nome de variável ausente —
+ * só os VALORES mudaram aqui.
  *
- * Nomes são todos novos e não reaproveitam `--gold`/`--ink`/`--cream`: nesta
- * fase o arquivo convive com `application.css` sem o tocar, e os dois nunca
- * devem resolver a mesma variável com valores diferentes — o prefixo `--dt-`
- * (design tokens) é o que impede a colisão de nome enquanto as duas
- * identidades existem lado a lado no mesmo bundle. Quando a fase 2+ aplicar
- * esta paleta às telas reais e o `application.css` antigo for removido, o
- * prefixo pode cair; ele existe só para a travessia. */
+ * Mapeamento fase 1 → fase 2 (petróleo/coral → escala de cinza Cal.com):
+ *   --dt-petrol-900 → Midnight #111111 (texto/nav de altíssimo contraste)
+ *   --dt-petrol-700 → Charcoal #242424 (texto primário, botão primário)
+ *   --dt-petrol-500 → Focus Ring azul 50% (só usado em :focus-visible —
+ *                      no Cal.com o "petróleo médio" de hover/accent não
+ *                      existe como cor própria; sobrou só o azul de foco)
+ *   --dt-petrol-300 → cinza claro de traço fino (ilustrações, linhas sutis)
+ *   --dt-petrol-100 / --dt-mist-100/200 → Light Gray (~#f5f5f5), variações
+ *                      de um mesmo cinza claro para diferenciação de seção
+ *   --dt-ice-0 → Pure White #ffffff · --dt-ice-50 → branco quase puro
+ *   --dt-ink → Charcoal (texto primário) · --dt-ink-soft → Mid Gray
+ *      (texto secundário) · --dt-ink-faint → cinza mais claro (placeholder)
+ *   --dt-coral-500 → Link Blue #0099ff, a ÚNICA cor de ação do sistema —
+ *      mesma função que o coral tinha ("a cor que empurra o olho"), mas
+ *      agora reservada estritamente a links e ao estado "isto é clicável
+ *      e é a decisão certa", nunca a um botão cheio.
+ *   --dt-coral-700/400/100 → variações do mesmo azul (hover mais escuro,
+ *      tinta clara para fundo de destaque pontual)
+ *   --dt-success/warning/danger-* → cores semânticas continuam existindo:
+ *      um app de agendamento real precisa confirmar, cancelar e validar, e
+ *      o próprio Cal.com reserva cor exatamente para isso. A diferença é
+ *      que aqui elas são deliberadamente dessaturadas (nunca vibrantes),
+ *      para não competirem visualmente com o azul de link/foco.
+ *   --dt-line / --dt-shadow-card → implementam o "ring border" do Cal.com:
+ *      rgba(34,42,53,0.08~0.10) fazendo o papel de borda sem `border` CSS.
+ *
+ * Tipografia: Inter (texto) + Roboto Mono (código), carregadas via Google
+ * Fonts só no layout `style_guide.html.erb` (ver tag <link> lá). O Cal Sans
+ * original — a fonte de display proprietária do Cal.com — não está
+ * disponível via CDN gratuito confiável; por isso os headings grandes usam
+ * a própria Inter em weight 600–700 com letter-spacing levemente negativo,
+ * que aproxima a sensação compacta/densa do Cal Sans sem depender de uma
+ * fonte que pode desaparecer do ar. */
 :root {
-  /* --- Cor: base ------------------------------------------------------- */
-  --dt-petrol-900: #0b2f3a;
-  --dt-petrol-700: #124a5c;
-  --dt-petrol-500: #1b6a82;
-  --dt-petrol-300: #5fa3b6;
-  --dt-petrol-100: #d8ebf0;
+  /* --- Cor: base (escala de cinza) --------------------------------------
+   * Nomeada com os mesmos sufixos "petrol-*" da fase 1 por compatibilidade
+   * de variável, mas o conteúdo agora é puramente neutro — não há mais
+   * petróleo nenhum na cor, só a escala Midnight → Charcoal → cinza claro
+   * do Cal.com. */
+  --dt-petrol-900: #111111; /* Midnight — nav admin, texto de máximo contraste */
+  --dt-petrol-700: #242424; /* Charcoal — texto primário, botão primário */
+  --dt-petrol-500: #3b82f6; /* Focus Ring — usado só em :focus-visible */
+  --dt-petrol-300: #c7c7c7; /* traço fino cinza claro (ilustrações, linhas) */
+  --dt-petrol-100: #f5f5f5; /* Light Gray — diferenciação sutil de seção */
 
-  --dt-ice-50: #f6f9fa;
+  --dt-ice-50: #fafafa;
   --dt-ice-0: #ffffff;
-  --dt-mist-100: #e7eef0;
-  --dt-mist-200: #d4e0e3;
+  --dt-mist-100: #f5f5f5;
+  --dt-mist-200: #ececec;
 
-  --dt-ink: #0e2024;
-  --dt-ink-soft: #52696d;
-  --dt-ink-faint: #8aa0a4;
+  --dt-ink: #242424; /* Charcoal */
+  --dt-ink-soft: #898989; /* Mid Gray */
+  --dt-ink-faint: #b3b3b3;
 
-  /* --- Cor: ação (coral) ------------------------------------------------ */
-  --dt-coral-700: #c43e26;
-  --dt-coral-500: #e8572f;
-  --dt-coral-400: #ef6f49;
-  --dt-coral-100: #fde4da;
+  /* --- Cor: ação (Link Blue) ---------------------------------------------
+   * Nomeada "coral-*" por compatibilidade com a fase 1, mas é o único azul
+   * do sistema Cal.com: reservado a links em texto e ao estado "isto é a
+   * ação certa". Não usar em botão cheio — botão primário é Charcoal. */
+  --dt-coral-700: #0077cc; /* hover do link */
+  --dt-coral-500: #0099ff; /* Link Blue — cor de link/ação */
+  --dt-coral-400: #4db8ff; /* tinta clara (ex.: sublinhado, destaque leve) */
+  --dt-coral-100: #e6f4ff; /* fundo claro pontual, ex. ícone de destaque */
 
-  /* --- Cor: status ------------------------------------------------------
-   * Segue o símbolo universal (verde = ok, vermelho = atenção) de propósito:
-   * um agendamento confirmado não é o lugar para inventar vocabulário de
-   * cor novo, porque quem olha o painel entre um corte e outro não tem tempo
-   * de aprender uma convenção de autor. */
-  --dt-success-700: #1d6b40;
-  --dt-success-500: #2f9159;
-  --dt-success-100: #e3f5e9;
+  /* --- Cor: status --------------------------------------------------------
+   * O Cal.com reserva cor só a dois lugares: link e estado semântico. Um
+   * app de agendamento de verdade precisa confirmar/cancelar/validar, então
+   * estas três famílias continuam existindo — mas dessaturadas de
+   * propósito, para não parecerem "marca" e sim só sinalização discreta. */
+  --dt-success-700: #2f6b4a;
+  --dt-success-500: #4d8a68;
+  --dt-success-100: #eaf3ee;
 
-  --dt-warning-700: #93600b;
-  --dt-warning-500: #c9870f;
-  --dt-warning-100: #fbf0d9;
+  --dt-warning-700: #8a6a2e;
+  --dt-warning-500: #b08a3f;
+  --dt-warning-100: #f6efe2;
 
-  --dt-danger-700: #8f2334;
-  --dt-danger-500: #c23349;
-  --dt-danger-100: #fbe4e7;
+  --dt-danger-700: #7a3030;
+  --dt-danger-500: #a14545;
+  --dt-danger-100: #f5e8e8;
 
-  --dt-neutral-700: #4a5a5d;
-  --dt-neutral-500: #6f8286;
-  --dt-neutral-100: #e9eeef;
+  --dt-neutral-700: #4a4a4a;
+  --dt-neutral-500: #898989;
+  --dt-neutral-100: #f0f0f0;
 
-  /* --- Linhas e sombras -------------------------------------------------- */
-  --dt-line: #d4e0e3;
-  --dt-line-soft: #e7eef0;
-  --dt-shadow-soft: 0 18px 40px rgba(11, 47, 58, 0.12);
-  --dt-shadow-card: 0 2px 10px rgba(11, 47, 58, 0.08);
-  --dt-shadow-focus: 0 0 0 4px rgba(27, 106, 130, 0.22);
+  /* --- "Ring border" e sombras --------------------------------------------
+   * O Cal.com não usa `border` CSS tradicional em superfícies elevadas: o
+   * papel de borda é feito por uma sombra de 1px de espalhamento zero
+   * (`0px 0px 0px 1px rgba(34,42,53,0.08)`), o chamado "ring border". As
+   * três variáveis abaixo compõem a pilha de 2-3 camadas que o Cal.com usa
+   * em cards: anel + contato nítido pequeno + difusa suave. */
+  --dt-line: rgba(34, 42, 53, 0.08);
+  --dt-line-soft: rgba(34, 42, 53, 0.05);
+  --dt-shadow-ring: 0px 0px 0px 1px rgba(34, 42, 53, 0.08);
+  --dt-shadow-card: rgba(19, 19, 22, 0.7) 0px 1px 5px -4px, rgba(34, 42, 53, 0.08) 0px 0px 0px 1px,
+    rgba(34, 42, 53, 0.05) 0px 4px 8px 0px;
+  --dt-shadow-soft: rgba(19, 19, 22, 0.5) 0px 2px 8px -4px, rgba(34, 42, 53, 0.1) 0px 0px 0px 1px,
+    rgba(34, 42, 53, 0.08) 0px 12px 24px 0px;
+  --dt-shadow-focus: 0 0 0 2px var(--dt-ice-0), 0 0 0 4px rgba(59, 130, 246, 0.5);
 
-  /* --- Raio de borda ------------------------------------------------------
-   * Mais arredondado que a identidade anterior (que usava 4-10px, quase
-   * reto, como uma régua de alfaiate): aqui o raio generoso é o toque de
-   * "app de celular" em vez de "cartão de visita impresso". */
-  --dt-radius-sm: 8px;
-  --dt-radius-md: 14px;
-  --dt-radius-lg: 22px;
-  --dt-radius-pill: 999px;
+  /* --- Raio de borda -------------------------------------------------------
+   * Escala do Cal.com: 2–4px em elementos inline pequenos, 6–8px em
+   * botões/inputs, 12px em cards médios, até o pill (9999px) em
+   * badges/tags. Mantemos 4 tokens (compatibilidade de nome); containers
+   * grandes (16px) reusam `--dt-radius-lg` por não haver um 5º token na
+   * fase 1. */
+  --dt-radius-sm: 4px;
+  --dt-radius-md: 8px;
+  --dt-radius-lg: 12px;
+  --dt-radius-pill: 9999px;
 
-  /* --- Espaçamento em escala (base 4px) ---------------------------------- */
-  --dt-space-1: 0.25rem;
-  --dt-space-2: 0.5rem;
-  --dt-space-3: 0.75rem;
-  --dt-space-4: 1rem;
-  --dt-space-5: 1.5rem;
-  --dt-space-6: 2rem;
-  --dt-space-7: 3rem;
-  --dt-space-8: 4rem;
+  /* --- Espaçamento em escala (base 8px, aproximando a escala do Cal.com:
+   * 4/8/12/16/20/24/28/80/96px) -------------------------------------------- */
+  --dt-space-1: 0.25rem; /* 4px */
+  --dt-space-2: 0.5rem; /* 8px */
+  --dt-space-3: 0.75rem; /* 12px */
+  --dt-space-4: 1rem; /* 16px */
+  --dt-space-5: 1.5rem; /* 24px */
+  --dt-space-6: 2rem; /* 32px */
+  --dt-space-7: 3rem; /* 48px */
+  --dt-space-8: 4rem; /* 64px */
 
   /* --- Tipografia ---------------------------------------------------------
-   * Par de fontes de sistema, sem webfont: o mesmo princípio do
-   * `application.css` continua valendo — baixar um arquivo de fonte para uma
-   * tela de agendamento custaria uma requisição bloqueante em quem só quer
-   * marcar um horário. A diferença de peso (display vs. corpo) já basta para
-   * separar título de texto sem precisar de uma segunda família. */
-  --dt-font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --dt-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --dt-font-mono: "SF Mono", "Cascadia Code", Consolas, monospace;
+   * Inter para tudo (corpo e display) + Roboto Mono para dado tabular —
+   * carregadas via Google Fonts no layout da página de estilo-guia. Ver
+   * comentário no topo do arquivo sobre a substituição do Cal Sans. */
+  --dt-font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --dt-font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --dt-font-mono: "Roboto Mono", "SF Mono", "Cascadia Code", Consolas, monospace;
 
   --dt-text-xs: 0.75rem;
   --dt-text-sm: 0.875rem;
@@ -118,20 +159,26 @@
   --dt-weight-medium: 500;
   --dt-weight-bold: 700;
 
-  --dt-leading-tight: 1.2;
+  /* Headings grandes (32px+) ficam entre 600-700 com tracking levemente
+   * negativo; textos ≤20px usam peso normal/médio com tracking neutro ou
+   * levemente positivo — por isso dois tokens de letter-spacing distintos. */
+  --dt-tracking-display: -0.02em;
+  --dt-tracking-body: 0;
+
+  --dt-leading-tight: 1.12;
   --dt-leading-normal: 1.5;
 
   /* --- Foco e acessibilidade ----------------------------------------------
-   * Um único anel de foco, usado por todo componente interativo, para que
-   * tabular pelo teclado nunca dependa de o componente ter "lembrado" de
-   * estilizar `:focus-visible` por conta própria. */
-  --dt-focus-ring: 0 0 0 2px var(--dt-ice-0), 0 0 0 4px var(--dt-petrol-500);
-  --dt-focus-ring-danger: 0 0 0 2px var(--dt-ice-0), 0 0 0 4px var(--dt-danger-500);
+   * O Cal.com usa um azul de foco neutro em relação à cor de ação (link),
+   * de propósito: foco por teclado precisa ser reconhecível mesmo em um
+   * componente que não é um link, então não reaproveita o Link Blue. */
+  --dt-focus-ring: var(--dt-shadow-focus);
+  --dt-focus-ring-danger: 0 0 0 2px var(--dt-ice-0), 0 0 0 4px rgba(161, 69, 69, 0.45);
 
   /* --- Transições --------------------------------------------------------
-   * Curta e única, para toda transição de estado (hover, foco, erro): um
-   * tempo diferente por componente é o tipo de inconsistência que ninguém
-   * decide de propósito, só acontece com o tempo. */
+   * O botão primário do Cal.com não muda de cor no hover, só de opacidade
+   * (ver `.button--primary:hover` em design_components.css) — por isso
+   * `opacity` entra na lista de propriedades transicionadas por padrão. */
   --dt-transition-fast: 120ms ease;
   --dt-transition-base: 180ms ease;
 }
