@@ -49,7 +49,8 @@ class AppointmentsController < ApplicationController
     prepare_booking(
       service_id: params[:service],
       professional_id: params[:professional],
-      date: params[:date]
+      date: params[:date],
+      extra_service_ids: params[:extra_service_ids]
     )
   end
 
@@ -70,7 +71,8 @@ class AppointmentsController < ApplicationController
       service_id: booking_params[:service_id],
       professional_id: escolha[:professional_id] || booking_params[:professional_id],
       date: booking_params[:date],
-      date_default: false
+      date_default: false,
+      extra_service_ids: booking_params[:extra_service_ids]
     )
 
     if @selected_service.blank? || @selected_professional.blank? || @selected_date.blank?
@@ -108,7 +110,8 @@ class AppointmentsController < ApplicationController
                  service: @selected_service,
                  start_at: booking_start_at,
                  barbershop_unit: @barbershop_unit,
-                 customer_note: booking_params[:customer_note]
+                 customer_note: booking_params[:customer_note],
+                 extra_services: @selected_extra_services
                )
     else
                Appointment.new.tap { |appointment| appointment.errors.add(:base, "Escolha um horário disponível.") }
@@ -137,6 +140,7 @@ class AppointmentsController < ApplicationController
     @selected_service = find_service(params[:service_id])
     @selected_professional = find_professional(params[:professional_id])
     @selected_date = selected_date(params[:date])
+    @selected_extra_services = find_extra_services(params[:extra_service_ids])
 
     if @selected_service.blank? || @selected_professional.blank? || @selected_date.blank?
       render json: { error: "Selecione serviço, profissional e data futura." }, status: :unprocessable_content
@@ -173,7 +177,8 @@ class AppointmentsController < ApplicationController
   # chamasse derrubaria a página com NoMethodError. `params[:unidade_slug]`
   # sozinho não serve, porque a view precisa da unidade resolvida, e não do
   # slug que o cliente pode ter digitado errado.
-  helper_method :barbershop_unit, :booking_units, :unidade_path, :slot_preselecionado?
+  helper_method :barbershop_unit, :booking_units, :unidade_path, :slot_preselecionado?,
+                :booking_total_duration_minutes, :booking_total_price_cents
 
   private
 
@@ -295,10 +300,11 @@ class AppointmentsController < ApplicationController
     @agenda_por_profissional ||= []
   end
 
-  def prepare_booking(service_id:, professional_id:, date:, date_default: true)
+  def prepare_booking(service_id:, professional_id:, date:, date_default: true, extra_service_ids: nil)
     @selected_service = find_service(service_id)
     @selected_professional = find_professional(professional_id) if @selected_service
     @selected_date = selected_date(date, default: date_default)
+    @selected_extra_services = find_extra_services(extra_service_ids)
     @available_slots = available_slots
     # A agenda vem depois de `@booking_step` porque dela depende: a grade de
     # todo mundo só é calculada enquanto a tela está pedindo quem faz o
@@ -337,7 +343,8 @@ class AppointmentsController < ApplicationController
         professional: professional,
         date: @selected_date,
         service: @selected_service,
-        barbershop_unit: @barbershop_unit
+        barbershop_unit: @barbershop_unit,
+        extra_services: @selected_extra_services
       )
       Agenda.new(professional: professional, slots: slots)
     end
@@ -354,6 +361,28 @@ class AppointmentsController < ApplicationController
     return false if @appointment&.start_at.blank?
 
     @appointment.professional_id == professional.id && @appointment.start_at == slot
+  end
+
+  # O resumo da tela de agendamento soma o serviço principal e os extras
+  # escolhidos. A conta é feita direto nos objetos em memória — e não
+  # construindo um `Appointment` só para perguntar — porque nenhum dos dois
+  # precisa de um registro: são os mesmos números que `Appointment#total_*`
+  # calcularia, mas antes de qualquer agendamento existir.
+  def booking_total_services
+    return [] if @selected_service.blank?
+
+    [ @selected_service ] + Array(@selected_extra_services)
+  end
+
+  def booking_total_duration_minutes
+    raw_minutes = booking_total_services.sum { |item| item.duration_minutes.to_i }
+    return raw_minutes if Array(@selected_extra_services).empty?
+
+    Scheduling.round_up_to_slot(raw_minutes)
+  end
+
+  def booking_total_price_cents
+    booking_total_services.sum { |item| item.price_cents.to_i }
   end
 
   # A etapa que a tela mostra.
@@ -385,6 +414,20 @@ class AppointmentsController < ApplicationController
     @services.find_by(id: value)
   end
 
+  # Os serviços extras escolhidos pelo cliente, resolvidos dentro do tenant
+  # atual. `value` chega como array (form multi-select) ou como string única
+  # separada por vírgula (query string de `availability`); qualquer id que não
+  # pertença a este tenant simplesmente não aparece na lista — não é erro,
+  # porque forjar um id de outra barbearia não deve derrubar a requisição,
+  # só não ter efeito nenhum.
+  def find_extra_services(value)
+    ids = Array(value).flat_map { |item| item.to_s.split(",") }.map(&:strip).compact_blank
+    return [] if ids.empty?
+
+    @services ||= Service.order(:name)
+    @services.where(id: ids).to_a.reject { |item| item.id == @selected_service&.id }
+  end
+
   def find_professional(value)
     return unless value.is_a?(String) || value.is_a?(Integer)
 
@@ -413,7 +456,8 @@ class AppointmentsController < ApplicationController
       professional: @selected_professional,
       date: @selected_date,
       service: @selected_service,
-      barbershop_unit: @barbershop_unit
+      barbershop_unit: @barbershop_unit,
+      extra_services: @selected_extra_services
     )
   end
 
@@ -430,7 +474,8 @@ class AppointmentsController < ApplicationController
     return ActionController::Parameters.new unless appointment_params.is_a?(ActionController::Parameters)
 
     appointment_params.permit(
-      :service_id, :professional_id, :date, :start_at, :client_name, :client_phone, :customer_note
+      :service_id, :professional_id, :date, :start_at, :client_name, :client_phone, :customer_note,
+      extra_service_ids: []
     )
   end
 

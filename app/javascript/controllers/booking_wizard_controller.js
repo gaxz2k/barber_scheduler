@@ -21,6 +21,11 @@ export default class extends Controller {
     const date = this.dateTarget?.value
     const serviceId = this.element.querySelector("[name='appointment[service_id]']")?.value
     const professionalId = this.element.querySelector("[name='appointment[professional_id]']")?.value
+    const extraServiceIds = Array.from(
+      this.element.querySelectorAll("[name='appointment[extra_service_ids][]'], [name='extra_service_ids[]']")
+    )
+      .filter((input) => input.type !== "checkbox" || input.checked)
+      .map((input) => input.value)
 
     if (!date || !serviceId || !professionalId) return
 
@@ -29,8 +34,11 @@ export default class extends Controller {
     this.slotsTarget.setAttribute("aria-busy", "true")
 
     try {
+      const params = new URLSearchParams({ service_id: serviceId, professional_id: professionalId, date })
+      extraServiceIds.forEach((id) => params.append("extra_service_ids[]", id))
+
       const response = await fetch(
-        `/appointments/availability?service_id=${encodeURIComponent(serviceId)}&professional_id=${encodeURIComponent(professionalId)}&date=${encodeURIComponent(date)}`,
+        `/appointments/availability?${params.toString()}`,
         { headers: { Accept: "application/json" }, signal: this.request.signal }
       )
 

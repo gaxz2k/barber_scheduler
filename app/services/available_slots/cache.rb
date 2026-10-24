@@ -6,14 +6,18 @@ module AvailableSlots
       new(...).fetch
     end
 
-    def self.invalidate(professional:, date:, service:, barbershop_unit: nil)
-      new(professional: professional, date: date, service: service, barbershop_unit: barbershop_unit).invalidate
+    def self.invalidate(professional:, date:, service:, barbershop_unit: nil, extra_services: [])
+      new(
+        professional: professional, date: date, service: service,
+        barbershop_unit: barbershop_unit, extra_services: extra_services
+      ).invalidate
     end
 
-    def initialize(professional:, date:, service:, barbershop_unit: nil)
+    def initialize(professional:, date:, service:, barbershop_unit: nil, extra_services: [])
       @professional = professional
       @date = date
       @service = service
+      @extra_services = Array(extra_services).compact
       @barbershop_unit = barbershop_unit
     end
 
@@ -49,7 +53,7 @@ module AvailableSlots
 
     private
 
-    attr_reader :professional, :date, :service, :barbershop_unit
+    attr_reader :professional, :date, :service, :barbershop_unit, :extra_services
 
     def with_current_generation(key, version, slots)
       redis.watch(generation_key) do
@@ -73,7 +77,8 @@ module AvailableSlots
         professional: professional,
         date: date,
         service: service,
-        barbershop_unit: barbershop_unit
+        barbershop_unit: barbershop_unit,
+        extra_services: extra_services
       ).call
     end
 
@@ -88,8 +93,16 @@ module AvailableSlots
         professional.id,
         date.to_date,
         service.id,
-        service.duration_minutes
+        service.duration_minutes,
+        extra_services_key
       ].join(":")
+    end
+
+    # Os ids dos extras, ordenados e deduplicados: a mesma combinação de
+    # serviços extras tem de produzir a mesma chave independente da ordem em
+    # que o cliente clicou nos botões "adicionar serviço".
+    def extra_services_key
+      extra_services.map(&:id).sort.join(",")
     end
 
     def generation_key

@@ -8,6 +8,13 @@ class Appointment < ApplicationRecord
   belongs_to :professional
   belongs_to :service
 
+  # Serviços extras, além do principal (`service`). O principal continua
+  # sendo uma coluna própria por compatibilidade com todo o código que já
+  # existe sobre ele (agenda, cache, recibo); os extras só somam duração e
+  # preço — ninguém além do resumo do agendamento precisa saber que existem.
+  has_many :appointment_services, dependent: :destroy
+  has_many :extra_services, through: :appointment_services, source: :service
+
   has_secure_token :confirmation_token, length: 32, on: :create
   before_validation :set_confirmation_expiration, on: :create
 
@@ -39,6 +46,49 @@ class Appointment < ApplicationRecord
       !canceled? && !completed?
   end
 
+  # Todos os serviços deste agendamento, o principal primeiro.
+  #
+  # Lê de `appointment_services` em memória, e não da associação `through`:
+  # um agendamento ainda não salvo pode ter `appointment_services.build(...)`
+  # pendente, e `extra_services` (through) precisaria da FK já gravada para
+  # consultar a tabela de junção — exatamente o estado que o `Scheduler` tem
+  # antes de chamar `save`.
+  def all_services
+    return [ service ].compact if service.blank?
+
+    [ service ] + appointment_services.map(&:service)
+  end
+
+  # A soma das durações cadastradas dos serviços, sem arredondar.
+  #
+  # `end_at - start_at` já é a duração gravada (arredondada para a grade), e
+  # não serve aqui: o resumo da tela precisa mostrar quanto tempo os serviços
+  # somam DE VERDADE, antes do arredondamento que a grade impõe. Separar os
+  # dois números é o que permite ao cliente entender por que 50 minutos de
+  # serviço reservam 60 minutos de agenda.
+  def raw_duration_minutes
+    all_services.sum { |item| item.duration_minutes.to_i }
+  end
+
+  # A duração que efetivamente reserva a agenda.
+  #
+  # Só arredonda para o múltiplo de 30 seguinte quando há mais de um serviço:
+  # a regra do goal ("duração total = soma dos serviços, arredondada para
+  # múltiplos de 30 min") descreve a SOMA, e um agendamento de serviço único
+  # sempre pôde ter duração cadastrada fora da grade (ex.: 45 min) sem ser
+  # esticado — só o horário de início precisa estar alinhado à grade, não a
+  # duração. Arredondar o serviço único mudaria esse comportamento já
+  # existente sem necessidade.
+  def total_duration_minutes
+    return raw_duration_minutes if appointment_services.empty?
+
+    Scheduling.round_up_to_slot(raw_duration_minutes)
+  end
+
+  def total_price_cents
+    all_services.sum { |item| item.price_cents.to_i }
+  end
+
   # `status` é uma String neste enum, e String#humanize não passa pelo I18n:
   # devolveria "Pending" mesmo com default_locale em pt-BR. As traduções ficam
   # em config/locales/pt-BR.yml, sob
@@ -65,12 +115,13 @@ class Appointment < ApplicationRecord
   end
 
   def invalidate_available_slots_cache
-    appointments_for_cache_invalidation.each do |professional, service, date, unit|
+    appointments_for_cache_invalidation.each do |professional, service, date, unit, extras|
       AvailableSlots::Cache.invalidate(
         professional: professional,
         date: date,
         service: service,
-        barbershop_unit: unit
+        barbershop_unit: unit,
+        extra_services: extras
       )
     end
   rescue Redis::BaseError, RedisClient::Error => error
@@ -95,23 +146,36 @@ class Appointment < ApplicationRecord
     previous_end_at = saved_changes["end_at"]&.first || current_end_at
     current_unit_id = barbershop_unit_id
     previous_unit_id = saved_changes["barbershop_unit_id"]&.first || current_unit_id
+    extras = current_extra_services
 
     current_records = cache_records_for(
       professional_id: current_professional_id,
       service_id: current_service_id,
       start_at: current_start_at,
       end_at: current_end_at,
-      unit_id: current_unit_id
+      unit_id: current_unit_id,
+      extras: extras
     )
     previous_records = cache_records_for(
       professional_id: previous_professional_id,
       service_id: previous_service_id,
       start_at: previous_start_at,
       end_at: previous_end_at,
-      unit_id: previous_unit_id
+      unit_id: previous_unit_id,
+      extras: extras
     )
 
     (current_records + previous_records).uniq
+  end
+
+  # Os extras já persistidos, lidos sem o default_scope: por `after_commit`
+  # o agendamento pode já ter sido destruído, e a leitura comum de
+  # `appointment_services` filtraria por um `barbershop_id` que ainda está
+  # em `Current` mas cuja requisição pode já ter encerrado o escopo.
+  def current_extra_services
+    Service.without_tenant_scope.where(
+      id: AppointmentService.where(appointment_id: id).select(:service_id)
+    ).to_a
   end
 
   # A unidade entra no registro porque ela faz parte da chave do cache. Sem
@@ -123,7 +187,7 @@ class Appointment < ApplicationRecord
   # atender em duas unidades, e é a unidade do agendamento que define a agenda
   # que mudou. Quando o profissional mudou, invalida as duas unidades, porque
   # as duas podem ter agenda calculada para ele.
-  def cache_records_for(professional_id:, service_id:, start_at:, end_at:, unit_id: barbershop_unit_id)
+  def cache_records_for(professional_id:, service_id:, start_at:, end_at:, unit_id: barbershop_unit_id, extras: [])
     professional = Professional.find_by(id: professional_id)
     service = Service.find_by(id: service_id)
     return [] unless professional && service
@@ -132,7 +196,7 @@ class Appointment < ApplicationRecord
     dates = [ start_at, end_at ].compact.map(&:to_date).uniq
 
     dates.flat_map do |date|
-      units.filter_map { |unit| [ professional, service, date, unit ] }
+      units.filter_map { |unit| [ professional, service, date, unit, extras ] }
     end
   end
 
@@ -159,7 +223,7 @@ class Appointment < ApplicationRecord
   def end_at_matches_service_duration
     return if start_at.blank? || end_at.blank? || service.blank?
 
-    expected_end_at = start_at + service.duration_minutes.minutes
+    expected_end_at = start_at + total_duration_minutes.minutes
     errors.add(:end_at, "deve corresponder à duração do serviço") unless end_at == expected_end_at
   end
 
