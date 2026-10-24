@@ -844,20 +844,40 @@ body:has(.booking-page) {
   gap: 0.5rem;
 }
 
+/* Select "com quem" mais estilizado: ícone de pessoa fixo à esquerda (o
+ * mesmo contorno do IconHelper, embutido como data-URI porque um <select>
+ * nativo não aceita elemento filho) e seta à direita, os dois na cor
+ * petróleo em vez de cinza neutro — para o campo parecer parte do produto,
+ * não um <select> de formulário genérico do navegador. Borda mais sólida e
+ * hover/focus mais evidentes porque é a única entrada clicável da linha que
+ * não é um botão, e precisa ser reconhecida como interativa à primeira
+ * vista. */
 .service-row__select {
   appearance: none;
-  border: 1px solid var(--dt-line);
+  border: 1.5px solid var(--dt-line);
   border-radius: var(--dt-radius-sm);
-  background: var(--dt-ice-0) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2352696d' d='M0 0h10L5 6z'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%231b6a82' d='M0 0h10L5 6z'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231b6a82' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 0.65rem center, left 0.6rem center;
+  background-color: var(--dt-ice-0);
   color: var(--dt-ink);
   font-size: 0.78rem;
-  padding: 0.4rem 1.7rem 0.4rem 0.6rem;
-  max-width: 11rem;
+  font-weight: var(--dt-weight-medium);
+  padding: 0.45rem 1.7rem 0.45rem 2.1rem;
+  max-width: 12.5rem;
   cursor: pointer;
+  transition: border-color var(--dt-transition-fast), box-shadow var(--dt-transition-fast);
+}
+
+.service-row__select:hover {
+  border-color: var(--dt-petrol-300);
 }
 
 .service-row__select:focus-visible {
   outline: none;
+  border-color: var(--dt-petrol-500);
   box-shadow: var(--dt-focus-ring);
   border-radius: var(--dt-radius-sm);
 }
