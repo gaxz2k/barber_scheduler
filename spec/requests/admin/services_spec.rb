@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Admin::Services", type: :request do
-  let(:admin) { User.create!(email: "admin@example.com", password: "password123", admin: true) }
+  let(:admin) { create_admin_for }
   let(:service) { Service.create!(name: "Corte", duration_minutes: 30) }
   let(:professional) { Professional.create!(name: "Profissional Teste") }
   let(:client) { Client.create!(name: "Cliente Teste", phone: "11999999999") }
@@ -31,7 +31,7 @@ RSpec.describe "Admin::Services", type: :request do
   end
 
   def create_appointment!
-    Appointment.create!(
+    create_test_appointment!(
       client: client,
       professional: professional,
       service: service,
@@ -163,7 +163,7 @@ RSpec.describe "Admin::Services", type: :request do
     it "persists the created service" do
       create_service(name: "Barba", duration: 20)
 
-      expect(Service.find_by(name: "Barba", duration_minutes: 20)).to be_present
+      expect(tenant_records(Service).find_by(name: "Barba", duration_minutes: 20)).to be_present
     end
   end
 end

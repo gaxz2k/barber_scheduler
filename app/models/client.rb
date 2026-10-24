@@ -1,4 +1,7 @@
 class Client < ApplicationRecord
+  include TenantScoped
+  apply_tenant_scope
+
   validates :phone, :name, presence: true
   has_many :appointments, dependent: :restrict_with_error
 

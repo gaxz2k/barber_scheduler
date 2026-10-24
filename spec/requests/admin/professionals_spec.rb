@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Admin::Professionals", type: :request do
-  let(:admin) { User.create!(email: "admin@example.com", password: "password123", admin: true) }
+  let(:admin) { create_admin_for }
   let(:professional) { Professional.create!(name: "Profissional Teste") }
 
   before { sign_in admin }
@@ -30,7 +30,7 @@ RSpec.describe "Admin::Professionals", type: :request do
     it "persists the professional when valid" do
       post admin_professionals_path, params: { professional: { name: "Novo profissional" } }
 
-      expect(Professional.find_by(name: "Novo profissional")).to be_present
+      expect(tenant_records(Professional).find_by(name: "Novo profissional")).to be_present
     end
   end
 

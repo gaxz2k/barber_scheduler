@@ -1,0 +1,87 @@
+<% content_for :title, "Criar barbearia" %>
+
+<%# A tela de cadastro é a única do sistema que não tem uma barbearia atrás
+    dela. Ela não usa o `shared/_brand` — não existe casa para marcar. O card é
+    o mesmo `booking-flow` do agendamento, para que a primeira tela de quem cria
+    a casa seja visualmente a mesma de quem agenda nela. %>
+<main class="site-shell booking-page">
+  <div class="booking-flow">
+    <%# O `booking-flow__head` é uma faixa horizontal: o título à esquerda, um
+        botão "voltar" à direita, e a margem negativa puxa o fio dourado até a
+        borda do card. O cadastro não tem botão, e um título dentro daquela
+        faixa ficaria espremido contra a faixa preta. Ele usa `booking-intro`,
+        que é o mesmo tratamento do `h1` da home — o texto grande, o subtítulo
+        embaixo. %>
+    <div class="booking-intro">
+      <h1>Criar sua barbearia</h1>
+      <p>
+        Leva menos de um minuto. A barbearia já nasce com uma unidade e com você
+        como administrador.
+      </p>
+    </div>
+
+    <% if @erros.present? %>
+      <div class="booking-errors" role="alert">
+        <ul>
+          <% @erros.each do |erro| %>
+            <li><%= erro %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%# Um `form_with url:` sem `model:`, e campos escritos à mão. O controller
+        lê duas raízes distintas — `barbershop[...]` e `user[...]` — porque cada
+        uma vira uma tabela diferente, e o Devise lê `user[email]` pelo nome da
+        chave. Dois `form_with` aninhados fossem a solução, mas com o botão no
+        segundo deles a submissão enviaria só `user[...]` e a casa não nasceria
+        — o botão precisa estar no formulário que cobre os dois. %>
+    <%= form_with url: barbershops_path, class: "booking-form" do %>
+      <fieldset class="form-section">
+        <legend><span class="form-step">01</span> A casa</legend>
+
+        <label for="barbershop_name">Nome</label>
+        <%= text_field_tag "barbershop[name]", @barbershop.name, id: "barbershop_name",
+                           required: true, autocomplete: "organization" %>
+
+        <label for="barbershop_slug">Endereço público</label>
+        <%= text_field_tag "barbershop[slug]", @barbershop.slug, id: "barbershop_slug",
+                           required: true, placeholder: "minha-barbearia",
+                           autocomplete: "off", autocapitalize: "none", spellcheck: false %>
+        <p class="booking-footnote">
+          É o pedaço do endereço que os clientes vão digitar. Deixe em letras
+          minúsculas, números e hífens. Se ficar vazio, usamos o nome.
+        </p>
+
+        <label for="barbershop_address">Endereço</label>
+        <%= text_field_tag "barbershop[address]", @barbershop.address, id: "barbershop_address",
+                           autocomplete: "street-address" %>
+
+        <label for="barbershop_whatsapp">WhatsApp</label>
+        <%= text_field_tag "barbershop[whatsapp]", @barbershop.whatsapp, id: "barbershop_whatsapp",
+                           autocomplete: "tel" %>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend><span class="form-step">02</span> Quem vai cuidar</legend>
+
+        <label for="user_email">E-mail</label>
+        <%= email_field_tag "user[email]", @user.email, id: "user_email",
+                            required: true, autocomplete: "email" %>
+
+        <label for="user_password">Senha</label>
+        <%= password_field_tag "user[password]", nil, id: "user_password",
+                               required: true, autocomplete: "new-password" %>
+        <p class="booking-footnote">Ao menos 8 caracteres.</p>
+
+        <label for="user_password_confirmation">Confirmar senha</label>
+        <%= password_field_tag "user[password_confirmation]", nil, id: "user_password_confirmation",
+                               required: true, autocomplete: "new-password" %>
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" class="button button--primary">Criar barbearia</button>
+      </div>
+    <% end %>
+  </div>
+</main>

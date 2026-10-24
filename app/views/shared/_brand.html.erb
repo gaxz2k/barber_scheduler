@@ -1,0 +1,12 @@
+<%# A marca da casa, num lugar só. As quatro telas que abrem o fluxo público
+    (agendar, confirmação e as duas de login) markupavam a mesma marca à mão,
+    com um nome fixo gravado no meio: ele aparecia na vitrine do Studio Navalha
+    e em qualquer tenant novo, e trocar o nome da barbearia não mudava nada
+    aqui. Um partial é o que impede a quinta cópia. %>
+<%= link_to root_path, class: "brand-lockup", aria: { label: "#{Current.barbershop.name}, início" } do %>
+  <span class="brand-mark" aria-hidden="true"><%= Current.barbershop.monograma %></span>
+  <span>
+    <span class="brand-name"><%= Current.barbershop.name.split(/\s+/).first %></span>
+    <span class="brand-name brand-name--strong"><%= Current.barbershop.nome_curto %></span>
+  </span>
+<% end %>

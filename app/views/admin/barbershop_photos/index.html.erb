@@ -1,12 +1,12 @@
 <% content_for :title, "Fotos da barbearia | Admin" %>
 
-<section class="admin-header-row">
+<section class="admin-page-header">
   <div>
     <div class="admin-kicker">Identidade visual</div>
     <h1 class="admin-page-title">Fotos da barbearia</h1>
     <p class="admin-page-description">Organize o carrossel da tela inicial. Apenas as fotos ativas são exibidas publicamente.</p>
   </div>
-  <%= link_to "Adicionar foto", new_admin_barbershop_photo_path, class: "admin-button" %>
+  <%= link_to "Adicionar foto", new_admin_barbershop_photo_path, class: "button button--primary" %>
 </section>
 
 <div class="admin-photo-toolbar" aria-label="Resumo da galeria">
@@ -15,16 +15,19 @@
   <span>Máximo de <strong>6</strong> ativas</span>
 </div>
 
-<section class="admin-photo-grid" aria-label="Fotos cadastradas">
-  <% if @photos.empty? %>
-    <div class="admin-empty admin-photo-empty">
-      Nenhuma foto cadastrada. Adicione imagens para compor a tela inicial.
-    </div>
-  <% else %>
+<% if @photos.empty? %>
+  <div class="empty-state card">
+    <%= empty_state_illustration(:no_gallery_photos) %>
+    <p class="empty-state__title">Nenhuma foto cadastrada</p>
+    <p class="empty-state__text">Adicione imagens para compor a tela inicial.</p>
+    <%= link_to "Adicionar foto", new_admin_barbershop_photo_path, class: "button button--primary" %>
+  </div>
+<% else %>
+  <section class="admin-photo-grid" aria-label="Fotos cadastradas">
     <% @photos.each do |photo| %>
-      <article class="admin-photo-card">
+      <article class="admin-photo-card card">
         <div class="admin-photo-card__preview">
-          <%= image_tag photo.image, alt: photo.caption.presence || "Foto da Barbearia Senhor R" %>
+          <%= image_tag photo.image, alt: photo.caption.presence || "Foto da #{Current.barbershop.name}" %>
           <% unless photo.active? %>
             <span class="admin-photo-card__inactive">Não publicada</span>
           <% end %>
@@ -34,10 +37,17 @@
           <span>Ordem <%= photo.position %></span>
         </div>
         <div class="admin-photo-card__actions">
-          <%= link_to "Editar", edit_admin_barbershop_photo_path(photo), class: "admin-button admin-button--quiet" %>
-          <%= button_to "Remover", admin_barbershop_photo_path(photo), method: :delete, class: "admin-button admin-button--danger", form: { data: { turbo_confirm: "Remover esta foto?" } } %>
+          <%= link_to edit_admin_barbershop_photo_path(photo), class: "button button--secondary button--sm", aria: { label: "Editar foto #{photo.caption.presence || photo.id}" } do %>
+            <%= icon_tag(:edit, size: 16) %> <span class="visually-hidden">Editar</span>
+          <% end %>
+          <%= button_to admin_barbershop_photo_path(photo), method: :delete,
+                class: "button button--danger button--sm",
+                form: { data: { turbo_confirm: "Remover esta foto?" } },
+                aria: { label: "Remover foto #{photo.caption.presence || photo.id}" } do %>
+            <%= icon_tag(:trash, size: 16) %> <span class="visually-hidden">Remover</span>
+          <% end %>
         </div>
       </article>
     <% end %>
-  <% end %>
-</section>
+  </section>
+<% end %>

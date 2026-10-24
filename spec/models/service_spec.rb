@@ -64,7 +64,7 @@ RSpec.describe Service, type: :model do
     let(:start_at) { 1.day.from_now.change(hour: 10, min: 0) }
 
     before do
-      Appointment.create!(
+      create_test_appointment!(
         client: client,
         professional: professional,
         service: service,

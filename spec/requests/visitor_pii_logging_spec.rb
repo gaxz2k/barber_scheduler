@@ -15,7 +15,7 @@ RSpec.describe "Visitor data in the SQL log", type: :request do
     professional = Professional.create!(name: "Profissional Log")
     service = Service.create!(name: "Corte Log", duration_minutes: 30)
     start_at = 2.days.from_now.change(hour: 10, min: 0, sec: 0)
-    post appointments_path, params: {
+    post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: {
       appointment: {
         service_id: service.id, professional_id: professional.id,
         date: start_at.to_date.iso8601, start_at: start_at.iso8601,
@@ -55,6 +55,6 @@ RSpec.describe "Visitor data in the SQL log", type: :request do
   it "still creates the appointment, so the log was actually exercised" do
     capture_sql_log { book_publicly }
 
-    expect(Appointment.last.client.name).to eq(visitor_name)
+    expect(within_tenant { tenant_records(Appointment).last.client.name }).to eq(visitor_name)
   end
 end

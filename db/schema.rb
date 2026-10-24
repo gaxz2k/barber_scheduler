@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_26_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_23_222535) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -43,17 +43,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_220000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "appointment_services", force: :cascade do |t|
+    t.bigint "appointment_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "service_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appointment_id", "service_id"], name: "index_appointment_services_on_appointment_id_and_service_id", unique: true
+    t.index ["appointment_id"], name: "index_appointment_services_on_appointment_id"
+    t.index ["service_id"], name: "index_appointment_services_on_service_id"
+  end
+
   create_table "appointments", force: :cascade do |t|
+    t.bigint "barbershop_id", null: false
+    t.bigint "barbershop_unit_id", null: false
     t.bigint "client_id", null: false
     t.datetime "confirmation_expires_at", null: false
     t.string "confirmation_token", null: false
     t.datetime "created_at", null: false
+    t.text "customer_note"
     t.datetime "end_at", null: false
     t.bigint "professional_id", null: false
     t.bigint "service_id", null: false
     t.datetime "start_at", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.index ["barbershop_id"], name: "index_appointments_on_barbershop_id"
+    t.index ["barbershop_unit_id"], name: "index_appointments_on_barbershop_unit_id"
     t.index ["client_id"], name: "index_appointments_on_client_id"
     t.index ["confirmation_token"], name: "index_appointments_on_confirmation_token", unique: true
     t.index ["professional_id"], name: "index_appointments_on_professional_id"
@@ -64,36 +79,88 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_220000) do
 
   create_table "barbershop_photos", force: :cascade do |t|
     t.boolean "active", default: true, null: false
+    t.bigint "barbershop_id", null: false
     t.string "caption"
     t.datetime "created_at", null: false
     t.integer "position", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["active", "position"], name: "index_barbershop_photos_on_active_and_position"
+    t.index ["barbershop_id"], name: "index_barbershop_photos_on_barbershop_id"
+  end
+
+  create_table "barbershop_units", force: :cascade do |t|
+    t.string "address"
+    t.bigint "barbershop_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.jsonb "opening_hours", default: {}, null: false
+    t.string "phone"
+    t.string "slug", null: false
+    t.string "timezone"
+    t.datetime "updated_at", null: false
+    t.string "whatsapp"
+    t.index ["barbershop_id", "slug"], name: "index_barbershop_units_on_barbershop_id_and_slug", unique: true
+    t.index ["barbershop_id"], name: "index_barbershop_units_on_barbershop_id"
+  end
+
+  create_table "barbershops", force: :cascade do |t|
+    t.string "address"
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.jsonb "opening_hours", default: {}, null: false
+    t.string "phone"
+    t.string "slug", null: false
+    t.string "tagline"
+    t.string "timezone", default: "America/Sao_Paulo", null: false
+    t.datetime "updated_at", null: false
+    t.string "whatsapp"
+    t.index ["slug"], name: "index_barbershops_on_slug", unique: true
   end
 
   create_table "clients", force: :cascade do |t|
+    t.bigint "barbershop_id", null: false
     t.datetime "created_at", null: false
     t.string "name"
     t.string "phone"
     t.datetime "updated_at", null: false
+    t.index ["barbershop_id"], name: "index_clients_on_barbershop_id"
   end
 
   create_table "professionals", force: :cascade do |t|
+    t.bigint "barbershop_id", null: false
+    t.bigint "barbershop_unit_id"
     t.datetime "created_at", null: false
     t.string "name"
+    t.string "photo"
+    t.string "specialty"
     t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_professionals_on_name", unique: true
+    t.index ["barbershop_id", "name"], name: "index_professionals_on_barbershop_id_and_name", unique: true
+    t.index ["barbershop_id"], name: "index_professionals_on_barbershop_id"
+    t.index ["barbershop_unit_id"], name: "index_professionals_on_barbershop_unit_id"
   end
 
   create_table "services", force: :cascade do |t|
+    t.bigint "barbershop_id", null: false
     t.datetime "created_at", null: false
     t.integer "duration_minutes"
     t.string "name"
+    t.integer "price_cents"
     t.datetime "updated_at", null: false
+    t.index ["barbershop_id"], name: "index_services_on_barbershop_id"
+  end
+
+  create_table "shop_settings", force: :cascade do |t|
+    t.bigint "barbershop_id", null: false
+    t.datetime "created_at", null: false
+    t.boolean "online_booking_enabled", default: true, null: false
+    t.text "online_booking_message"
+    t.datetime "updated_at", null: false
+    t.index ["barbershop_id"], name: "index_shop_settings_on_barbershop_id", unique: true
   end
 
   create_table "users", force: :cascade do |t|
     t.boolean "admin", default: false, null: false
+    t.bigint "barbershop_id"
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -101,13 +168,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_220000) do
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.datetime "updated_at", null: false
+    t.index ["barbershop_id"], name: "index_users_on_barbershop_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "appointment_services", "appointments"
+  add_foreign_key "appointment_services", "services"
   add_foreign_key "appointments", "clients"
   add_foreign_key "appointments", "professionals"
   add_foreign_key "appointments", "services"
+  add_foreign_key "shop_settings", "barbershops"
 end

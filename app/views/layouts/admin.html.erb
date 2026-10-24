@@ -1,44 +1,60 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
-    <title><%= content_for(:title) || "Painel | Barbearia Senhor R" %></title>
+    <title><%= content_for(:title) || "Painel | #{Current.barbershop.name}" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="application-name" content="Barbearia Senhor R">
+    <meta name="application-name" content="<%= Current.barbershop.name %>">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#18191a">
+    <meta name="theme-color" content="#0b2f3a">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>
 
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%# A ordem importa: tokens antes de componentes antes da camada do admin,
+        porque `admin_panel.css` só declara o que é específico da casca e
+        confia em `var(--dt-*)` e nas classes `.button`/`.card`/`.table`
+        já existirem quando o navegador aplica a cascata. %>
+    <%= stylesheet_link_tag "design_tokens", "design_components", "admin_panel", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="admin-body" data-theme="admin">
-    <nav class="admin-nav" aria-label="Navegação principal do painel">
-      <%= link_to admin_root_path, class: "admin-nav__brand" do %>
-        <span class="admin-nav__mark" aria-hidden="true">Sr</span>
-        <span>Barbearia Senhor R <small>Painel administrativo</small></span>
+  <body data-theme="admin">
+    <nav class="nav nav--admin" aria-label="Navegação principal do painel" data-controller="nav-toggle">
+      <%= link_to admin_root_path, class: "nav__brand" do %>
+        <span aria-hidden="true"><%= Current.barbershop.monograma %></span>
+        <span><%= Current.barbershop.name %></span>
       <% end %>
 
-      <div class="admin-nav__links">
-        <%= link_to "Painel", admin_root_path, class: "admin-nav__link" %>
-        <%= link_to "Agendamentos", admin_appointments_path, class: "admin-nav__link" %>
-        <%= link_to "Profissionais", admin_professionals_path, class: "admin-nav__link" %>
-        <%= link_to "Serviços", admin_services_path, class: "admin-nav__link" %>
-        <%= link_to "Fotos", admin_barbershop_photos_path, class: "admin-nav__link" %>
-        <%= button_to "Sair", destroy_user_session_path, method: :delete, class: "admin-nav__signout", form: { class: "admin-signout-form" } %>
-      </div>
+      <button type="button" class="nav__toggle" data-action="nav-toggle#toggle" aria-expanded="false"
+              aria-controls="admin-nav-links" aria-label="Abrir menu do painel">
+        <%= icon_tag(:menu, size: 22) %>
+      </button>
+
+      <ul class="nav__links" id="admin-nav-links" data-nav-toggle-target="menu">
+        <li><%= link_to "Painel", admin_root_path, class: ["nav__link", ("nav__link--active" if current_page?(admin_root_path))] %></li>
+        <li><%= link_to "Agendamentos", admin_appointments_path, class: ["nav__link", ("nav__link--active" if current_page?(admin_appointments_path))] %></li>
+        <li><%= link_to "Profissionais", admin_professionals_path, class: ["nav__link", ("nav__link--active" if current_page?(admin_professionals_path))] %></li>
+        <li><%= link_to "Serviços", admin_services_path, class: ["nav__link", ("nav__link--active" if current_page?(admin_services_path))] %></li>
+        <li><%= link_to "Unidades", admin_barbershop_units_path, class: ["nav__link", ("nav__link--active" if current_page?(admin_barbershop_units_path))] %></li>
+        <li><%= link_to "Fotos", admin_barbershop_photos_path, class: ["nav__link", ("nav__link--active" if current_page?(admin_barbershop_photos_path))] %></li>
+        <li><%= link_to "Agendamento online", edit_admin_shop_setting_path, class: ["nav__link", ("nav__link--active" if current_page?(edit_admin_shop_setting_path))] %></li>
+        <li><%= button_to "Sair", destroy_user_session_path, method: :delete, class: "button button--ghost button--sm" %></li>
+      </ul>
     </nav>
 
     <% flash.each do |type, message| %>
-      <p class="flash flash-<%= type == "notice" ? "notice" : "alert" %>" role="<%= type == "notice" ? "status" : "alert" %>"><%= message %></p>
+      <p class="alert alert--<%= type == "notice" ? "success" : "danger" %>" role="<%= type == "notice" ? "status" : "alert" %>">
+        <%= icon_tag(type == "notice" ? :check : :x) %>
+        <%= message %>
+      </p>
     <% end %>
 
-    <main class="admin-content">
-      <%= yield %>
-    </main>
+    <div class="admin-shell">
+      <main class="admin-shell__content">
+        <%= yield %>
+      </main>
+    </div>
   </body>
 </html>

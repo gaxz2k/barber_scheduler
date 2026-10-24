@@ -1,0 +1,53 @@
+<%= form_with model: [:admin, @barbershop_unit] do |form| %>
+  <% if @barbershop_unit.errors.any? %>
+    <div class="alert alert--danger" id="error_explanation" role="alert">
+      <%= icon_tag(:x) %>
+      <div>
+        <strong><%= pluralize(@barbershop_unit.errors.count, "erro") %> impediram esta unidade de ser salva:</strong>
+        <ul>
+          <% @barbershop_unit.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name, "Nome da unidade", class: "field__label" %>
+    <%= form.text_field :name, required: true, autofocus: true, autocomplete: "off",
+          class: "input#{' input--error' if @barbershop_unit.errors[:name].any?}" %>
+    <span class="field__hint">Ex.: Centro, Jardim, Shopping.</span>
+  </div>
+
+  <div class="field">
+    <%= form.label :slug, "Endereço na URL", class: "field__label" %>
+    <%= form.text_field :slug, required: true, class: "input#{' input--error' if @barbershop_unit.errors[:slug].any?}" %>
+    <span class="field__hint">O cliente acessa /barbearia/unidades/<strong>este-texto</strong>. Único dentro da barbearia.</span>
+  </div>
+
+  <fieldset class="unit-schedule">
+    <legend>Horário de funcionamento</legend>
+    <p class="field__hint">O cliente só vê horários dentro desta janela, e o último agendamento precisa terminar antes do fechamento. Dia sem horário aparece como agenda vazia.</p>
+
+    <% Admin::BarbershopUnitsController::WEEK_DAYS.each do |chave, nome| %>
+      <% janela = (@barbershop_unit.opening_hours || {})[chave] || {} %>
+      <div class="unit-day">
+        <span class="unit-day__name"><%= nome %></span>
+        <label class="unit-day__field">
+          <span>Abre</span>
+          <input type="time" name="barbershop_unit[opening_hours][<%= chave %>][open]" value="<%= janela['open'] %>">
+        </label>
+        <label class="unit-day__field">
+          <span>Fecha</span>
+          <input type="time" name="barbershop_unit[opening_hours][<%= chave %>][close]" value="<%= janela['close'] %>">
+        </label>
+      </div>
+    <% end %>
+  </fieldset>
+
+  <div class="admin-form__actions">
+    <%= form.submit @barbershop_unit.new_record? ? "Criar unidade" : "Salvar alterações", class: "button button--primary" %>
+    <%= link_to "Cancelar", admin_barbershop_units_path, class: "button button--ghost" %>
+  </div>
+<% end %>

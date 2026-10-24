@@ -13,7 +13,8 @@ RSpec.describe Appointments::PublicScheduler, type: :service do
       phone: "19999998888",
       professional: professional,
       service: service,
-      start_at: start_at
+      start_at: start_at,
+      barbershop_unit: test_unit_for(test_barbershop)
     )
 
     expect(result).not_to be_persisted

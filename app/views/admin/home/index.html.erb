@@ -1,6 +1,6 @@
-<% content_for :title, "Admin | Barbearia Senhor R" %>
+<% content_for :title, "Admin | #{Current.barbershop.name}" %>
 
-<section class="admin-header-row">
+<section class="admin-page-header">
   <div>
     <div class="admin-kicker">Painel operacional</div>
     <h1 class="admin-page-title">Tudo sob controle</h1>
@@ -8,47 +8,126 @@
   </div>
 </section>
 
-<section class="admin-dashboard-hero">
-  <div class="admin-dashboard-hero__copy">
-    <p><strong>Seu painel está pronto para operar.</strong></p>
-    <p>Use os atalhos abaixo para cuidar da agenda e da presença digital da barbearia.</p>
+<% if @missing_setup.any? %>
+  <div class="alert alert--warning" style="margin-bottom: var(--dt-space-5);">
+    <%= icon_tag(:clock) %>
+    <div>
+      <strong>Ainda falta configurar a barbearia antes de atender.</strong>
+      <p style="margin: var(--dt-space-2) 0 0;">Sem estes itens o cliente não consegue concluir um agendamento. Cada um abaixo leva direto à tela correspondente.</p>
+      <ul class="admin-setup-checklist">
+        <% @missing_setup.each do |item| %>
+          <li>
+            <%= link_to setup_path(item), class: "admin-setup-checklist__link" do %>
+              <%= icon_tag(:check, size: 14) %> <%= setup_label(item) %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
   </div>
+<% else %>
+  <div class="alert alert--success" style="margin-bottom: var(--dt-space-5);">
+    <%= icon_tag(:check) %>
+    <div>
+      <strong>Seu painel está pronto para atender.</strong>
+      <p style="margin: var(--dt-space-2) 0 0;">Serviços, profissionais, unidades e horários cadastrados. Use os atalhos abaixo para cuidar da agenda e da presença digital.</p>
+    </div>
+  </div>
+<% end %>
+
+<section class="admin-metrics" aria-label="Métricas da operação">
+  <div class="admin-metrics__verdict admin-metrics__verdict--<%= @metrics.veredito_tom %>">
+    <%= icon_tag(@metrics.veredito_tom == "ok" ? :check : :clock) %>
+    <p><%= @metrics.veredito_texto %></p>
+  </div>
+
+  <div class="admin-metrics__grid">
+    <% @metrics.indicadores.each do |indicador| %>
+      <div class="metric-card <%= tom_card_class(indicador.tom) %>" data-metric-key="<%= indicador.chave %>">
+        <span class="metric-card__label"><%= indicador.rotulo %></span>
+        <span class="metric-card__value"><%= indicador.texto %></span>
+        <span class="badge <%= tom_badge_class(indicador.tom) %> metric-card__badge"><%= indicador.tom.humanize %></span>
+        <p class="metric-card__detail"><%= indicador.detalhe %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <h2 class="admin-metrics__table-title">Clientes por profissional</h2>
+  <p class="admin-metrics__table-caption">
+    Clientes distintos com pelo menos um agendamento não cancelado nos últimos <%= @metrics.janela_dias %> dias.
+  </p>
+
+  <% if @metrics.clientes_por_profissional.empty? %>
+    <div class="empty-state">
+      <%= empty_state_illustration(:no_professionals) %>
+      <h3 class="empty-state__title">Nenhum profissional cadastrado ainda</h3>
+      <p class="empty-state__text">Cadastre a equipe para ver a distribuição de clientes por profissional.</p>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table class="table" aria-label="Clientes por profissional">
+        <thead>
+          <tr>
+            <th>Profissional</th>
+            <th>Clientes atendidos (<%= @metrics.janela_dias %> dias)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @metrics.clientes_por_profissional.each do |linha| %>
+            <tr>
+              <td><%= linha[:profissional].name %></td>
+              <td><%= linha[:total_clientes] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
 </section>
 
-<section class="professional-grid" aria-label="Atalhos administrativos">
-  <%= link_to admin_appointments_path, class: "professional-card" do %>
-    <span class="professional-avatar" aria-hidden="true">⌁</span>
-    <span class="professional-card__content">
-      <span class="professional-card__name">Agendamentos</span>
-      <span class="professional-card__caption">Consulte e organize os horários reservados.</span>
-      <span class="professional-card__action">Abrir agenda →</span>
+<section class="admin-shortcut-grid" aria-label="Atalhos administrativos">
+  <%= link_to admin_appointments_path, class: "card admin-shortcut-card" do %>
+    <span class="admin-shortcut-card__icon" aria-hidden="true"><%= icon_tag(:calendar, size: 22) %></span>
+    <span>
+      <span class="admin-shortcut-card__name">Agendamentos</span>
+      <span class="admin-shortcut-card__caption">Consulte e organize os horários reservados.</span>
+      <span class="admin-shortcut-card__action">Abrir agenda →</span>
     </span>
   <% end %>
 
-  <%= link_to admin_professionals_path, class: "professional-card" do %>
-    <span class="professional-avatar" aria-hidden="true">✦</span>
-    <span class="professional-card__content">
-      <span class="professional-card__name">Profissionais</span>
-      <span class="professional-card__caption">Gerencie quem atende na barbearia.</span>
-      <span class="professional-card__action">Gerenciar equipe →</span>
+  <%= link_to admin_professionals_path, class: "card admin-shortcut-card" do %>
+    <span class="admin-shortcut-card__icon" aria-hidden="true"><%= icon_tag(:user, size: 22) %></span>
+    <span>
+      <span class="admin-shortcut-card__name">Profissionais</span>
+      <span class="admin-shortcut-card__caption">Gerencie quem atende na barbearia.</span>
+      <span class="admin-shortcut-card__action">Gerenciar equipe →</span>
     </span>
   <% end %>
 
-  <%= link_to admin_services_path, class: "professional-card" do %>
-    <span class="professional-avatar" aria-hidden="true">▦</span>
-    <span class="professional-card__content">
-      <span class="professional-card__name">Serviços</span>
-      <span class="professional-card__caption">Atualize o cardápio e as durações.</span>
-      <span class="professional-card__action">Ver serviços →</span>
+  <%= link_to admin_services_path, class: "card admin-shortcut-card" do %>
+    <span class="admin-shortcut-card__icon" aria-hidden="true"><%= icon_tag(:clock, size: 22) %></span>
+    <span>
+      <span class="admin-shortcut-card__name">Serviços</span>
+      <span class="admin-shortcut-card__caption">Atualize o cardápio e as durações.</span>
+      <span class="admin-shortcut-card__action">Ver serviços →</span>
     </span>
   <% end %>
 
-  <%= link_to admin_barbershop_photos_path, class: "professional-card" do %>
-    <span class="professional-avatar" aria-hidden="true">▧</span>
-    <span class="professional-card__content">
-      <span class="professional-card__name">Fotos da barbearia</span>
-      <span class="professional-card__caption">Monte o carrossel da tela inicial.</span>
-      <span class="professional-card__action">Editar galeria →</span>
+  <%= link_to admin_barbershop_units_path, class: "card admin-shortcut-card" do %>
+    <span class="admin-shortcut-card__icon" aria-hidden="true"><%= icon_tag(:phone, size: 22) %></span>
+    <span>
+      <span class="admin-shortcut-card__name">Unidades</span>
+      <span class="admin-shortcut-card__caption">Lojas e o horário de funcionamento de cada uma.</span>
+      <span class="admin-shortcut-card__action">Gerenciar unidades →</span>
+    </span>
+  <% end %>
+
+  <%= link_to admin_barbershop_photos_path, class: "card admin-shortcut-card" do %>
+    <span class="admin-shortcut-card__icon" aria-hidden="true"><%= icon_tag(:edit, size: 22) %></span>
+    <span>
+      <span class="admin-shortcut-card__name">Fotos da barbearia</span>
+      <span class="admin-shortcut-card__caption">Monte o carrossel da tela inicial.</span>
+      <span class="admin-shortcut-card__action">Editar galeria →</span>
     </span>
   <% end %>
 </section>

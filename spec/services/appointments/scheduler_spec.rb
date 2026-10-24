@@ -11,7 +11,8 @@ RSpec.describe Appointments::Scheduler, type: :service do
       client: client,
       professional: professional,
       service: service,
-      start_at: start_time
+      start_at: start_time,
+      barbershop_unit: test_unit_for(test_barbershop)
     )
   end
 
@@ -21,6 +22,7 @@ RSpec.describe Appointments::Scheduler, type: :service do
       professional: professional,
       service: service,
       start_at: start_time,
+      barbershop_unit: test_unit_for(test_barbershop),
       end_at: start_time + service.duration_minutes.minutes
     )
   end
@@ -70,7 +72,8 @@ RSpec.describe Appointments::Scheduler, type: :service do
         client: client,
         professional: professional,
         service: stale_service,
-        start_at: start_at
+        start_at: start_at,
+        barbershop_unit: test_unit_for(test_barbershop)
       )
 
       expect(result).to be_persisted
@@ -117,7 +120,8 @@ RSpec.describe Appointments::Scheduler, type: :service do
         professional: professional,
         service: service,
         start_at: start_at,
-        end_at: start_at + 2.hours
+        end_at: start_at + 2.hours,
+        barbershop_unit: test_unit_for(test_barbershop)
       )
 
       expect(result).to be_persisted
@@ -186,7 +190,8 @@ RSpec.describe Appointments::Scheduler, type: :service do
         client: client,
         professional: professional,
         service: nil,
-        start_at: start_at
+        start_at: start_at,
+        barbershop_unit: test_unit_for(test_barbershop)
       )
 
       expect(result).not_to be_persisted

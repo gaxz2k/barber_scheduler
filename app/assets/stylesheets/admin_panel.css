@@ -1,0 +1,612 @@
+/* Camada visual do painel administrativo — identidade "litoral urbano".
+ *
+ * Fase 3 do redesign: aplica os tokens (`design_tokens.css`) e os componentes
+ * (`design_components.css`) às telas que o dono da barbearia usa. Este
+ * arquivo é só para o que é específico do admin — a casca do painel, o
+ * cabeçalho de cada tela, os atalhos do dashboard, o grid de fotos — e nunca
+ * duplica algo que já existe em `.button`/`.card`/`.table`/`.field`: quando
+ * uma tela precisa de um desses, ela usa a classe de `design_components.css`
+ * direto no HTML.
+ *
+ * `application.css` continua intacto (ver o comentário no topo dele) — as
+ * classes antigas (`.admin-table`, `.admin-button`, `.admin-nav`...) ficam
+ * mortas no CSS, sem nenhuma view usando-as mais, e podem ser removidas numa
+ * limpeza futura fora do escopo desta fase. */
+
+/* === Casca do painel ======================================================= */
+
+.admin-shell {
+  min-height: 100vh;
+  background: var(--dt-ice-50);
+}
+
+.admin-shell__content {
+  width: min(100% - 2rem, 76rem);
+  margin: 0 auto;
+  padding: var(--dt-space-6) 0 var(--dt-space-8);
+}
+
+/* === Cabeçalho de tela ======================================================
+ * Kicker + título + descrição à esquerda, ação primária à direita — o mesmo
+ * padrão em toda listagem (agendamentos, profissionais, serviços...). */
+.admin-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--dt-space-4);
+  margin-bottom: var(--dt-space-5);
+}
+
+.admin-kicker {
+  color: var(--dt-coral-500);
+  font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-page-title {
+  margin: var(--dt-space-1) 0 var(--dt-space-1);
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
+  font-size: clamp(1.5rem, 4vw, var(--dt-text-3xl));
+  font-weight: var(--dt-weight-bold);
+  line-height: var(--dt-leading-tight);
+}
+
+.admin-page-description {
+  margin: 0;
+  max-width: 40rem;
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+}
+
+/* === Formulário / detalhe ===================================================
+ * Moldura de `.card` em volta de um `_form` ou de um `show`: o conteúdo
+ * interno (campos, erros, ações) já vem do `_form.html.erb` usando os
+ * componentes de `design_components.css` diretamente. */
+.admin-form-shell,
+.admin-detail-card {
+  max-width: 34rem;
+}
+
+.admin-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-3);
+}
+
+.admin-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--dt-space-4);
+  padding: var(--dt-space-2) 0;
+  border-bottom: 1px solid var(--dt-line-soft);
+  font-size: var(--dt-text-sm);
+}
+
+.admin-detail-row:last-of-type {
+  border-bottom: 0;
+}
+
+.admin-detail-row > span:first-child {
+  color: var(--dt-ink-soft);
+}
+
+.admin-detail-row > span:last-child {
+  color: var(--dt-ink);
+  font-weight: var(--dt-weight-medium);
+  text-align: right;
+}
+
+.admin-form__actions {
+  display: flex;
+  gap: var(--dt-space-3);
+  margin-top: var(--dt-space-2);
+}
+
+/* === Checklist de prontidão (home) ========================================= */
+.admin-setup-checklist {
+  list-style: none;
+  margin: var(--dt-space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-2);
+}
+
+.admin-setup-checklist__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-space-2);
+  color: var(--dt-petrol-700);
+  font-weight: var(--dt-weight-medium);
+  text-decoration: none;
+}
+
+.admin-setup-checklist__link:hover {
+  text-decoration: underline;
+}
+
+/* === Atalhos do dashboard ===================================================
+ * Grid de cartões-link para as telas mais usadas. Cada cartão é um `.card`
+ * clicável: o `<a>` inteiro é o alvo do toque, maior que qualquer botão —
+ * o dono abre isto no celular entre um corte e outro, não tem tempo de
+ * acertar um botão pequeno. */
+.admin-shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--dt-space-4);
+}
+
+.admin-shortcut-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-space-3);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow var(--dt-transition-fast), transform var(--dt-transition-fast);
+}
+
+.admin-shortcut-card:hover,
+.admin-shortcut-card:focus-visible {
+  box-shadow: var(--dt-shadow-soft);
+  transform: translateY(-2px);
+}
+
+.admin-shortcut-card:focus-visible {
+  outline: none;
+  box-shadow: var(--dt-shadow-soft), var(--dt-focus-ring);
+}
+
+.admin-shortcut-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-petrol-100);
+  color: var(--dt-petrol-700);
+}
+
+.admin-shortcut-card__name {
+  display: block;
+  font-weight: var(--dt-weight-bold);
+  color: var(--dt-ink);
+}
+
+.admin-shortcut-card__caption {
+  display: block;
+  margin-top: var(--dt-space-1);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+}
+
+.admin-shortcut-card__action {
+  display: inline-block;
+  margin-top: var(--dt-space-2);
+  color: var(--dt-coral-500);
+  font-size: var(--dt-text-sm);
+  font-weight: var(--dt-weight-medium);
+}
+
+/* === Painel de métricas (home) ==============================================
+ * Dashboard de diagnóstico da operação — ver `diagnostics-dashboard-design`.
+ * O tom de cada cartão vem pronto do servidor (`Admin::DashboardMetrics`);
+ * aqui só existe a aparência de cada tom, nunca a regra que escolhe qual. */
+
+.admin-metrics {
+  margin-bottom: var(--dt-space-6);
+}
+
+/* O veredito abre a seção, antes de qualquer número — uma frase com o motivo
+ * concreto (ver skill). A borda lateral grossa é o único sinal de cor; o
+ * fundo continua neutro para não competir com os cartões abaixo. */
+.admin-metrics__verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-space-3);
+  padding: var(--dt-space-4) var(--dt-space-5);
+  margin-bottom: var(--dt-space-5);
+  border-radius: var(--dt-radius-md);
+  border-left: 4px solid var(--dt-neutral-500);
+  background: var(--dt-ice-0);
+  box-shadow: var(--dt-shadow-card);
+}
+
+.admin-metrics__verdict p {
+  margin: 0;
+  color: var(--dt-ink);
+  font-weight: var(--dt-weight-medium);
+}
+
+.admin-metrics__verdict--ok { border-left-color: var(--dt-success-500); }
+.admin-metrics__verdict--atencao { border-left-color: var(--dt-warning-500); }
+.admin-metrics__verdict--critico { border-left-color: var(--dt-danger-500); }
+.admin-metrics__verdict--neutro,
+.admin-metrics__verdict--sem_dado { border-left-color: var(--dt-neutral-500); }
+
+/* `auto-fit`/`minmax` em vez de um número fixo de colunas: o grid de cartões
+ * de indicador tem um número VARIÁVEL de filhos (um indicador pode faltar se
+ * o avaliador dele falhar — ver skill, regra 6), e um `grid-template-columns`
+ * fixo por contagem de filhos quebraria nesse caso. */
+.admin-metrics__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--dt-space-4);
+  margin-bottom: var(--dt-space-6);
+}
+
+.metric-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-1);
+  padding: var(--dt-space-4) var(--dt-space-5);
+  border-radius: var(--dt-radius-md);
+  border: 1px solid var(--dt-line);
+  background: var(--dt-ice-0);
+  box-shadow: var(--dt-shadow-card);
+  border-top: 3px solid var(--dt-neutral-500);
+}
+
+.metric-card--ok { border-top-color: var(--dt-success-500); }
+.metric-card--atencao { border-top-color: var(--dt-warning-500); }
+.metric-card--critico { border-top-color: var(--dt-danger-500); }
+.metric-card--neutro { border-top-color: var(--dt-neutral-500); }
+
+.metric-card__label {
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+  font-weight: var(--dt-weight-medium);
+}
+
+.metric-card__value {
+  font-family: var(--dt-font-display);
+  font-size: var(--dt-text-2xl);
+  font-weight: var(--dt-weight-bold);
+  color: var(--dt-ink);
+}
+
+.metric-card__badge {
+  align-self: flex-start;
+  text-transform: capitalize;
+}
+
+.metric-card__detail {
+  margin: var(--dt-space-1) 0 0;
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-xs);
+}
+
+.admin-metrics__table-title {
+  margin: 0 0 var(--dt-space-1);
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
+  font-size: var(--dt-text-lg);
+  font-weight: var(--dt-weight-bold);
+}
+
+.admin-metrics__table-caption {
+  margin: 0 0 var(--dt-space-3);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+}
+
+/* === Galeria de fotos ======================================================= */
+.admin-photo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dt-space-5);
+  margin-bottom: var(--dt-space-5);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+}
+
+.admin-photo-toolbar strong {
+  color: var(--dt-ink);
+}
+
+.admin-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--dt-space-4);
+}
+
+.admin-photo-card {
+  overflow: hidden;
+  padding: 0;
+}
+
+.admin-photo-card__preview {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--dt-mist-100);
+}
+
+.admin-photo-card__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-photo-card__inactive {
+  position: absolute;
+  bottom: var(--dt-space-2);
+  left: var(--dt-space-2);
+  padding: var(--dt-space-1) var(--dt-space-2);
+  border-radius: var(--dt-radius-pill);
+  background: rgba(14, 32, 36, 0.8);
+  color: var(--dt-ice-0);
+  font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-medium);
+}
+
+.admin-photo-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-1);
+  padding: var(--dt-space-3) var(--dt-space-4) 0;
+  font-size: var(--dt-text-sm);
+  color: var(--dt-ink-soft);
+}
+
+.admin-photo-card__body strong {
+  color: var(--dt-ink);
+}
+
+.admin-photo-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--dt-space-2);
+  padding: var(--dt-space-3) var(--dt-space-4) var(--dt-space-4);
+}
+
+.admin-current-image {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-2);
+  margin-bottom: var(--dt-space-5);
+  font-size: var(--dt-text-sm);
+  color: var(--dt-ink-soft);
+}
+
+.admin-current-image img {
+  max-width: 12rem;
+  border-radius: var(--dt-radius-md);
+  border: 1px solid var(--dt-line);
+}
+
+/* === Unidades: horário de funcionamento ===================================== */
+.unit-schedule {
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-md);
+  padding: var(--dt-space-4);
+  margin: 0 0 var(--dt-space-5);
+}
+
+.unit-schedule legend {
+  padding: 0 var(--dt-space-2);
+  font-weight: var(--dt-weight-bold);
+  color: var(--dt-ink);
+}
+
+.unit-day {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--dt-space-3);
+  padding: var(--dt-space-2) 0;
+  border-bottom: 1px solid var(--dt-line-soft);
+}
+
+.unit-day:last-child {
+  border-bottom: 0;
+}
+
+.unit-day__name {
+  width: 5.5rem;
+  flex-shrink: 0;
+  font-weight: var(--dt-weight-medium);
+  color: var(--dt-ink);
+}
+
+.unit-day__field {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-space-2);
+  font-size: var(--dt-text-sm);
+  color: var(--dt-ink-soft);
+}
+
+.unit-day__field input {
+  font-family: var(--dt-font-body);
+  font-size: var(--dt-text-sm);
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-sm);
+  padding: var(--dt-space-2);
+}
+
+.unit-day__field input:focus-visible {
+  outline: none;
+  border-color: var(--dt-petrol-500);
+  box-shadow: var(--dt-focus-ring);
+}
+
+/* === Login ==================================================================
+ * A porta de entrada do painel usa o layout público (`application.html.erb`),
+ * então carrega tokens + componentes normalmente; a única coisa própria
+ * daqui é o posicionamento do cartão de login no centro da tela.
+ *
+ * `shared/_brand` também é usado pelo login, mas o `.brand-mark`/`.brand-name`
+ * só ganham a paleta nova dentro de `.booking-entry`/`.booking-page` (ver
+ * `booking_wizard.css`) — o login não é nenhuma das duas, então sem este
+ * bloco o monograma continuaria preto+dourado do `application.css` antigo
+ * numa tela que deveria estar 100% na identidade nova. */
+.admin-login-card .brand-lockup {
+  gap: var(--dt-space-3);
+  color: var(--dt-ink);
+  text-decoration: none;
+  margin-bottom: var(--dt-space-2);
+}
+
+.admin-login-card .brand-mark {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--dt-petrol-900);
+  color: var(--dt-ice-0);
+  font-family: var(--dt-font-display);
+  font-size: var(--dt-text-base);
+  font-weight: var(--dt-weight-bold);
+}
+
+.admin-login-card .brand-name {
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-login-card .brand-name--strong {
+  display: block;
+  color: var(--dt-ink);
+  font-size: var(--dt-text-base);
+  text-transform: none;
+}
+
+.admin-login-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: var(--dt-space-5);
+  background: var(--dt-ice-50);
+}
+
+.admin-login-card {
+  width: min(100%, 26rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-2);
+}
+
+.admin-login-card h1 {
+  margin: var(--dt-space-2) 0 0;
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
+  font-size: var(--dt-text-2xl);
+  font-weight: var(--dt-weight-bold);
+}
+
+.admin-login-card > p {
+  margin: 0 0 var(--dt-space-3);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* `application.css` estiliza `input:not([type="radio"]):not([type="checkbox"])`
+ * sem precisar de classe — e essa dupla negação de atributo tem mais
+ * especificidade (0,2,1) que a classe `.input` sozinha (0,1,0), então o
+ * cadastro cream/bege antigo vencia o branco da identidade nova neste
+ * formulário, mesmo com `admin_panel.css` carregado depois. O seletor
+ * composto abaixo iguala a especificidade (0,2,1); como este arquivo é
+ * carregado depois de `application.css` no layout público, o empate
+ * desempata para cá. */
+.admin-login-form input.input,
+.admin-login-form select.select,
+.admin-login-form textarea.textarea {
+  background: var(--dt-ice-0);
+  border-color: var(--dt-line);
+  color: var(--dt-ink);
+}
+
+.admin-login-form input.input:focus-visible,
+.admin-login-form select.select:focus-visible,
+.admin-login-form textarea.textarea:focus-visible {
+  border-color: var(--dt-petrol-500);
+  box-shadow: var(--dt-focus-ring);
+}
+
+/* Mesmo problema de especificidade do botão de submit documentado em
+ * `booking_wizard.css` (ver o comentário lá): `input:not([type="radio"])
+ * :not([type="checkbox"])` do `application.css` também casa com
+ * `input[type="submit"]`, com a MESMA especificidade de `.button`. Sem este
+ * desempate explícito, "Entrar" herdava a aparência de campo de texto em vez
+ * do botão coral. */
+.admin-login-form input[type="submit"].button {
+  background: var(--dt-coral-500);
+  color: var(--dt-ice-0);
+  border-color: var(--dt-coral-500);
+}
+
+.admin-login-form input[type="submit"].button:hover,
+.admin-login-form input[type="submit"].button:focus-visible {
+  background: var(--dt-coral-700);
+  border-color: var(--dt-coral-700);
+}
+
+.remember-label {
+  display: flex !important;
+  align-items: center;
+  gap: var(--dt-space-2);
+  margin: 0 0 var(--dt-space-4);
+  font-size: var(--dt-text-sm);
+  color: var(--dt-ink-soft);
+  cursor: pointer;
+}
+
+.login-recovery-link {
+  margin-top: var(--dt-space-3);
+  text-align: center;
+  font-size: var(--dt-text-sm);
+}
+
+.login-recovery-link a {
+  color: var(--dt-petrol-700);
+}
+
+/* === Responsivo ============================================================= */
+@media (max-width: 760px) {
+  .admin-shell__content {
+    padding-top: var(--dt-space-4);
+  }
+
+  .admin-page-header {
+    align-items: flex-start;
+  }
+
+  .admin-page-header .button {
+    width: 100%;
+  }
+
+  .admin-detail-row {
+    flex-direction: column;
+    gap: var(--dt-space-1);
+  }
+
+  .admin-detail-row > span:last-child {
+    text-align: left;
+  }
+
+  .unit-day {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-metrics__grid {
+    grid-template-columns: 1fr;
+  }
+}

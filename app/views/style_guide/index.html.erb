@@ -1,0 +1,193 @@
+<% cores = [
+  ["Petróleo 900", "--dt-petrol-900", "#0b2f3a", "escuro"],
+  ["Petróleo 700", "--dt-petrol-700", "#124a5c", "escuro"],
+  ["Petróleo 500", "--dt-petrol-500", "#1b6a82", "escuro"],
+  ["Petróleo 300", "--dt-petrol-300", "#5fa3b6", "claro"],
+  ["Petróleo 100", "--dt-petrol-100", "#d8ebf0", "claro"],
+  ["Coral 700", "--dt-coral-700", "#c43e26", "escuro"],
+  ["Coral 500", "--dt-coral-500", "#e8572f", "escuro"],
+  ["Coral 100", "--dt-coral-100", "#fde4da", "claro"],
+  ["Sucesso 500", "--dt-success-500", "#2f9159", "escuro"],
+  ["Alerta 500", "--dt-warning-500", "#c9870f", "escuro"],
+  ["Perigo 500", "--dt-danger-500", "#c23349", "escuro"],
+  ["Gelo 50", "--dt-ice-50", "#f6f9fa", "claro"],
+  ["Névoa 100", "--dt-mist-100", "#e7eef0", "claro"],
+  ["Tinta", "--dt-ink", "#0e2024", "escuro"]
+] %>
+
+<section class="sg-section">
+  <h1 style="font-family: var(--dt-font-display); font-size: var(--dt-text-3xl); margin-bottom: 0;">
+    Guia de estilo — fundação visual
+  </h1>
+  <p style="color: var(--dt-ink-soft); max-width: 40rem;">
+    Fase 1 do redesign: tokens e componentes novos, antes de qualquer tela
+    real ser tocada. Paleta "litoral urbano" — petróleo + coral — no lugar
+    do preto e dourado do Studio Navalha.
+  </p>
+</section>
+
+<section class="sg-section">
+  <h2>Paleta de cores</h2>
+  <div class="sg-grid">
+    <% cores.each do |nome, token, hex, contraste| %>
+      <div class="sg-swatch" style="background: var(<%= token %>); color: <%= contraste == "escuro" ? "#fff" : "#0e2024" %>;">
+        <span class="sg-swatch__name"><%= nome %></span>
+        <span class="sg-swatch__hex"><%= token %> · <%= hex %></span>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<section class="sg-section">
+  <h2>Tipografia</h2>
+  <p style="font-size: var(--dt-text-3xl); font-family: var(--dt-font-display); font-weight: var(--dt-weight-bold); margin: 0;">Título 3xl — Agendar horário</p>
+  <p style="font-size: var(--dt-text-2xl); font-weight: var(--dt-weight-bold); margin: 0;">Título 2xl — Seus próximos cortes</p>
+  <p style="font-size: var(--dt-text-xl); font-weight: var(--dt-weight-medium); margin: 0;">Título xl — Profissionais disponíveis</p>
+  <p style="font-size: var(--dt-text-lg); margin: 0;">Texto lg — Corte + barba, 45 minutos</p>
+  <p style="font-size: var(--dt-text-base); margin: 0;">Texto base — Confirme seu horário até 24h antes do agendamento.</p>
+  <p style="font-size: var(--dt-text-sm); color: var(--dt-ink-soft); margin: 0;">Texto sm — Cancelamentos têm política própria.</p>
+  <p style="font-size: var(--dt-text-xs); color: var(--dt-ink-faint); margin: 0;">Texto xs — Horário sujeito a confirmação do profissional.</p>
+</section>
+
+<section class="sg-section">
+  <h2>Botões</h2>
+  <div class="sg-row">
+    <button class="button button--primary">Agendar horário</button>
+    <button class="button button--secondary">Ver detalhes</button>
+    <button class="button button--ghost">Cancelar</button>
+    <button class="button button--danger">Excluir</button>
+  </div>
+  <div class="sg-row">
+    <button class="button button--primary button--sm">Pequeno</button>
+    <button class="button button--primary">Padrão</button>
+    <button class="button button--primary button--lg">Grande</button>
+    <button class="button button--primary" disabled>Desabilitado</button>
+  </div>
+</section>
+
+<section class="sg-section">
+  <h2>Cards</h2>
+  <div class="sg-grid">
+    <div class="card">
+      <p class="card__title">Corte + barba</p>
+      <p class="card__subtitle">45 minutos · R$ 70</p>
+      <span class="badge badge--success"><%= icon_tag(:check, size: 14) %> Confirmado</span>
+    </div>
+    <div class="card card--elevated">
+      <p class="card__title">João Pereira</p>
+      <p class="card__subtitle">Barbeiro sênior</p>
+      <span class="admin-badge">Painel</span>
+    </div>
+  </div>
+</section>
+
+<section class="sg-section">
+  <h2>Badges de status</h2>
+  <div class="sg-row">
+    <span class="badge badge--success">Confirmado</span>
+    <span class="badge badge--warning">Pendente</span>
+    <span class="badge badge--danger">Cancelado</span>
+    <span class="badge badge--neutral">Concluído</span>
+    <span class="admin-badge">Admin</span>
+  </div>
+</section>
+
+<section class="sg-section">
+  <h2>Formulário</h2>
+  <div class="sg-grid">
+    <div class="field">
+      <label class="field__label">Nome do cliente</label>
+      <input class="input" type="text" placeholder="Maria Silva">
+      <span class="field__hint">Como aparece na confirmação.</span>
+    </div>
+    <div class="field">
+      <label class="field__label">Serviço</label>
+      <select class="select">
+        <option>Corte simples</option>
+        <option>Corte + barba</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field__label">Observação (com erro)</label>
+      <textarea class="textarea input--error" placeholder="Opcional"></textarea>
+      <span class="field__error">Máximo de 280 caracteres.</span>
+    </div>
+    <div class="field">
+      <label class="field__label">Campo desabilitado</label>
+      <input class="input" type="text" value="Bloqueado" disabled>
+    </div>
+    <div class="field">
+      <label class="checkbox"><input type="checkbox" checked> Confirmar presença</label>
+      <label class="radio"><input type="radio" name="sg-radio" checked> Manhã</label>
+      <label class="radio"><input type="radio" name="sg-radio"> Tarde</label>
+    </div>
+  </div>
+</section>
+
+<section class="sg-section">
+  <h2>Alertas / flash</h2>
+  <div class="alert alert--success"><%= icon_tag(:check) %> Agendamento confirmado com sucesso.</div>
+  <br>
+  <div class="alert alert--warning"><%= icon_tag(:clock) %> O horário escolhido está perto do fechamento.</div>
+  <br>
+  <div class="alert alert--danger"><%= icon_tag(:x) %> Não foi possível cancelar: o agendamento já foi concluído.</div>
+  <br>
+  <div class="alert alert--neutral"><%= icon_tag(:calendar) %> Nenhuma alteração pendente.</div>
+</section>
+
+<section class="sg-section">
+  <h2>Navegação</h2>
+  <nav class="nav" style="border-radius: var(--dt-radius-md); margin-bottom: var(--dt-space-5);">
+    <a class="nav__brand" href="#">Studio Exemplo</a>
+    <ul class="nav__links">
+      <li><a class="nav__link nav__link--active" href="#">Agendar</a></li>
+      <li><a class="nav__link" href="#">Meus horários</a></li>
+    </ul>
+  </nav>
+  <nav class="nav nav--admin" style="border-radius: var(--dt-radius-md);">
+    <a class="nav__brand" href="#">Studio Exemplo · Painel</a>
+    <ul class="nav__links">
+      <li><a class="nav__link nav__link--active" href="#">Agenda</a></li>
+      <li><a class="nav__link" href="#">Profissionais</a></li>
+      <li><a class="nav__link" href="#">Galeria</a></li>
+    </ul>
+  </nav>
+</section>
+
+<section class="sg-section">
+  <h2>Ícones</h2>
+  <div class="sg-grid">
+    <% %i[calendar clock user phone check x whatsapp lock edit trash].each do |nome| %>
+      <div class="sg-icon-tile">
+        <%= icon_tag(nome, size: 28) %>
+        <span><%= nome %></span>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<section class="sg-section">
+  <h2>Ilustrações de estado vazio</h2>
+  <div class="sg-grid">
+    <div class="empty-state">
+      <%= empty_state_illustration(:no_appointments) %>
+      <p class="empty-state__title">Nenhum agendamento hoje</p>
+      <p class="empty-state__text">Quando alguém marcar um horário, ele aparece aqui.</p>
+    </div>
+    <div class="empty-state">
+      <%= empty_state_illustration(:no_professionals) %>
+      <p class="empty-state__title">Nenhum profissional cadastrado</p>
+      <p class="empty-state__text">Cadastre o primeiro profissional para liberar os agendamentos.</p>
+    </div>
+    <div class="empty-state">
+      <%= empty_state_illustration(:no_gallery_photos) %>
+      <p class="empty-state__title">Nenhuma foto na galeria</p>
+      <p class="empty-state__text">Fotos do espaço aparecem aqui para quem está agendando.</p>
+    </div>
+    <div class="empty-state">
+      <%= empty_state_illustration(:empty_list) %>
+      <p class="empty-state__title">Lista vazia</p>
+      <p class="empty-state__text">Ilustração genérica reutilizável para qualquer lista sem itens.</p>
+    </div>
+  </div>
+</section>
