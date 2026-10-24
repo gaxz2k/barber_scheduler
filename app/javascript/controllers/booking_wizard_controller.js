@@ -3,13 +3,13 @@ import { Controller } from "@hotwired/stimulus"
 // Um card único, três etapas internas — arquitetura da referência
 // SimplesAgenda (ver o comentário no topo de `new.html.erb`).
 //
-// Este controller faz três coisas, e só três:
+// Este controller faz duas coisas, e só duas:
 //
 //   1. Troca de etapa sem navegar: qualquer link ou formulário GET dentro do
 //      cartão marcado com `data-step-link` é interceptado, buscado via
 //      `fetch`, e o `.booking-flow` da resposta substitui o `.booking-flow`
 //      atual — a MESMA troca de servidor que já existia (a URL ainda decide
-//      tudo: serviço, profissional, data, extras), só sem recarregar a
+//      tudo: serviço, profissional, data), só sem recarregar a
 //      página. `history.pushState` mantém a URL e o botão Voltar do
 //      navegador coerentes com a etapa mostrada — sem isto, apertar Voltar
 //      deixaria a URL e o cartão visível dessincronizados.
@@ -19,14 +19,6 @@ import { Controller } from "@hotwired/stimulus"
 //      confirmação já está nesta mesma resposta, só escondida por
 //      `[hidden]`. `hideConfirm` desfaz, para "Trocar horário".
 //
-//   3. Mostra/escabonde o painel "+ Adicionar serviço" (`showAddService`/
-//      `hideAddService`) sem perder o progresso: o painel é a mesma lista
-//      densa de serviços (`_service_rows`, `mode: :add_extra`), e cada item
-//      dela é um link comum `data-step-link` que soma o serviço aos
-//      `extra_service_ids[]` já escolhidos e recarrega/troca a tela — a
-//      lógica de "não perder o que já foi escolhido" vem inteira do servidor,
-//      que já sabia somar extras antes desta tarefa.
-//
 // Sem JavaScript, nada disto roda: os links e formulários navegam
 // normalmente (todos já levam `data-turbo="false"`), a página recarrega, e a
 // etapa fundida mostra as duas sub-telas (data/horário e confirmação)
@@ -35,7 +27,7 @@ import { Controller } from "@hotwired/stimulus"
 // `barber-scheduler-js-toolchain`: o POST por `curl` continua completando um
 // agendamento sem nenhum JS carregado).
 export default class extends Controller {
-  static targets = [ "schedulePanel", "confirmPanel", "addServicePanel" ]
+  static targets = [ "schedulePanel", "confirmPanel" ]
 
   connect() {
     // Se a tela já chegou com um horário escolhido (reenvio de formulário
@@ -70,16 +62,12 @@ export default class extends Controller {
     const url = new URL(form.action, window.location.origin)
     // Começa pelos parâmetros já embutidos no `action` (service, profissional,
     // unidade_slug — a view monta a URL com eles via `new_appointment_path`) e
-    // só então sobrescreve/adiciona os campos do próprio form (date,
-    // extra_service_ids[]). Um GET form nativo descartaria a query string do
-    // action e manteria só os campos do form — por isso não dá para usar
+    // só então sobrescreve/adiciona os campos do próprio form (date). Um GET
+    // form nativo descartaria a query string do action e manteria só os
+    // campos do form — por isso não dá para usar
     // `new URLSearchParams(new FormData(form))` sozinho: perderia serviço e
     // profissional ao trocar de etapa só pela data.
     const params = new URLSearchParams(url.search)
-    // `extra_service_ids[]` pode repetir a mesma chave várias vezes (um
-    // serviço extra por campo oculto) — por isso cada chave do form é
-    // zerada uma única vez antes do loop (não a cada entrada) e depois só
-    // acumulada com `append`, senão a segunda entrada apagaria a primeira.
     const formKeys = new Set()
     for (const [key] of new FormData(form)) formKeys.add(key)
     formKeys.forEach((key) => params.delete(key))
@@ -157,15 +145,5 @@ export default class extends Controller {
         passo.classList.add("progress-step--todo")
       }
     })
-  }
-
-  showAddService() {
-    if (this.hasAddServicePanelTarget) this.addServicePanelTarget.hidden = false
-    if (this.hasConfirmPanelTarget) this.confirmPanelTarget.hidden = true
-  }
-
-  hideAddService() {
-    if (this.hasAddServicePanelTarget) this.addServicePanelTarget.hidden = true
-    if (this.hasConfirmPanelTarget) this.confirmPanelTarget.hidden = false
   }
 }

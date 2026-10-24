@@ -93,8 +93,7 @@ RSpec.describe AvailableSlots::Cache, type: :service do
         professional.id,
         date.to_date,
         service.id,
-        service.duration_minutes,
-        ""
+        service.duration_minutes
       ].join(":")
       generation_key = "#{cache_key}:generation"
       allow(calculator).to receive(:call) do

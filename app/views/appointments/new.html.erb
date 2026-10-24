@@ -33,7 +33,7 @@
 
       Nenhuma rota, controller ou parâmetro mudou: toda troca de etapa usa as
       URLs que `AppointmentsController` já aceita (`new_appointment_path` com
-      `service`/`professional`/`date`/`extra_service_ids[]`). %>
+      `service`/`professional`/`date`). %>
   <div class="booking-flow" data-controller="booking-wizard" data-step="<%= @booking_step %>"
        data-action="click->booking-wizard#interceptLink submit->booking-wizard#interceptForm">
     <div class="booking-flow__head">
@@ -140,40 +140,10 @@
       <div class="booking-selection-summary">
         <span>Serviço escolhido</span>
         <strong><%= @selected_service.name %> · <%= @selected_service.duration_minutes %> min</strong>
-        <% if @selected_extra_services.any? %>
-          <%# A lista de serviços já escolhidos, com botão de remover
-              individual — o pedido explícito da referência. Cada "Remover" é
-              um link comum (`data-turbo="false"`) para a mesma tela, só com
-              aquele id fora de `extra_service_ids[]`: o servidor recalcula a
-              agenda para a duração nova, exatamente como já fazia quando um
-              extra era desmarcado no formulário antigo. %>
-          <ul class="chosen-extra-list" aria-label="Serviços adicionados">
-            <% @selected_extra_services.each do |extra| %>
-              <li>
-                <span><%= extra.name %></span>
-                <%= link_to "Remover",
-                            new_appointment_path(service: @selected_service.id,
-                                                 professional: params[:professional],
-                                                 date: @selected_date&.iso8601,
-                                                 unidade_slug: params[:unidade_slug],
-                                                 extra_service_ids: (@selected_extra_services.map(&:id) - [ extra.id ])),
-                            class: "chosen-extra-list__remove", data: { turbo: false, step_link: true },
-                            aria: { label: "Remover #{extra.name}" } %>
-              </li>
-            <% end %>
-          </ul>
-        <% end %>
-        <% if @selected_extra_services.any? || @selected_service.price_cents.to_i.positive? %>
+        <% if @selected_service.price_cents.to_i.positive? %>
           <span class="booking-selection-summary__total">
-            <%# `.to_i` só na exibição: `booking_total_duration_minutes` pode
-                devolver float quando há extras (round_up_to_slot arredonda
-                para o próximo múltiplo do intervalo de slot), e "90.0 min"
-                lido em voz alta soa a erro de conta — o valor já é inteiro na
-                prática, só o tipo Ruby que não é. %>
-            Total: <%= booking_total_duration_minutes.to_i %> min
-            <% if booking_total_price_cents.positive? %>
-              · <%= number_to_currency(booking_total_price_cents / 100.0) %>
-            <% end %>
+            Total: <%= booking_total_duration_minutes %> min
+            · <%= number_to_currency(booking_total_price_cents / 100.0) %>
           </span>
         <% end %>
         <% if @selected_professional %>
@@ -188,26 +158,6 @@
           </span>
         <% end %>
       </div>
-
-      <%# A lista de serviços restantes, para o botão "+ Adicionar serviço" da
-          etapa de confirmação revelar. Escondida por CSS quando há JS (fica
-          atrás do botão); sem JS, aparece sempre aqui — é a mesma posição que
-          o fieldset "Adicionar serviço (opcional)" ocupava antes, só com a
-          lista densa em vez de checkboxes. %>
-      <% outros_servicos = @services - [ @selected_service ] - @selected_extra_services %>
-      <% if outros_servicos.any? %>
-        <section class="add-service-panel" data-booking-wizard-target="addServicePanel" hidden>
-          <div class="add-service-panel__head">
-            <span>Adicionar outro serviço</span>
-            <button type="button" class="button button--secondary button--sm"
-                    data-action="click->booking-wizard#hideAddService">Cancelar</button>
-          </div>
-          <%= render "appointments/service_rows", services: outros_servicos, professionals: [], mode: :add_extra,
-                      base_booking_params: { service: @selected_service.id, professional: params[:professional],
-                                             date: @selected_date&.iso8601, unidade_slug: params[:unidade_slug] },
-                      current_extra_ids: @selected_extra_services.map(&:id) %>
-        </section>
-      <% end %>
 
       <fieldset class="form-section">
         <legend><span class="form-step">01</span> Escolha a data</legend>
@@ -231,9 +181,6 @@
               required: true,
               class: "select-field",
               data: { action: "change->booking-wizard#interceptForm" } %>
-          <% @selected_extra_services.each do |extra| %>
-            <%= hidden_field_tag "extra_service_ids[]", extra.id, multiple: true %>
-          <% end %>
         <% end %>
       </fieldset>
 
@@ -249,9 +196,6 @@
               data válidos" tendo escolhido tudo. %>
           <%= form.hidden_field :service_id, value: @selected_service.id %>
           <%= form.hidden_field :date, value: @selected_date&.iso8601 %>
-          <% @selected_extra_services.each do |extra| %>
-            <%= hidden_field_tag "appointment[extra_service_ids][]", extra.id, multiple: true %>
-          <% end %>
 
           <%# Etapa 2: profissional e horário. Fica visível por padrão (sem
               JS, é a mesma tela fundida de sempre); com JS, some assim que um
@@ -333,14 +277,6 @@
               <button type="button" class="button button--secondary button--sm"
                       data-action="click->booking-wizard#hideConfirm">Trocar horário</button>
             </div>
-
-            <fieldset class="form-section">
-              <legend><span class="form-step">+</span> Mais de um serviço?</legend>
-              <button type="button" class="button button--secondary button--full"
-                      data-action="click->booking-wizard#showAddService">
-                + Adicionar serviço
-              </button>
-            </fieldset>
 
             <fieldset class="form-section">
               <legend><span class="form-step">03</span> Seus dados</legend>

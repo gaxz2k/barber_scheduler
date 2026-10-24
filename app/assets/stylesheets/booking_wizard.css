@@ -701,63 +701,6 @@ body:has(.booking-page) {
   border-color: var(--dt-petrol-700);
 }
 
-/* === Serviços já adicionados ao agendamento (etapa de confirmação) ==========
- * A lista que a referência pede: cada serviço extra escolhido aparece com um
- * botão "Remover" individual, sem perder o que já foi escolhido — o link de
- * remoção é uma navegação comum (`step-link`), que o servidor já sabia
- * recalcular antes desta tarefa. */
-.chosen-extra-list {
-  display: grid;
-  gap: 0.2rem;
-  margin: 0.5rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chosen-extra-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  font-size: 0.82rem;
-}
-
-.chosen-extra-list__remove {
-  color: var(--dt-danger-700);
-  font-size: 0.74rem;
-  font-weight: var(--dt-weight-bold);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.chosen-extra-list__remove:hover,
-.chosen-extra-list__remove:focus-visible {
-  color: var(--dt-danger-500);
-}
-
-/* === Painel "+ Adicionar serviço" ============================================
- * Mesma lista densa de serviço (`.service-list`), só com um cabeçalho próprio
- * com "Cancelar" para voltar à confirmação sem perder o que já estava
- * preenchido — ver `booking_wizard_controller.js#hideAddService`. */
-.add-service-panel {
-  margin-bottom: 1.5rem;
-}
-
-.add-service-panel__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.add-service-panel__head > span {
-  color: var(--dt-ink);
-  font-family: var(--dt-font-display);
-  font-size: 0.95rem;
-  font-weight: var(--dt-weight-bold);
-}
-
 /* === Painéis que alternam dentro da etapa fundida (data/horário vs.
  * confirmação) =================================================================
  * `[hidden]` já é nativo do navegador — aqui só garantimos o espaçamento
