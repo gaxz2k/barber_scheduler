@@ -193,6 +193,109 @@
   font-weight: var(--dt-weight-medium);
 }
 
+/* === Painel de métricas (home) ==============================================
+ * Dashboard de diagnóstico da operação — ver `diagnostics-dashboard-design`.
+ * O tom de cada cartão vem pronto do servidor (`Admin::DashboardMetrics`);
+ * aqui só existe a aparência de cada tom, nunca a regra que escolhe qual. */
+
+.admin-metrics {
+  margin-bottom: var(--dt-space-6);
+}
+
+/* O veredito abre a seção, antes de qualquer número — uma frase com o motivo
+ * concreto (ver skill). A borda lateral grossa é o único sinal de cor; o
+ * fundo continua neutro para não competir com os cartões abaixo. */
+.admin-metrics__verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-space-3);
+  padding: var(--dt-space-4) var(--dt-space-5);
+  margin-bottom: var(--dt-space-5);
+  border-radius: var(--dt-radius-md);
+  border-left: 4px solid var(--dt-neutral-500);
+  background: var(--dt-ice-0);
+  box-shadow: var(--dt-shadow-card);
+}
+
+.admin-metrics__verdict p {
+  margin: 0;
+  color: var(--dt-ink);
+  font-weight: var(--dt-weight-medium);
+}
+
+.admin-metrics__verdict--ok { border-left-color: var(--dt-success-500); }
+.admin-metrics__verdict--atencao { border-left-color: var(--dt-warning-500); }
+.admin-metrics__verdict--critico { border-left-color: var(--dt-danger-500); }
+.admin-metrics__verdict--neutro,
+.admin-metrics__verdict--sem_dado { border-left-color: var(--dt-neutral-500); }
+
+/* `auto-fit`/`minmax` em vez de um número fixo de colunas: o grid de cartões
+ * de indicador tem um número VARIÁVEL de filhos (um indicador pode faltar se
+ * o avaliador dele falhar — ver skill, regra 6), e um `grid-template-columns`
+ * fixo por contagem de filhos quebraria nesse caso. */
+.admin-metrics__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--dt-space-4);
+  margin-bottom: var(--dt-space-6);
+}
+
+.metric-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-1);
+  padding: var(--dt-space-4) var(--dt-space-5);
+  border-radius: var(--dt-radius-md);
+  border: 1px solid var(--dt-line);
+  background: var(--dt-ice-0);
+  box-shadow: var(--dt-shadow-card);
+  border-top: 3px solid var(--dt-neutral-500);
+}
+
+.metric-card--ok { border-top-color: var(--dt-success-500); }
+.metric-card--atencao { border-top-color: var(--dt-warning-500); }
+.metric-card--critico { border-top-color: var(--dt-danger-500); }
+.metric-card--neutro { border-top-color: var(--dt-neutral-500); }
+
+.metric-card__label {
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+  font-weight: var(--dt-weight-medium);
+}
+
+.metric-card__value {
+  font-family: var(--dt-font-display);
+  font-size: var(--dt-text-2xl);
+  font-weight: var(--dt-weight-bold);
+  color: var(--dt-ink);
+}
+
+.metric-card__badge {
+  align-self: flex-start;
+  text-transform: capitalize;
+}
+
+.metric-card__detail {
+  margin: var(--dt-space-1) 0 0;
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-xs);
+}
+
+.admin-metrics__table-title {
+  margin: 0 0 var(--dt-space-1);
+  color: var(--dt-ink);
+  font-family: var(--dt-font-display);
+  font-size: var(--dt-text-lg);
+  font-weight: var(--dt-weight-bold);
+}
+
+.admin-metrics__table-caption {
+  margin: 0 0 var(--dt-space-3);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+}
+
 /* === Galeria de fotos ======================================================= */
 .admin-photo-toolbar {
   display: flex;
@@ -501,5 +604,9 @@
   .unit-day {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .admin-metrics__grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -35,6 +35,56 @@
   </div>
 <% end %>
 
+<section class="admin-metrics" aria-label="Métricas da operação">
+  <div class="admin-metrics__verdict admin-metrics__verdict--<%= @metrics.veredito_tom %>">
+    <%= icon_tag(@metrics.veredito_tom == "ok" ? :check : :clock) %>
+    <p><%= @metrics.veredito_texto %></p>
+  </div>
+
+  <div class="admin-metrics__grid">
+    <% @metrics.indicadores.each do |indicador| %>
+      <div class="metric-card <%= tom_card_class(indicador.tom) %>" data-metric-key="<%= indicador.chave %>">
+        <span class="metric-card__label"><%= indicador.rotulo %></span>
+        <span class="metric-card__value"><%= indicador.texto %></span>
+        <span class="badge <%= tom_badge_class(indicador.tom) %> metric-card__badge"><%= indicador.tom.humanize %></span>
+        <p class="metric-card__detail"><%= indicador.detalhe %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <h2 class="admin-metrics__table-title">Clientes por profissional</h2>
+  <p class="admin-metrics__table-caption">
+    Clientes distintos com pelo menos um agendamento não cancelado nos últimos <%= @metrics.janela_dias %> dias.
+  </p>
+
+  <% if @metrics.clientes_por_profissional.empty? %>
+    <div class="empty-state">
+      <%= empty_state_illustration(:no_professionals) %>
+      <h3 class="empty-state__title">Nenhum profissional cadastrado ainda</h3>
+      <p class="empty-state__text">Cadastre a equipe para ver a distribuição de clientes por profissional.</p>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table class="table" aria-label="Clientes por profissional">
+        <thead>
+          <tr>
+            <th>Profissional</th>
+            <th>Clientes atendidos (<%= @metrics.janela_dias %> dias)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @metrics.clientes_por_profissional.each do |linha| %>
+            <tr>
+              <td><%= linha[:profissional].name %></td>
+              <td><%= linha[:total_clientes] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>
+
 <section class="admin-shortcut-grid" aria-label="Atalhos administrativos">
   <%= link_to admin_appointments_path, class: "card admin-shortcut-card" do %>
     <span class="admin-shortcut-card__icon" aria-hidden="true"><%= icon_tag(:calendar, size: 22) %></span>
