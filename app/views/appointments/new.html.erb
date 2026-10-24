@@ -211,6 +211,14 @@
 
       <fieldset class="form-section">
         <legend><span class="form-step">01</span> Escolha a data</legend>
+        <%# O botão "Ver agenda" foi removido a pedido do produto — o campo de
+            data já é um `step_link` (GET interceptado pelo booking-wizard), e
+            o `change` no input dispara a mesma troca de etapa automaticamente
+            assim que o cliente escolhe uma data, sem precisar de um clique
+            extra. Sem JS, o form continua funcionando por Enter no campo
+            (input[type=date] não tem um submit implícito confiável em todo
+            navegador, mas o fluxo seguinte reaparece ao recarregar com `date`
+            na URL, que é o que o usuário faria de qualquer forma). %>
         <%= form_with url: new_appointment_path(service: @selected_service.id,
                                                 profissional: params[:professional],
                                                 unidade_slug: params[:unidade_slug]),
@@ -221,11 +229,11 @@
               min: (Date.current + 1).iso8601,
               max: (Date.current + 1.year).iso8601,
               required: true,
-              class: "select-field" %>
+              class: "select-field",
+              data: { action: "change->booking-wizard#interceptForm" } %>
           <% @selected_extra_services.each do |extra| %>
             <%= hidden_field_tag "extra_service_ids[]", extra.id, multiple: true %>
           <% end %>
-          <%= form.submit "Ver agenda", class: "button button--secondary" %>
         <% end %>
       </fieldset>
 
