@@ -40,7 +40,19 @@ gem "kamal", require: false
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
+#
+# A partir da 2.x, image_processing parou de depender de um backend fixo —
+# quem usa escolhe mini_magick OU vips. O projeto sempre rodou com vips (é o
+# padrão do Rails 8 para variantes), então a dependência precisa ficar
+# explícita aqui, senão o boot quebra com LoadError assim que algo chamar
+# ImageProcessing::Vips.
 gem "image_processing", "~> 2.2"
+# `require: false`: a gem só é carregada quando algo de fato chama
+# ImageProcessing::Vips, não no boot. Sem isso o Bundler.require tenta abrir
+# a lib nativa libvips.so.42 em TODO job do CI — inclusive os que não
+# instalam libvips (só o job `test` roda `apt-get install libvips`), e o
+# boot quebra em scan_js/scan_ruby/lint com "cannot open shared object file".
+gem "ruby-vips", "~> 2.0", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
