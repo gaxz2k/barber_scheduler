@@ -1,15 +1,18 @@
-/* Componentes base da nova identidade, construídos só com os tokens de
+/* Componentes base da identidade Cal.com, construídos só com os tokens de
  * `design_tokens.css`.
  *
- * Esta fase não aplica nada aos templates reais: estes componentes só
- * existem para a página de estilo-guia poder mostrá-los. O nome da classe
- * não leva prefixo (`.button`, não `.dt-button`) de propósito — quando a
- * fase seguinte aplicar isto às telas reais, a classe precisa ter o nome
- * final, e renomear 40 ocorrências depois só para tirar um prefixo
- * temporário seria trabalho que a fase 1 pode evitar hoje. O que não tem
- * prefixo aqui é só o nome da classe; toda cor, espaço e sombra continua
- * vindo de `var(--dt-*)`, e é isso que mantém os dois arquivos
- * desacoplados. */
+ * Esta fase ainda não aplica nada aos templates reais: estes componentes só
+ * existem para a página de estilo-guia (/style-guide) poder mostrá-los antes
+ * da aprovação visual. O nome da classe não leva prefixo (`.button`, não
+ * `.dt-button`) de propósito — quando uma fase futura aplicar isto às telas
+ * reais, a classe já tem o nome final. Toda cor, espaço, raio e sombra
+ * continua vindo de `var(--dt-*)`, o que mantém os dois arquivos
+ * desacoplados.
+ *
+ * Princípio geral herdado do Cal.com: nenhuma superfície elevada usa
+ * `border` CSS tradicional — o papel de borda é feito por uma sombra de
+ * "anel" de 1px (`--dt-shadow-ring` / primeira camada de `--dt-shadow-card`),
+ * e cor só aparece em link e nos três estados semânticos. */
 
 /* === Botão ================================================================ */
 
@@ -22,13 +25,14 @@
   font-weight: var(--dt-weight-medium);
   font-size: var(--dt-text-base);
   line-height: var(--dt-leading-tight);
+  letter-spacing: var(--dt-tracking-body);
   border-radius: var(--dt-radius-md);
-  border: 1px solid transparent;
+  border: none;
   padding: var(--dt-space-3) var(--dt-space-5);
   cursor: pointer;
   text-decoration: none;
-  transition: background-color var(--dt-transition-fast), border-color var(--dt-transition-fast),
-    color var(--dt-transition-fast), box-shadow var(--dt-transition-fast);
+  transition: opacity var(--dt-transition-fast), box-shadow var(--dt-transition-fast),
+    background-color var(--dt-transition-fast), color var(--dt-transition-fast);
 }
 
 .button:focus-visible {
@@ -54,38 +58,37 @@
   font-size: var(--dt-text-lg);
 }
 
-/* Variante primária: a cor de ação (coral), reservada para a decisão
- * principal da tela — agendar, confirmar, salvar. Se o coral aparecer em
- * botão secundário também, ele perde o papel de "é aqui que se decide". */
+/* Variante primária: fundo Charcoal, texto branco — a única "cor cheia" de
+ * botão do sistema. O hover do Cal.com NÃO muda de cor, só de opacidade:
+ * trocar de cor no hover criaria uma segunda cor de marca onde o produto
+ * decidiu que só existe uma (preto). */
 .button--primary {
-  background: var(--dt-coral-500);
+  background: var(--dt-petrol-700); /* Charcoal #242424 */
   color: var(--dt-ice-0);
-  border-color: var(--dt-coral-500);
 }
 
 .button--primary:hover:not(:disabled) {
-  background: var(--dt-coral-700);
-  border-color: var(--dt-coral-700);
+  opacity: 0.7;
 }
 
-/* Variante secundária: petróleo, para ações relevantes mas não a decisão
- * final da tela — "ver detalhes", "editar". */
+/* Variante secundária: fundo branco com a sombra-ring fazendo o papel de
+ * borda (não `border` CSS), texto escuro — o botão "de respeito" do
+ * Cal.com que não compete com o primário por atenção. */
 .button--secondary {
   background: var(--dt-ice-0);
-  color: var(--dt-petrol-700);
-  border-color: var(--dt-petrol-500);
+  color: var(--dt-ink);
+  box-shadow: var(--dt-shadow-ring);
 }
 
 .button--secondary:hover:not(:disabled) {
-  background: var(--dt-petrol-100);
+  opacity: 0.7;
 }
 
-/* Variante ghost: sem fundo nem borda própria, para ações de baixo peso
+/* Variante ghost: sem fundo nem sombra própria, para ações de baixo peso
  * visual dentro de uma lista ou card — "cancelar", "limpar filtro". */
 .button--ghost {
   background: transparent;
   color: var(--dt-ink-soft);
-  border-color: transparent;
 }
 
 .button--ghost:hover:not(:disabled) {
@@ -93,21 +96,26 @@
   color: var(--dt-ink);
 }
 
+/* Variante de perigo: continua existindo porque excluir/cancelar é uma ação
+ * real de agendamento — mas usa o vermelho dessaturado de status, nunca um
+ * vermelho de botão vibrante, para não parecer uma segunda cor de marca. */
 .button--danger {
   background: var(--dt-ice-0);
   color: var(--dt-danger-700);
-  border-color: var(--dt-danger-500);
+  box-shadow: 0px 0px 0px 1px rgba(161, 69, 69, 0.3);
 }
 
 .button--danger:hover:not(:disabled) {
   background: var(--dt-danger-100);
 }
 
-/* === Card ================================================================= */
+/* === Card ==================================================================
+ * Pilha de 2-3 sombras do Cal.com em vez de `border`: (1) anel de 1px fazendo
+ * o papel de borda, (2) sombra de contato nítida e pequena, (3) sombra
+ * difusa suave. Nenhuma das três é escura/pesada nem usa gradiente. */
 
 .card {
   background: var(--dt-ice-0);
-  border: 1px solid var(--dt-line);
   border-radius: var(--dt-radius-lg);
   box-shadow: var(--dt-shadow-card);
   padding: var(--dt-space-5);
@@ -115,13 +123,13 @@
 
 .card--elevated {
   box-shadow: var(--dt-shadow-soft);
-  border-color: transparent;
 }
 
 .card__title {
   font-family: var(--dt-font-display);
   font-weight: var(--dt-weight-bold);
   font-size: var(--dt-text-lg);
+  letter-spacing: var(--dt-tracking-display);
   color: var(--dt-ink);
   margin: 0 0 var(--dt-space-2);
 }
@@ -129,6 +137,7 @@
 .card__subtitle {
   color: var(--dt-ink-soft);
   font-size: var(--dt-text-sm);
+  font-weight: var(--dt-weight-regular);
   margin: 0 0 var(--dt-space-4);
 }
 
@@ -146,10 +155,10 @@
   white-space: nowrap;
 }
 
-/* Status de agendamento: segue o símbolo universal de cor (verde = ok,
- * âmbar = aguardando, vermelho = atenção, cinza = encerrado/neutro), porque
- * quem olha o painel entre um corte e outro não tem tempo de aprender uma
- * convenção de cor de autor. */
+/* Status de agendamento: verde/âmbar/vermelho dessaturados — a única cor
+ * fora de link neste sistema, porque confirmar/cancelar precisa ser lido em
+ * menos de um segundo entre um corte e outro, e símbolo de cor universal
+ * continua vencendo um vocabulário de autor aqui. */
 .badge--success {
   background: var(--dt-success-100);
   color: var(--dt-success-700);
@@ -171,8 +180,8 @@
 }
 
 /* Equivalente ao badge, mas para marcar "isto é área do dono", não estado de
- * agendamento — cor própria (petróleo escuro) para não ser confundido com um
- * dos quatro estados acima. */
+ * agendamento — Midnight (o cinza mais escuro da escala) para não ser
+ * confundido com nenhum dos três estados semânticos acima. */
 .admin-badge {
   display: inline-flex;
   align-items: center;
@@ -183,7 +192,7 @@
   letter-spacing: 0.04em;
   padding: var(--dt-space-1) var(--dt-space-3);
   border-radius: var(--dt-radius-pill);
-  background: var(--dt-petrol-900);
+  background: var(--dt-petrol-900); /* Midnight #111111 */
   color: var(--dt-ice-0);
 }
 
@@ -226,18 +235,23 @@
   font-weight: var(--dt-weight-medium);
 }
 
+/* Input: padding generoso e respirado (princípio do Cal.com para
+ * componentes individuais, mesmo numa UI densa de agendamento), sombra-ring
+ * no lugar de `border` sólida. */
 .input,
 .select,
 .textarea {
   font-family: var(--dt-font-body);
   font-size: var(--dt-text-base);
+  font-weight: var(--dt-weight-regular);
   color: var(--dt-ink);
   background: var(--dt-ice-0);
-  border: 1px solid var(--dt-line);
+  box-shadow: var(--dt-shadow-ring);
+  border: none;
   border-radius: var(--dt-radius-sm);
   padding: var(--dt-space-3) var(--dt-space-4);
   width: 100%;
-  transition: border-color var(--dt-transition-fast), box-shadow var(--dt-transition-fast);
+  transition: box-shadow var(--dt-transition-fast);
 }
 
 .textarea {
@@ -253,14 +267,13 @@
 .input:hover,
 .select:hover,
 .textarea:hover {
-  border-color: var(--dt-petrol-300);
+  box-shadow: 0px 0px 0px 1px rgba(34, 42, 53, 0.16);
 }
 
 .input:focus-visible,
 .select:focus-visible,
 .textarea:focus-visible {
   outline: none;
-  border-color: var(--dt-petrol-500);
   box-shadow: var(--dt-focus-ring);
 }
 
@@ -272,13 +285,13 @@
   cursor: not-allowed;
 }
 
-/* Erro: a borda e o anel de foco mudam para o vermelho de status, e não para
- * uma cor de erro inventada — é o mesmo vermelho do badge de perigo, então
- * quem já leu a cor num agendamento cancelado reconhece a mesma cor aqui. */
+/* Erro: o anel muda para o vermelho de status dessaturado, e não para uma
+ * cor de erro inventada — é o mesmo vermelho do badge de perigo, então quem
+ * já leu a cor num agendamento cancelado reconhece a mesma cor aqui. */
 .input--error,
 .select--error,
 .textarea--error {
-  border-color: var(--dt-danger-500);
+  box-shadow: 0px 0px 0px 1px rgba(161, 69, 69, 0.5);
 }
 
 .input--error:focus-visible,
@@ -301,7 +314,7 @@
 .radio input {
   width: 1.125rem;
   height: 1.125rem;
-  accent-color: var(--dt-petrol-500);
+  accent-color: var(--dt-petrol-700); /* Charcoal — neutro, não o azul de link */
 }
 
 .checkbox input:focus-visible,
@@ -312,9 +325,9 @@
 }
 
 /* === Alerta / flash ========================================================
- * Quatro variantes, mapeadas 1:1 com as variantes de badge: a cor que
- * marca sucesso num badge é a mesma que marca sucesso num flash, porque as
- * duas competem pela mesma leitura rápida de "deu certo" ou "deu problema". */
+ * Quatro variantes, mapeadas 1:1 com as variantes de badge: a cor que marca
+ * sucesso num badge é a mesma que marca sucesso num flash. Sombra-ring no
+ * lugar de `border` colorida — a cor de fundo já basta para o aviso. */
 
 .alert {
   display: flex;
@@ -322,8 +335,9 @@
   gap: var(--dt-space-3);
   padding: var(--dt-space-4) var(--dt-space-5);
   border-radius: var(--dt-radius-md);
-  border: 1px solid transparent;
+  box-shadow: var(--dt-shadow-ring);
   font-size: var(--dt-text-sm);
+  font-weight: var(--dt-weight-regular);
   line-height: var(--dt-leading-normal);
 }
 
@@ -337,33 +351,51 @@
 .alert--success {
   background: var(--dt-success-100);
   color: var(--dt-success-700);
-  border-color: var(--dt-success-500);
 }
 
 .alert--warning {
   background: var(--dt-warning-100);
   color: var(--dt-warning-700);
-  border-color: var(--dt-warning-500);
 }
 
 .alert--danger {
   background: var(--dt-danger-100);
   color: var(--dt-danger-700);
-  border-color: var(--dt-danger-500);
 }
 
 .alert--neutral {
   background: var(--dt-mist-100);
   color: var(--dt-ink);
-  border-color: var(--dt-line);
+}
+
+/* === Link em texto ==========================================================
+ * O ÚNICO lugar, fora dos três estados semânticos, onde cor aparece de
+ * verdade no sistema: Link Blue, sublinhado, exatamente como o Cal.com
+ * trata link em texto corrido. */
+.link {
+  color: var(--dt-coral-500); /* Link Blue #0099ff */
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+  font-weight: var(--dt-weight-regular);
+}
+
+.link:hover {
+  color: var(--dt-coral-700);
+}
+
+.link:focus-visible {
+  outline: none;
+  box-shadow: var(--dt-focus-ring);
+  border-radius: var(--dt-radius-sm);
 }
 
 /* === Navegação =============================================================
  * Uma única barra, adaptável a público e admin pelo modificador `--admin`:
- * a vitrine pública e o painel do dono compartilham a mesma estrutura (marca
- * à esquerda, ações à direita), e a única diferença visual que vale marcar é
- * a cor de fundo — petróleo escuro no admin, para o dono nunca confundir a
- * tela que o cliente vê com a tela que só ele vê. */
+ * a vitrine pública e o painel do dono compartilham a mesma estrutura
+ * (marca à esquerda, ações à direita). A diferença visual que vale marcar é
+ * a cor de fundo — Midnight no admin, para o dono nunca confundir a tela
+ * que o cliente vê com a tela que só ele vê. Sem cor de marca em nenhuma
+ * das duas: a única cor que aparece é o Link Blue no item ativo. */
 
 .nav {
   display: flex;
@@ -372,12 +404,12 @@
   gap: var(--dt-space-4);
   padding: var(--dt-space-4) var(--dt-space-6);
   background: var(--dt-ice-0);
-  border-bottom: 1px solid var(--dt-line);
+  box-shadow: 0px 1px 0px 0px rgba(34, 42, 53, 0.08);
 }
 
 .nav--admin {
-  background: var(--dt-petrol-900);
-  border-bottom-color: var(--dt-petrol-700);
+  background: var(--dt-petrol-900); /* Midnight */
+  box-shadow: 0px 1px 0px 0px rgba(255, 255, 255, 0.08);
 }
 
 .nav__brand {
@@ -387,6 +419,7 @@
   font-family: var(--dt-font-display);
   font-weight: var(--dt-weight-bold);
   font-size: var(--dt-text-lg);
+  letter-spacing: var(--dt-tracking-display);
   color: var(--dt-ink);
   text-decoration: none;
 }
@@ -415,24 +448,26 @@
 }
 
 .nav__link:hover {
-  color: var(--dt-petrol-700);
+  color: var(--dt-ink);
 }
 
+/* O item ativo é o único lugar na nav onde o Link Blue aparece — é
+ * literalmente "você está aqui", a mesma semântica de um link. */
 .nav__link--active {
-  color: var(--dt-petrol-700);
+  color: var(--dt-coral-500);
   border-bottom-color: var(--dt-coral-500);
 }
 
 .nav--admin .nav__link {
-  color: var(--dt-petrol-100);
+  color: #a3a3a3;
 }
 
-.nav--admin .nav__link:hover,
-.nav--admin .nav__link--active {
+.nav--admin .nav__link:hover {
   color: var(--dt-ice-0);
 }
 
 .nav--admin .nav__link--active {
+  color: var(--dt-coral-400);
   border-bottom-color: var(--dt-coral-400);
 }
 
@@ -448,7 +483,7 @@
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  border: 1px solid transparent;
+  border: none;
   border-radius: var(--dt-radius-sm);
   background: transparent;
   color: var(--dt-ice-0);
@@ -461,27 +496,23 @@
 }
 
 /* === Tabela ================================================================
- * Equivalente, na paleta nova, ao `.admin-table` do `application.css`: linha
- * zebrada não (a borda inferior já separa), cabeçalho em versalete e baixo
- * contraste para não competir com o dado, ação alinhada à direita.
+ * Equivalente, na paleta nova, ao `.admin-table` do `application.css`:
+ * cabeçalho em versalete e baixo contraste para não competir com o dado,
+ * ação alinhada à direita, linhas separadas por um filete quase invisível
+ * (mesmo tom do "ring border") em vez de `border` sólida tradicional.
  *
  * Mobile: a escolha é rolagem horizontal com uma sombra de borda que só
  * aparece enquanto há conteúdo escondido à direita (`background-attachment:
- * local` com dois gradientes — truque conhecido de \"scroll shadow\" só em
- * CSS), e não reflow em cards. Reflow exigiria reescrever `<td>` com
- * `data-label` em quatro telas só para a mesma informação, e o ganho real
- * para o dono — que já rola listas na tela do celular o dia inteiro — é
- * pequeno perto do custo de manter duas formas de render da mesma tabela. */
+ * local` com dois gradientes — truque conhecido de "scroll shadow" só em
+ * CSS), e não reflow em cards. */
 .table-wrap {
   overflow-x: auto;
   margin-bottom: var(--dt-space-5);
-  border: 1px solid var(--dt-line);
   border-radius: var(--dt-radius-lg);
   background: var(--dt-ice-0);
   box-shadow: var(--dt-shadow-card);
-  background-image:
-    linear-gradient(to right, var(--dt-ice-0) 30%, rgba(255, 255, 255, 0)),
-    linear-gradient(to right, rgba(11, 47, 58, 0.12), rgba(11, 47, 58, 0)) 100% 0;
+  background-image: linear-gradient(to right, var(--dt-ice-0) 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(to right, rgba(34, 42, 53, 0.12), rgba(34, 42, 53, 0)) 100% 0;
   background-repeat: no-repeat;
   background-size: 2rem 100%, 1rem 100%;
   background-attachment: local, scroll;
@@ -499,6 +530,7 @@
   padding: var(--dt-space-3) var(--dt-space-4);
   color: var(--dt-ink-soft);
   font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-medium);
   letter-spacing: 0.06em;
   text-align: left;
   text-transform: uppercase;
@@ -531,10 +563,8 @@
 
 /* === Utilitário de acessibilidade ==========================================
  * Mesma regra de `application.css`, duplicada aqui de propósito: os dois
- * arquivos nunca são carregados juntos na mesma página (ver cabeçalho deste
- * arquivo e de `design_tokens.css`), então não há risco de uma regra
- * sobrescrever a outra — só o de uma tela carregar sem a classe se ela
- * existisse num só lugar. */
+ * arquivos nunca são carregados juntos na mesma página, então não há risco
+ * de uma regra sobrescrever a outra. */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -548,14 +578,14 @@
  * Para um `checkbox` que liga/desliga uma funcionalidade inteira (agendamento
  * online, publicar foto no carrossel) — não é uma opção de formulário comum,
  * é uma decisão com texto de apoio, por isso ganha moldura própria em vez do
- * `.checkbox` simples. */
+ * `.checkbox` simples. Sombra-ring no lugar de `border`. */
 .toggle-card {
   display: flex;
   align-items: flex-start;
   gap: var(--dt-space-3);
   padding: var(--dt-space-4);
-  border: 1px solid var(--dt-line);
   border-radius: var(--dt-radius-md);
+  box-shadow: var(--dt-shadow-ring);
   background: var(--dt-ice-50);
   cursor: pointer;
 }
@@ -564,7 +594,7 @@
   width: 1.25rem;
   height: 1.25rem;
   margin-top: 0.15rem;
-  accent-color: var(--dt-petrol-500);
+  accent-color: var(--dt-petrol-700);
   flex-shrink: 0;
 }
 
@@ -578,6 +608,7 @@
   display: block;
   color: var(--dt-ink);
   font-size: var(--dt-text-base);
+  font-weight: var(--dt-weight-medium);
 }
 
 .toggle-card small {
@@ -589,8 +620,9 @@
 
 /* === Estado vazio ===========================================================
  * Moldura comum para as ilustrações de `empty_states` — centraliza o SVG, o
- * título e o texto de apoio, e deixa um espaço opcional para uma ação
- * (ex.: "cadastrar primeiro profissional"). */
+ * título e o texto de apoio. As ilustrações em si (ver `empty_state_helper.rb`)
+ * foram simplificadas para traço fino monocromático/cinza nesta fase — sem
+ * nenhuma cor de marca, coerente com "sem decoração vistosa" do Cal.com. */
 
 .empty-state {
   display: flex;
@@ -611,12 +643,14 @@
   font-family: var(--dt-font-display);
   font-weight: var(--dt-weight-bold);
   font-size: var(--dt-text-lg);
+  letter-spacing: var(--dt-tracking-display);
   color: var(--dt-ink);
   margin: 0;
 }
 
 .empty-state__text {
   font-size: var(--dt-text-sm);
+  font-weight: var(--dt-weight-regular);
   max-width: 24rem;
   margin: 0;
 }
@@ -625,8 +659,7 @@
  * Abaixo de 760px (celular, uso entre um corte e outro) a nav esconde a
  * lista de links e mostra o botão hambúrguer; `.nav__links--open` é alternado
  * por Stimulus (ver `nav_toggle_controller.js`) e não por `:target`/`:has`,
- * porque o painel já usa Stimulus para todo outro comportamento interativo e
- * um segundo mecanismo só para este menu seria inconsistência sem motivo. */
+ * porque o painel já usa Stimulus para todo outro comportamento interativo. */
 @media (max-width: 760px) {
   .nav__toggle {
     display: inline-flex;
@@ -643,7 +676,6 @@
     gap: 0;
     padding: var(--dt-space-2) var(--dt-space-4) var(--dt-space-4);
     background: var(--dt-petrol-900);
-    border-bottom: 1px solid var(--dt-petrol-700);
     box-shadow: var(--dt-shadow-soft);
   }
 
@@ -657,7 +689,7 @@
 
   .nav--admin .nav__link {
     padding: var(--dt-space-3) 0;
-    border-bottom: 1px solid var(--dt-petrol-700);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .nav--admin .nav__link--active {

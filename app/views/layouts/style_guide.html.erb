@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%# Layout mínimo e isolado de propósito: só carrega os dois arquivos
         novos (tokens + componentes), nunca o `application.css` antigo, para
-        a aprovação visual não misturar as duas identidades na mesma tela. %>
+        a aprovação visual não misturar as duas identidades na mesma tela.
+
+        Google Fonts (Inter + Roboto Mono) entra só aqui, não em
+        `application.html.erb`/`admin.html.erb`: esta é uma prévia isolada,
+        a decisão de carregar webfont nas telas reais fica para a fase em
+        que o usuário aprovar esta identidade. %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <%= stylesheet_link_tag "design_tokens", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "design_components", "data-turbo-track": "reload" %>
     <style>
@@ -27,6 +35,8 @@
       .sg-section h2 {
         font-family: var(--dt-font-display);
         font-size: var(--dt-text-2xl);
+        font-weight: var(--dt-weight-bold);
+        letter-spacing: var(--dt-tracking-display);
         margin-bottom: var(--dt-space-5);
       }
 
@@ -70,7 +80,7 @@
         gap: var(--dt-space-2);
         padding: var(--dt-space-4);
         background: var(--dt-ice-0);
-        border: 1px solid var(--dt-line);
+        box-shadow: var(--dt-shadow-ring);
         border-radius: var(--dt-radius-md);
         font-size: var(--dt-text-xs);
         color: var(--dt-ink-soft);
