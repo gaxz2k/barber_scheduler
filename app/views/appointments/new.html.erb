@@ -220,7 +220,7 @@
             navegador, mas o fluxo seguinte reaparece ao recarregar com `date`
             na URL, que é o que o usuário faria de qualquer forma). %>
         <%= form_with url: new_appointment_path(service: @selected_service.id,
-                                                profissional: params[:professional],
+                                                professional: params[:professional],
                                                 unidade_slug: params[:unidade_slug]),
                       method: :get, class: "booking-inline-form", data: { turbo: false, step_link: true } do |form| %>
           <%= form.label :date, "Data" %>

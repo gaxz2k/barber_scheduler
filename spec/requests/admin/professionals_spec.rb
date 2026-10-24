@@ -32,6 +32,14 @@ RSpec.describe "Admin::Professionals", type: :request do
 
       expect(tenant_records(Professional).find_by(name: "Novo profissional")).to be_present
     end
+
+    it "stores the uploaded photo as a blob when provided" do
+      file = fixture_file_upload("barbershop.png", "image/png")
+
+      post admin_professionals_path, params: { professional: { name: "Novo profissional", photo_upload: file } }
+
+      expect(tenant_records(Professional).find_by(name: "Novo profissional")).to be_photo
+    end
   end
 
   describe "PATCH /admin/professionals/:id" do
@@ -59,6 +67,14 @@ RSpec.describe "Admin::Professionals", type: :request do
       patch admin_professional_path(professional), params: { professional: { name: "Renomeado" } }
 
       expect(professional.reload.name).to eq("Renomeado")
+    end
+
+    it "removes the photo when remove_photo is checked" do
+      professional.update!(photo_upload: fixture_file_upload("barbershop.png", "image/png"))
+
+      patch admin_professional_path(professional), params: { professional: { name: professional.name, remove_photo: "1" } }
+
+      expect(professional.reload.photo).to be_nil
     end
   end
 end

@@ -21,4 +21,53 @@ RSpec.describe Professional, type: :model do
     professional = described_class.new(name: "")
     expect(professional).not_to be_valid
   end
+
+  describe "photo_upload" do
+    def upload(content_type: "image/png", filename: "barbershop.png")
+      fixture_file_upload(filename, content_type)
+    end
+
+    it "stores the uploaded file as a blob signed_id on save" do
+      professional = described_class.new(name: "Gustavo", photo_upload: upload)
+
+      expect { professional.save! }.to change(professional, :photo).from(nil)
+      expect(professional.photo?).to be(true)
+      expect(professional.photo_blob).to be_a(ActiveStorage::Blob)
+    end
+
+    it "rejects non-image content types" do
+      professional = described_class.new(name: "Gustavo",
+        photo_upload: fixture_file_upload("barbershop.png", "text/plain"))
+
+      expect(professional).not_to be_valid
+      expect(professional.errors[:photo_upload]).to include("deve ser PNG, JPG ou WEBP")
+    end
+
+    it "rejects a mislabeled text file" do
+      io = Tempfile.new([ "fake", ".png" ]).tap { |f| f.write("not an image"); f.rewind }
+      uploaded = ActionDispatch::Http::UploadedFile.new(tempfile: io, filename: "fake.png", type: "image/png")
+      professional = described_class.new(name: "Gustavo", photo_upload: uploaded)
+
+      expect(professional).not_to be_valid
+      expect(professional.errors[:photo_upload]).to include("o conteúdo não corresponde a uma imagem PNG, JPG ou WEBP válida")
+    end
+
+    it "removes the photo when remove_photo is checked and no new upload is sent" do
+      professional = described_class.create!(name: "Gustavo", photo_upload: upload)
+
+      professional.update!(remove_photo: "1")
+
+      expect(professional.reload.photo).to be_nil
+    end
+
+    it "ignores remove_photo when a new upload replaces the photo in the same submit" do
+      professional = described_class.create!(name: "Gustavo", photo_upload: upload)
+      old_photo = professional.photo
+
+      professional.update!(remove_photo: "1", photo_upload: upload)
+
+      expect(professional.reload.photo).to be_present
+      expect(professional.photo).not_to eq(old_photo)
+    end
+  end
 end

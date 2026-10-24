@@ -18,6 +18,27 @@
     <%= form.text_field :name, required: true, autofocus: true, class: "input#{' input--error' if professional.errors[:name].any?}" %>
   </div>
 
+  <div class="field">
+    <%= form.label :photo_upload, professional.photo? ? "Trocar foto" : "Foto", class: "field__label" %>
+    <%= form.file_field :photo_upload, accept: "image/png,image/jpeg,image/webp",
+          class: "input#{' input--error' if professional.errors[:photo_upload].any?}" %>
+    <span class="field__hint">PNG, JPG ou WEBP, até 5 MB. Aparece no painel e na agenda pública.</span>
+  </div>
+
+  <% if professional.persisted? && professional.photo? %>
+    <div class="admin-current-image">
+      <span>Foto atual</span>
+      <%= image_tag professional.photo_blob, alt: professional.name %>
+    </div>
+    <label class="toggle-card">
+      <%= form.check_box :remove_photo %>
+      <span>
+        <strong>Remover foto atual</strong>
+        <small>O profissional volta a aparecer só com a inicial do nome.</small>
+      </span>
+    </label>
+  <% end %>
+
   <div class="admin-form__actions">
     <%= form.submit professional.new_record? ? "Criar profissional" : "Salvar alterações", class: "button button--primary" %>
     <%= link_to "Cancelar", admin_professionals_path, class: "button button--ghost" %>
