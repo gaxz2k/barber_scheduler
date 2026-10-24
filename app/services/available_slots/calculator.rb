@@ -4,17 +4,10 @@ module AvailableSlots
     # origem de quem atende; a unidade é a origem de quando atende. São coisas
     # diferentes: um profissional pode atender em mais de uma unidade, e cada
     # uma tem horário próprio.
-    #
-    # `extra_services` soma à duração do serviço principal. Um horário só é
-    # oferecido quando TODOS os slots de 30 minutos que a soma ocupa estão
-    # livres — oferecer um início sem checar o bloco inteiro deixaria o
-    # cliente marcar um horário que colide com outro agendamento dez minutos
-    # depois do início.
-    def initialize(professional:, date:, service:, barbershop_unit: nil, extra_services: [])
+    def initialize(professional:, date:, service:, barbershop_unit: nil)
       @professional = professional
       @date = date
       @service = service
-      @extra_services = Array(extra_services).compact
       @barbershop_unit = barbershop_unit
     end
 
@@ -60,16 +53,11 @@ module AvailableSlots
         .none?
     end
 
-    # A duração que efetivamente reserva a agenda.
-    #
-    # Só arredonda para o múltiplo de 30 seguinte quando há serviços extras —
-    # ver o comentário equivalente em `Appointment#total_duration_minutes`
-    # para a razão de não arredondar o serviço único.
+    # A duração que efetivamente reserva a agenda: a duração cadastrada do
+    # serviço, sem arredondamento — o horário de início é que precisa estar
+    # alinhado à grade, não a duração.
     def total_duration
-      raw_minutes = ([ @service ] + @extra_services).sum { |item| item.duration_minutes.to_i }
-      return raw_minutes.minutes if @extra_services.empty?
-
-      Scheduling.round_up_to_slot(raw_minutes).minutes
+      @service.duration_minutes.to_i.minutes
     end
   end
 end

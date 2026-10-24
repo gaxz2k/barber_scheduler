@@ -67,6 +67,39 @@ RSpec.describe "Appointments", type: :request do
 
       expect(response.body).not_to include("profissional=#{professional.id}")
     end
+
+    it "only lists professionals who attend the chosen unit" do
+      # Regressão: a lista de profissionais ignorava a unidade escolhida e
+      # mostrava todo mundo do tenant. O cliente podia escolher alguém que só
+      # atende outra unidade, e só descobria o erro no submit ("profissional
+      # não atende nesta unidade"), vindo do Scheduler.
+      other_unit = test_barbershop.unidades.create!(name: "Outra Unidade", slug: "outra-unidade")
+      professional.update!(barbershop_unit: test_unit_for(test_barbershop))
+      Professional.create!(name: "Fora da Unidade", barbershop_unit: other_unit)
+
+      get new_appointment_path(service: service.id, unidade_slug: test_unit_for(test_barbershop).slug)
+
+      expect(response.body).to include(professional.name)
+    end
+
+    it "does not list a professional who only attends a different unit" do
+      other_unit = test_barbershop.unidades.create!(name: "Outra Unidade", slug: "outra-unidade")
+      professional.update!(barbershop_unit: test_unit_for(test_barbershop))
+      outro_profissional = Professional.create!(name: "Fora da Unidade", barbershop_unit: other_unit)
+
+      get new_appointment_path(service: service.id, unidade_slug: test_unit_for(test_barbershop).slug)
+
+      expect(response.body).not_to include(outro_profissional.name)
+    end
+
+    it "lists professionals without a fixed unit for any unit" do
+      other_unit = test_barbershop.unidades.create!(name: "Outra Unidade", slug: "outra-unidade-2")
+      professional.update!(barbershop_unit: nil)
+
+      get new_appointment_path(service: service.id, unidade_slug: other_unit.slug)
+
+      expect(response.body).to include(professional.name)
+    end
   end
 
   describe "POST /appointments" do

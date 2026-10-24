@@ -14,9 +14,12 @@ class AppointmentsController < ApplicationController
   # que ela estava.
   Agenda = Data.define(:professional, :slots)
 
-  before_action :set_booking_collections, only: [ :index, :new, :create, :availability ]
   before_action :set_booking_errors, only: [ :new, :create ]
   before_action :set_barbershop_unit, only: [ :index, :new, :create, :availability ]
+  # Depois de `set_barbershop_unit` de propósito: a lista de profissionais
+  # precisa saber a unidade para filtrar quem atende nela — ver o comentário
+  # em `set_booking_collections`.
+  before_action :set_booking_collections, only: [ :index, :new, :create, :availability ]
   # A lista de unidades atende a home e a tela de agendamento, e precisa ficar
   # pronta nas duas. Ela morava no corpo de `index` e, quando `booking_step`
   # passou a ter a etapa `:unit` — para o caso de `unidade_slug` inválido, que
@@ -49,8 +52,7 @@ class AppointmentsController < ApplicationController
     prepare_booking(
       service_id: params[:service],
       professional_id: params[:professional],
-      date: params[:date],
-      extra_service_ids: params[:extra_service_ids]
+      date: params[:date]
     )
   end
 
@@ -71,8 +73,7 @@ class AppointmentsController < ApplicationController
       service_id: booking_params[:service_id],
       professional_id: escolha[:professional_id] || booking_params[:professional_id],
       date: booking_params[:date],
-      date_default: false,
-      extra_service_ids: booking_params[:extra_service_ids]
+      date_default: false
     )
 
     if @selected_service.blank? || @selected_professional.blank? || @selected_date.blank?
@@ -110,8 +111,7 @@ class AppointmentsController < ApplicationController
                  service: @selected_service,
                  start_at: booking_start_at,
                  barbershop_unit: @barbershop_unit,
-                 customer_note: booking_params[:customer_note],
-                 extra_services: @selected_extra_services
+                 customer_note: booking_params[:customer_note]
                )
     else
                Appointment.new.tap { |appointment| appointment.errors.add(:base, "Escolha um horário disponível.") }
@@ -140,7 +140,6 @@ class AppointmentsController < ApplicationController
     @selected_service = find_service(params[:service_id])
     @selected_professional = find_professional(params[:professional_id])
     @selected_date = selected_date(params[:date])
-    @selected_extra_services = find_extra_services(params[:extra_service_ids])
 
     if @selected_service.blank? || @selected_professional.blank? || @selected_date.blank?
       render json: { error: "Selecione serviço, profissional e data futura." }, status: :unprocessable_content
@@ -287,9 +286,18 @@ class AppointmentsController < ApplicationController
     @booking_units = @barbershop_unit.blank? ? unidades_com_expediente : []
   end
 
+  # Só os profissionais que atendem a unidade escolhida (ou sem unidade fixa,
+  # que atendem qualquer uma). Sem o filtro, a lista mostrava todo mundo do
+  # tenant e o `Scheduler` só recusava no submit ("profissional não atende
+  # nesta unidade") — o cliente escolhia um nome que a própria tela não devia
+  # ter oferecido.
   def set_booking_collections
     @services = Service.order(:name)
-    @professionals = Professional.order(:name)
+    @professionals = if @barbershop_unit.present?
+      Professional.where(barbershop_unit: [ @barbershop_unit, nil ]).order(:name)
+    else
+      Professional.order(:name)
+    end
   end
 
   def set_booking_errors
@@ -300,11 +308,10 @@ class AppointmentsController < ApplicationController
     @agenda_por_profissional ||= []
   end
 
-  def prepare_booking(service_id:, professional_id:, date:, date_default: true, extra_service_ids: nil)
+  def prepare_booking(service_id:, professional_id:, date:, date_default: true)
     @selected_service = find_service(service_id)
     @selected_professional = find_professional(professional_id) if @selected_service
     @selected_date = selected_date(date, default: date_default)
-    @selected_extra_services = find_extra_services(extra_service_ids)
     @available_slots = available_slots
     # A agenda vem depois de `@booking_step` porque dela depende: a grade de
     # todo mundo só é calculada enquanto a tela está pedindo quem faz o
@@ -343,8 +350,7 @@ class AppointmentsController < ApplicationController
         professional: professional,
         date: @selected_date,
         service: @selected_service,
-        barbershop_unit: @barbershop_unit,
-        extra_services: @selected_extra_services
+        barbershop_unit: @barbershop_unit
       )
       Agenda.new(professional: professional, slots: slots)
     end
@@ -363,26 +369,14 @@ class AppointmentsController < ApplicationController
     @appointment.professional_id == professional.id && @appointment.start_at == slot
   end
 
-  # O resumo da tela de agendamento soma o serviço principal e os extras
-  # escolhidos. A conta é feita direto nos objetos em memória — e não
-  # construindo um `Appointment` só para perguntar — porque nenhum dos dois
-  # precisa de um registro: são os mesmos números que `Appointment#total_*`
-  # calcularia, mas antes de qualquer agendamento existir.
-  def booking_total_services
-    return [] if @selected_service.blank?
-
-    [ @selected_service ] + Array(@selected_extra_services)
-  end
-
+  # O resumo da tela de agendamento usa a duração e o preço cadastrados do
+  # serviço escolhido.
   def booking_total_duration_minutes
-    raw_minutes = booking_total_services.sum { |item| item.duration_minutes.to_i }
-    return raw_minutes if Array(@selected_extra_services).empty?
-
-    Scheduling.round_up_to_slot(raw_minutes)
+    @selected_service&.duration_minutes.to_i
   end
 
   def booking_total_price_cents
-    booking_total_services.sum { |item| item.price_cents.to_i }
+    @selected_service&.price_cents.to_i
   end
 
   # A etapa que a tela mostra.
@@ -414,20 +408,6 @@ class AppointmentsController < ApplicationController
     @services.find_by(id: value)
   end
 
-  # Os serviços extras escolhidos pelo cliente, resolvidos dentro do tenant
-  # atual. `value` chega como array (form multi-select) ou como string única
-  # separada por vírgula (query string de `availability`); qualquer id que não
-  # pertença a este tenant simplesmente não aparece na lista — não é erro,
-  # porque forjar um id de outra barbearia não deve derrubar a requisição,
-  # só não ter efeito nenhum.
-  def find_extra_services(value)
-    ids = Array(value).flat_map { |item| item.to_s.split(",") }.map(&:strip).compact_blank
-    return [] if ids.empty?
-
-    @services ||= Service.order(:name)
-    @services.where(id: ids).to_a.reject { |item| item.id == @selected_service&.id }
-  end
-
   def find_professional(value)
     return unless value.is_a?(String) || value.is_a?(Integer)
 
@@ -456,8 +436,7 @@ class AppointmentsController < ApplicationController
       professional: @selected_professional,
       date: @selected_date,
       service: @selected_service,
-      barbershop_unit: @barbershop_unit,
-      extra_services: @selected_extra_services
+      barbershop_unit: @barbershop_unit
     )
   end
 
@@ -474,8 +453,7 @@ class AppointmentsController < ApplicationController
     return ActionController::Parameters.new unless appointment_params.is_a?(ActionController::Parameters)
 
     appointment_params.permit(
-      :service_id, :professional_id, :date, :start_at, :client_name, :client_phone, :customer_note,
-      extra_service_ids: []
+      :service_id, :professional_id, :date, :start_at, :client_name, :client_phone, :customer_note
     )
   end
 

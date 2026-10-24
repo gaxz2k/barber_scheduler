@@ -15,16 +15,10 @@ module Appointments
     # A unidade do profissional não é usada como fonte: o profissional pode
     # atender em várias unidades, e quem sabe onde o cliente vai é a escolha
     # dele, não o cadastro do profissional.
-    #
-    # `extra_services:` são serviços adicionais ao principal (`service:`).
-    # Quem resolve os ids para objetos é o chamador — e deve resolvê-los pelo
-    # escopo do tenant atual (`Service.find_by`, não `Service.unscoped`), que
-    # é o que impede um id de outra barbearia de entrar aqui.
-    def initialize(client:, professional:, service:, start_at:, barbershop_unit:, customer_note: nil, extra_services: [], **_ignored)
+    def initialize(client:, professional:, service:, start_at:, barbershop_unit:, customer_note: nil, **_ignored)
       @client = client
       @professional = professional
       @service = service
-      @extra_services = Array(extra_services).compact.uniq
       @start_at = start_at
       @barbershop_unit = barbershop_unit
       @customer_note = customer_note
@@ -52,26 +46,13 @@ module Appointments
     # the row under SELECT ... FOR UPDATE and holds it while the appointment is inserted, so
     # end_at always reflects the persisted duration. If a concurrent admin destroy removed the
     # row first, lock! raises RecordNotFound and we return a domain error instead of inserting
-    # an appointment against a missing service. Every service involved (main + extras) is locked,
-    # because the total duration depends on all of them.
+    # an appointment against a missing service.
     def with_locked_services
-      persisted = all_services.select(&:persisted?)
-      return yield if persisted.empty?
+      return yield unless @service.persisted?
 
-      lock_chain(persisted) { yield }
+      @service.with_lock { yield }
     rescue ActiveRecord::RecordNotFound
       invalid_appointment("serviço não está mais disponível")
-    end
-
-    def lock_chain(services, &block)
-      head, *rest = services
-      return head.with_lock(&block) if rest.empty?
-
-      head.with_lock { lock_chain(rest, &block) }
-    end
-
-    def all_services
-      [ @service ] + @extra_services
     end
 
     def schedule_appointment
@@ -86,7 +67,6 @@ module Appointments
         end_at: end_at,
         customer_note: @customer_note
       )
-      @extra_services.each { |extra| appointment.appointment_services.build(service: extra) }
 
       unless Scheduling.valid_slot?(@start_at)
         appointment.errors.add(:start_at, "não está alinhado à grade de horários")
@@ -116,23 +96,17 @@ module Appointments
     end
 
     def valid_service_durations?
-      all_services.all? { |item| item.duration_minutes.is_a?(Integer) && item.duration_minutes.positive? }
+      @service.duration_minutes.is_a?(Integer) && @service.duration_minutes.positive?
     end
 
     def end_at
       @start_at.to_time + total_duration
     end
 
-    # A duração que efetivamente reserva a agenda.
-    #
-    # Só arredonda para o múltiplo de 30 seguinte quando há serviços extras —
-    # ver o comentário equivalente em `Appointment#total_duration_minutes`
-    # para a razão de não arredondar o serviço único.
+    # A duração que efetivamente reserva a agenda: a duração cadastrada do
+    # serviço, sem arredondamento.
     def total_duration
-      raw_minutes = all_services.sum { |item| item.duration_minutes.to_i }
-      return raw_minutes.minutes if @extra_services.empty?
-
-      Scheduling.round_up_to_slot(raw_minutes).minutes
+      @service.duration_minutes.to_i.minutes
     end
   end
 end

@@ -1,31 +1,18 @@
-<%# Lista densa de serviços, reaproveitada em três lugares:
+<%# Lista densa de serviços, reaproveitada em dois lugares:
     (1) a home (app/views/appointments/index.html.erb), para a escolha inicial;
     (2) a etapa 1 do card único (app/views/appointments/new.html.erb), quando
-        ainda não há serviço escolhido;
-    (3) o painel "Adicionar outro serviço" dentro da etapa de
-        data/horário/confirmação — o botão "+ Adicionar serviço" da
-        confirmação revela este mesmo painel sem perder a escolha atual.
+        ainda não há serviço escolhido.
 
-    `mode: :choose` é o comportamento de sempre: o botão "Agendar" é um link
-    que navega para a tela de data/horário, carregando o serviço (e o
-    profissional, se escolhido no seletor "com") na URL.
-
-    `mode: :add_extra` também é um link — e não um botão JS — de propósito:
-    ele soma o serviço aos `extra_service_ids[]` já escolhidos e recarrega a
-    mesma tela com `data-step-link`, que tanto funciona como navegação comum
-    (sem JavaScript, recarrega a página com o resumo atualizado) quanto é
-    interceptado por `booking_wizard_controller.js` para trocar o cartão sem
-    recarregar. Nenhuma lógica nova no cliente: é a mesma troca de servidor de
-    sempre, só com outro conjunto de parâmetros na URL. Por isso este modo
-    recebe `base_booking_params` (serviço/profissional/data/unidade já
-    escolhidos) e `current_extra_ids` (os extras já somados) como locais. %>
+    O botão "Agendar" é um link que navega para a tela de data/horário,
+    carregando o serviço (e o profissional, se escolhido no seletor "com") na
+    URL. %>
 <% if services.any? %>
-  <div class="service-list" <%= "data-controller=\"service-agendar\"".html_safe if mode == :choose %>>
+  <div class="service-list" data-controller="service-agendar">
     <div class="service-list__head">
-      <%= mode == :add_extra ? "Adicionar outro serviço" : "Escolha um serviço" %>
+      Escolha um serviço
     </div>
     <% services.each do |service| %>
-      <div class="service-row" <%= "data-service-agendar-row".html_safe if mode == :choose %>>
+      <div class="service-row" data-service-agendar-row>
         <span class="service-row__body">
           <span class="service-row__name"><%= service.name %></span>
           <span class="service-row__meta">
@@ -37,35 +24,27 @@
         </span>
 
         <span class="service-row__action">
-          <% if mode == :choose %>
-            <% if professionals.any? %>
-              <label class="sr-only" for="com-<%= service.id %>">Com quem para <%= service.name %></label>
-              <select id="com-<%= service.id %>" class="service-row__select"
-                      data-action="change->service-agendar#selectProfessional">
-                <option value="">Nenhum selecionado</option>
-                <% professionals.each do |profissional| %>
-                  <option value="<%= profissional.id %>"><%= profissional.name %></option>
-                <% end %>
-              </select>
-            <% end %>
-
-            <%# O `href` do botão é reescrito pelo Stimulus quando o "com"
-                muda. Sem isso o profissional escolhido não chegaria ao
-                servidor e o atalho seria decorativo. `data-turbo="false"`
-                porque a troca precisa recarregar/ser interceptada — é a URL
-                que carrega a escolha, nos dois casos. %>
-            <%= link_to "Agendar",
-                        new_appointment_path(service: service.id, unidade_slug: params[:unidade_slug]),
-                        class: "service-row__go",
-                        id: "agendar-#{service.id}",
-                        data: { turbo: false, step_link: true, service_agendar_target: "link" } %>
-          <% else %>
-            <%= link_to "Adicionar",
-                        new_appointment_path(local_assigns.fetch(:base_booking_params, {})
-                          .merge(extra_service_ids: local_assigns.fetch(:current_extra_ids, []) + [ service.id ])),
-                        class: "service-row__go",
-                        data: { turbo: false, step_link: true } %>
+          <% if professionals.any? %>
+            <label class="sr-only" for="com-<%= service.id %>">Com quem para <%= service.name %></label>
+            <select id="com-<%= service.id %>" class="service-row__select"
+                    data-action="change->service-agendar#selectProfessional">
+              <option value="">Nenhum selecionado</option>
+              <% professionals.each do |profissional| %>
+                <option value="<%= profissional.id %>"><%= profissional.name %></option>
+              <% end %>
+            </select>
           <% end %>
+
+          <%# O `href` do botão é reescrito pelo Stimulus quando o "com"
+              muda. Sem isso o profissional escolhido não chegaria ao
+              servidor e o atalho seria decorativo. `data-turbo="false"`
+              porque a troca precisa recarregar/ser interceptada — é a URL
+              que carrega a escolha. %>
+          <%= link_to "Agendar",
+                      new_appointment_path(service: service.id, unidade_slug: params[:unidade_slug]),
+                      class: "service-row__go",
+                      id: "agendar-#{service.id}",
+                      data: { turbo: false, step_link: true, service_agendar_target: "link" } %>
         </span>
       </div>
     <% end %>
