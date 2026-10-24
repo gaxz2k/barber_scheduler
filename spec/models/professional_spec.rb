@@ -27,11 +27,15 @@ RSpec.describe Professional, type: :model do
       fixture_file_upload(filename, content_type)
     end
 
-    it "stores the uploaded file as a blob signed_id on save" do
+    it "stores the uploaded file's signed_id on the photo column" do
       professional = described_class.new(name: "Gustavo", photo_upload: upload)
 
       expect { professional.save! }.to change(professional, :photo).from(nil)
-      expect(professional.photo?).to be(true)
+    end
+
+    it "resolves the stored photo to a blob" do
+      professional = described_class.create!(name: "Gustavo", photo_upload: upload)
+
       expect(professional.photo_blob).to be_a(ActiveStorage::Blob)
     end
 
@@ -40,15 +44,31 @@ RSpec.describe Professional, type: :model do
         photo_upload: fixture_file_upload("barbershop.png", "text/plain"))
 
       expect(professional).not_to be_valid
+    end
+
+    it "explains that non-image content types must be PNG, JPG or WEBP" do
+      professional = described_class.new(name: "Gustavo",
+        photo_upload: fixture_file_upload("barbershop.png", "text/plain"))
+      professional.validate
+
       expect(professional.errors[:photo_upload]).to include("deve ser PNG, JPG ou WEBP")
     end
 
-    it "rejects a mislabeled text file" do
+    def mislabeled_text_file
       io = Tempfile.new([ "fake", ".png" ]).tap { |f| f.write("not an image"); f.rewind }
-      uploaded = ActionDispatch::Http::UploadedFile.new(tempfile: io, filename: "fake.png", type: "image/png")
-      professional = described_class.new(name: "Gustavo", photo_upload: uploaded)
+      ActionDispatch::Http::UploadedFile.new(tempfile: io, filename: "fake.png", type: "image/png")
+    end
+
+    it "rejects a mislabeled text file" do
+      professional = described_class.new(name: "Gustavo", photo_upload: mislabeled_text_file)
 
       expect(professional).not_to be_valid
+    end
+
+    it "explains that a mislabeled text file's content isn't a valid image" do
+      professional = described_class.new(name: "Gustavo", photo_upload: mislabeled_text_file)
+      professional.validate
+
       expect(professional.errors[:photo_upload]).to include("o conteúdo não corresponde a uma imagem PNG, JPG ou WEBP válida")
     end
 
@@ -60,14 +80,21 @@ RSpec.describe Professional, type: :model do
       expect(professional.reload.photo).to be_nil
     end
 
-    it "ignores remove_photo when a new upload replaces the photo in the same submit" do
+    it "lets a new upload win over remove_photo in the same submit" do
+      professional = described_class.create!(name: "Gustavo", photo_upload: upload)
+
+      professional.update!(remove_photo: "1", photo_upload: upload)
+
+      expect(professional.reload.photo).to be_present
+    end
+
+    it "replaces the signed_id when a new upload wins over remove_photo" do
       professional = described_class.create!(name: "Gustavo", photo_upload: upload)
       old_photo = professional.photo
 
       professional.update!(remove_photo: "1", photo_upload: upload)
 
-      expect(professional.reload.photo).to be_present
-      expect(professional.photo).not_to eq(old_photo)
+      expect(professional.reload.photo).not_to eq(old_photo)
     end
   end
 end
