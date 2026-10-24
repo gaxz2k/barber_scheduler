@@ -67,8 +67,25 @@ export default class extends Controller {
     if (!form || form.tagName !== "FORM" || form.method.toLowerCase() !== "get") return
 
     event.preventDefault()
-    const params = new URLSearchParams(new FormData(form))
     const url = new URL(form.action, window.location.origin)
+    // Começa pelos parâmetros já embutidos no `action` (service, profissional,
+    // unidade_slug — a view monta a URL com eles via `new_appointment_path`) e
+    // só então sobrescreve/adiciona os campos do próprio form (date,
+    // extra_service_ids[]). Um GET form nativo descartaria a query string do
+    // action e manteria só os campos do form — por isso não dá para usar
+    // `new URLSearchParams(new FormData(form))` sozinho: perderia serviço e
+    // profissional ao trocar de etapa só pela data.
+    const params = new URLSearchParams(url.search)
+    // `extra_service_ids[]` pode repetir a mesma chave várias vezes (um
+    // serviço extra por campo oculto) — por isso cada chave do form é
+    // zerada uma única vez antes do loop (não a cada entrada) e depois só
+    // acumulada com `append`, senão a segunda entrada apagaria a primeira.
+    const formKeys = new Set()
+    for (const [key] of new FormData(form)) formKeys.add(key)
+    formKeys.forEach((key) => params.delete(key))
+    for (const [key, value] of new FormData(form)) {
+      params.append(key, value)
+    }
     url.search = params.toString()
     this.navigate(url.toString())
   }
