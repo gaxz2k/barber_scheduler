@@ -44,7 +44,13 @@ module IconHelper
     # Local/endereço — usado no marcador do cartão de unidade (escolha de
     # onde ser atendido), no lugar do número de sequência "01/02/03" que
     # sugeria uma ordem que a lista de unidades não tem.
-    pin: '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/>'
+    pin: '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/>',
+    # Seta do seletor "com quem" (serviço → profissional) e do botão de
+    # consulta estática — reaberto pelo redesenho mobile do agendamento
+    # público (ver booking_wizard.css / #58-#60 e esta tarefa).
+    "chevron-down": '<path d="M5 8.5 12 15.5 19 8.5"/>',
+    # Botão flutuante "voltar ao topo" do fluxo público.
+    "arrow-up": '<path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/>'
   }.freeze
 
   # Devolve o `<svg>` inline do ícone `name`. `size` é o lado em pixels (o

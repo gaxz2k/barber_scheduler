@@ -1,12 +1,12 @@
 <% content_for :title, "Seu agendamento | #{Current.barbershop.name}" %>
 
-<main class="site-shell booking-page">
-  <%# A tela de sucesso reaproveita o mesmo cabeçalho do card único — logo,
-      nome, endereço/telefone e os botões de WhatsApp/ligar — igual à
+<main class="site-shell booking-page" id="top">
+  <%# A tela de sucesso reaproveita o mesmo cabeçalho do fluxo — logo,
+      nome, telefone/endereço e os botões de WhatsApp/ligar — igual à
       referência (a confirmação reabre o mesmo cabeçalho do agendamento, só
-      com a mensagem de status no lugar das etapas). %>
+      com a mensagem de status no lugar da lista de serviços). %>
   <div class="booking-flow">
-    <%= render "shared/booking_card_header", tagline: false %>
+    <%= render "shared/booking_card_header" %>
 
     <section class="confirmation-card">
       <div class="eyebrow"><%= confirmation_eyebrow %></div>
@@ -29,4 +29,6 @@
       <%= link_to "Fazer outro agendamento", root_path, class: "button button--primary button--large" %>
     </section>
   </div>
+
+  <%= render "shared/back_to_top" %>
 </main>

@@ -1,6 +1,6 @@
 <% content_for :title, "Agendar | #{Current.barbershop.name}" %>
 
-<main class="site-shell customer-home booking-entry">
+<main class="site-shell customer-home booking-entry" id="top">
   <%# A galeria vem antes do cabeçalho.
       A ordem aqui é deliberada e invertida em relação ao que a página fazia:
       a foto do salão é o que o cliente quer ver ao chegar, e o nome da
@@ -51,44 +51,34 @@
     </div>
   <% end %>
 
-  <%# A partir daqui a home é a ETAPA 1 do mesmo card único que `new.html.erb`
-      usa para as etapas seguintes — ver o comentário no topo daquele arquivo
-      sobre a arquitetura "um card, três etapas" vinda da referência
-      SimplesAgenda. A home continua sendo uma URL própria (ela faz o papel de
-      landing/vitrine, com a galeria acima), mas o card de agendamento em si
-      é visualmente o mesmo bloco, e clicar em "Agendar" aqui leva para dentro
-      do card único em `/appointments/new`, já na etapa certa. %>
-  <div class="booking-flow booking-flow--entry">
-    <%= render "shared/booking_card_header" %>
+  <%# A partir daqui a home é a ETAPA 1 do mesmo fluxo que `new.html.erb`
+      usa para as etapas seguintes. A home continua sendo uma URL própria
+      (ela faz o papel de landing/vitrine, com a galeria acima), mas o
+      cabeçalho de marca e a lista de serviços são os mesmos blocos — clicar
+      em "Agendar" aqui leva para dentro do fluxo em `/appointments/new`, já
+      na etapa certa.
 
-    <%= booking_progress(booking_steps(:unit, com_unidade: @booking_units.any?, unidade_ativa: @booking_units.any?)) %>
+      Composição desta etapa, de cima pra baixo — a estrutura da referência
+      SimplesAgenda (ver o contexto da tarefa de redesenho): banner +
+      cartão de perfil (nome/contato/ações, `shared/_booking_card_header`),
+      aviso de pausa (só quando @online_booking_open é false — não existe
+      campo de aviso genérico cadastrável, ver a lacuna 1 do contexto),
+      "Últimos agendamentos" (só o UM registro de @ultimo_agendamento, ver a
+      lacuna 4) e a lista de serviços. %>
+  <div class="booking-flow booking-flow--entry" data-step="service">
+    <%= render "shared/booking_card_header" %>
 
     <% unless @online_booking_open %>
       <div class="booking-notice booking-notice--alert" role="status">
-        <%= icon_tag(:lock) %>
-        <div>
-          <strong>Agendamento online pausado</strong>
-          <%= Current.barbershop.online_booking_pause_message %>
-          <% if Current.barbershop.whatsapp_link.present? %>
-            Fale com a equipe pelo
-            <%= link_to "WhatsApp", Current.barbershop.whatsapp_link, rel: "noopener" %>.
-          <% end %>
-        </div>
+        <%# Título visualmente oculto para leitor de tela: a caixa "IMPORTANTE"
+            abaixo já comunica a pausa visualmente (ver a lacuna 1 do
+            contexto), mas "importante" sozinho não diz do que se trata para
+            quem usa leitor de tela. %>
+        <h2 class="sr-only">Agendamento online pausado</h2>
+        <strong>Importante</strong>
+        <p><%= simple_format(Current.barbershop.online_booking_pause_message, {}, wrapper_tag: "span") %></p>
       </div>
     <% end %>
-
-    <%# O aviso de antecedência fica logo abaixo do cabeçalho, antes de
-        qualquer escolha — é a mesma posição da referência (política de
-        atraso/cancelamento em destaque de alerta no topo do card), com o
-        texto que o projeto já usava. %>
-    <div class="booking-notice">
-      <%= icon_tag(:clock) %>
-      <div>
-        <strong>Importante</strong>
-        O agendamento precisa de <strong>24 horas de antecedência</strong>, e o
-        horário só é garantido depois da confirmação.
-      </div>
-    </div>
 
     <% if @booking_units.any? %>
       <%# A etapa da unidade só existe quando a barbearia tem mais de uma loja
@@ -115,34 +105,21 @@
         <% end %>
       </ul>
     <% else %>
-      <%# Atalho de recompra: o último agendamento (pending/confirmed) do
-          cliente, oferecido no topo da lista de serviços — antes da lista
-          completa, como na referência. Ver a nota de decisão de design no
-          controller sobre a ausência de um sistema de login/identificação de
-          cliente: este atalho usa o último agendamento da BARBEARIA (não do
-          navegador), que já existia antes desta tarefa; não introduzimos
-          autenticação de cliente nem cookie novo para "lembrar" o visitante. %>
+      <%# "Últimos agendamentos" é SÓ o último registro de @ultimo_agendamento
+          (pending/confirmed) — não um histórico com paginação, que o backend
+          não tem (ver a lacuna 4 do contexto). Reaproveita o mesmo componente
+          de item de serviço da lista completa logo abaixo, com `scope:
+          "last"` para os ids de select/link não colidirem com a cópia do
+          mesmo serviço na lista completa. %>
       <% if @ultimo_agendamento.present? %>
-        <div class="booking-again">
-          <p class="booking-again__text">
-            Último agendamento: <strong><%= @ultimo_agendamento.service.name %></strong>
-            com <strong><%= @ultimo_agendamento.professional.name %></strong>
-            em <%= l(@ultimo_agendamento.start_at.to_date, format: :long) %>,
-            às <%= @ultimo_agendamento.start_at.strftime("%H:%M") %>.
-          </p>
-          <%= link_to new_appointment_path(service: @ultimo_agendamento.service_id,
-                                          professional: @ultimo_agendamento.professional_id,
-                                          date: @ultimo_agendamento.start_at.to_date.iso8601,
-                                          unidade_slug: @ultimo_agendamento.barbershop_unit&.slug),
-                      class: "button button--secondary booking-again__action", data: { turbo: false } do %>
-            Agendar de novo
-          <% end %>
-        </div>
+        <%= render "appointments/service_rows",
+                    services: [ @ultimo_agendamento.service ],
+                    professionals: @professionals,
+                    mode: :choose,
+                    heading: "Últimos Agendamentos",
+                    bar_modifier: "service-list__head--last",
+                    scope: "last" %>
       <% end %>
-
-      <section class="booking-intro" aria-labelledby="booking-title">
-        <h2 id="booking-title">Escolha um serviço</h2>
-      </section>
 
       <%= render "appointments/service_rows", services: @services, professionals: @professionals, mode: :choose %>
     <% end %>
@@ -153,4 +130,6 @@
     <span>·</span>
     <span><%= Current.barbershop.address.presence || Current.barbershop.phone %></span>
   </footer>
+
+  <%= render "shared/back_to_top" %>
 </main>

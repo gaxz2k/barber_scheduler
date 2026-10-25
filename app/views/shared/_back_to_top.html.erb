@@ -1,0 +1,15 @@
+<%# Botão flutuante "voltar ao topo", da referência SimplesAgenda (ver o
+    contexto da tarefa de redesenho): canto inferior direito, só aparece
+    depois de rolar a página, e o clique faz scroll suave até o topo.
+
+    Sem JavaScript o botão fica sempre visível e continua funcionando — é
+    um link de âncora comum para `#top`, então a degradação graciosa não
+    depende de nenhum script (ver a skill `barber-scheduler-js-toolchain`:
+    nada no fluxo público pode depender de JS para funcionar). Com
+    JavaScript, `back_to_top_controller.js` troca a âncora abrupta por um
+    `scrollIntoView({ behavior: "smooth" })` e esconde o botão até o
+    primeiro scroll. %>
+<a href="#top" class="back-to-top" data-controller="back-to-top" data-action="click->back-to-top#scrollToTop"
+   aria-label="Voltar ao topo da página">
+  <%= icon_tag(:"arrow-up", size: 20) %>
+</a>

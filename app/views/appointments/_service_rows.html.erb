@@ -1,54 +1,73 @@
-<%# Lista densa de serviços, reaproveitada em dois lugares:
-    (1) a home (app/views/appointments/index.html.erb), para a escolha inicial;
-    (2) a etapa 1 do card único (app/views/appointments/new.html.erb), quando
-        ainda não há serviço escolhido.
+<%# Lista densa de serviços — o "componente item de serviço" da referência
+    SimplesAgenda (ver o contexto da tarefa de redesenho): nome à esquerda,
+    preço + duração à direita, seletor "com quem" abaixo do nome e botão
+    "Agendar" abaixo da duração.
+
+    Reaproveitada em três lugares:
+    (1) a home (`appointments/index`), para a lista completa de serviços;
+    (2) a etapa 1 do card único (`appointments/new`), quando ainda não há
+        serviço escolhido;
+    (3) a seção "Últimos agendamentos" da home, para o único registro de
+        `@ultimo_agendamento` (ver a lacuna 4 do contexto: é um registro só,
+        não um histórico) — por isso aceita `heading`/`bar_modifier`/`scope`:
+        a mesma lista pode aparecer duas vezes na mesma página (o serviço do
+        último agendamento também pode estar na lista completa), e sem um
+        `scope` prefixando os ids de `<select>`/`<a>` as duas cópias
+        colidiriam em DOM (dois elementos com o mesmo id).
 
     O botão "Agendar" é um link que navega para a tela de data/horário,
     carregando o serviço (e o profissional, se escolhido no seletor "com") na
     URL. %>
+<% heading ||= "Escolha um serviço" %>
+<% bar_modifier ||= nil %>
+<% scope ||= "all" %>
 <% if services.any? %>
-  <div class="service-list" data-controller="service-agendar">
-    <div class="service-list__head">
-      Escolha um serviço
-    </div>
+  <section class="service-list">
+    <h2 class="service-list__head <%= bar_modifier %>"><%= heading %></h2>
+
     <% services.each do |service| %>
-      <div class="service-row" data-service-agendar-row>
-        <span class="service-row__body">
+      <div class="service-row" data-controller="service-agendar" data-service-agendar-row>
+        <div class="service-row__main">
           <span class="service-row__name"><%= service.name %></span>
-          <span class="service-row__meta">
-            <span><%= service.duration_minutes %> min</span>
+
+          <% if professionals.any? %>
+            <div class="service-row__with">
+              <span class="service-row__with-label">com</span>
+              <span class="service-row__select-wrap" data-controller="professional-select">
+                <select id="com-<%= scope %>-<%= service.id %>" class="service-row__select"
+                        aria-label="Com quem para <%= service.name %>"
+                        data-action="change->service-agendar#selectProfessional">
+                  <option value="">Nada selecionado</option>
+                  <% professionals.each do |profissional| %>
+                    <option value="<%= profissional.id %>"><%= profissional.name %></option>
+                  <% end %>
+                </select>
+              </span>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="service-row__side">
+          <span class="service-row__price-block">
             <% if service.price_cents.to_i.positive? %>
               <span class="service-row__price"><%= number_to_currency(service.price_cents / 100.0) %></span>
             <% end %>
+            <span class="service-row__duration"><%= duracao_formatada(service.duration_minutes) %></span>
           </span>
-        </span>
 
-        <span class="service-row__action">
-          <% if professionals.any? %>
-            <label class="sr-only" for="com-<%= service.id %>">Com quem para <%= service.name %></label>
-            <select id="com-<%= service.id %>" class="service-row__select"
-                    data-action="change->service-agendar#selectProfessional">
-              <option value="">Nenhum selecionado</option>
-              <% professionals.each do |profissional| %>
-                <option value="<%= profissional.id %>"><%= profissional.name %></option>
-              <% end %>
-            </select>
-          <% end %>
-
-          <%# O `href` do botão é reescrito pelo Stimulus quando o "com"
-              muda. Sem isso o profissional escolhido não chegaria ao
-              servidor e o atalho seria decorativo. `data-turbo="false"`
-              porque a troca precisa recarregar/ser interceptada — é a URL
-              que carrega a escolha. %>
+          <%# O `href` é reescrito pelo Stimulus quando o "com" muda — ver
+              `service_agendar_controller.js`. `data-turbo="false"` porque a
+              troca precisa recarregar/ser interceptada pelo wizard; é a URL
+              que carrega a escolha de profissional. %>
           <%= link_to "Agendar",
                       new_appointment_path(service: service.id, unidade_slug: params[:unidade_slug]),
                       class: "service-row__go",
-                      id: "agendar-#{service.id}",
+                      id: "agendar-#{scope}-#{service.id}",
                       data: { turbo: false, step_link: true, service_agendar_target: "link" } %>
-        </span>
+        </div>
       </div>
     <% end %>
-  </div>
+  </section>
 <% else %>
   <div class="customer-empty-state" role="status">
     <%= empty_state_illustration(:empty_list) %>
