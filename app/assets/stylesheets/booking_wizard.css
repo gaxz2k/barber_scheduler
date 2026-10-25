@@ -43,14 +43,52 @@
    * recomenda: vence a cascata sem mexer no token global usado pelo admin. */
   --dt-ink-soft: #5c5c5c;
   --dt-ink-faint: #6b6b6b;
+
+  /* --- Paleta da referência SimplesAgenda, SÓ para esta tela ----------------
+   * Fase 3 do redesign: o usuário viu a Fase 2 (petróleo/coral monocromático
+   * herdado de `design_tokens.css`) e achou "muito preto" comparado ao print
+   * do concorrente. Pediu explicitamente as CORES do print aplicadas só
+   * aqui, mantendo o admin e o resto do site intocados. Em vez de editar
+   * `design_tokens.css` (vazaria para o admin), as cores novas são custom
+   * properties LOCAIS, declaradas e usadas só dentro de
+   * `.booking-entry`/`.booking-page`. Cada valor foi escolhido e checado com
+   * o medidor de contraste real da taste-skill (`inspect.mjs`) para manter
+   * AA (4.5:1) de texto sobre a cor — ver os comentários de cada regra que
+   * usa estas variáveis para o número exato. */
+  --ref-gradient-start: #0b3d91; /* azul profundo, canto superior esquerdo */
+  --ref-gradient-mid: #0e7490; /* azul-petróleo de transição */
+  --ref-gradient-end: #0f9d6b; /* verde, canto inferior direito */
+  --ref-whatsapp: #14793b; /* verde WhatsApp escurecido — 5.5:1 com branco */
+  --ref-whatsapp-hover: #0f5c2c;
+  --ref-phone: #4b5563; /* cinza neutro — 7.6:1 com branco */
+  --ref-phone-hover: #374151;
+  --ref-section-blue: #1d4ed8; /* barra de seção — 6.7:1 com branco */
+  --ref-primary-orange: #c2410c; /* botão primário — 5.2:1 com branco */
+  --ref-primary-orange-hover: #9a3412; /* hover — 7.3:1 com branco */
+  --ref-alert-bg: #fdf1f3; /* rosa bem claro */
+  --ref-alert-border: #f43f5e; /* vermelho/rosa, borda tracejada */
+  --ref-alert-ink: #9f1239; /* vermelho escuro — 7.3:1 com --ref-alert-bg */
+
   font-family: var(--dt-font-body);
   font-size: 1rem;
   color: var(--dt-ink);
 }
 
+/* Fundo da página (fora do card branco): gradiente diagonal azul→verde, como
+ * no print de referência. O card central continua branco (`.booking-flow`,
+ * mais abaixo) — só o que está FORA dele muda de cor.
+ *
+ * As variáveis `--ref-gradient-*` precisam ser redeclaradas aqui porque
+ * custom properties só herdam para DESCENDENTES: `body` é PAI de
+ * `.booking-entry`/`.booking-page`, não filho, então `var(--ref-gradient-*)`
+ * não enxergaria os valores declarados só no bloco `.booking-entry,
+ * .booking-page` acima — ficaria `initial` e o gradiente nunca apareceria. */
 body:has(.booking-entry),
 body:has(.booking-page) {
-  background: var(--dt-ice-50);
+  --ref-gradient-start: #0b3d91;
+  --ref-gradient-mid: #0e7490;
+  --ref-gradient-end: #0f9d6b;
+  background: linear-gradient(135deg, var(--ref-gradient-start) 0%, var(--ref-gradient-mid) 55%, var(--ref-gradient-end) 100%);
 }
 
 .booking-entry,
@@ -58,7 +96,7 @@ body:has(.booking-page) {
   width: min(100% - 2rem, 64rem);
   min-height: 100vh;
   padding: 1.5rem 0 3rem;
-  background: var(--dt-ice-50);
+  background: transparent;
 }
 
 .booking-entry .customer-header,
@@ -567,17 +605,22 @@ body:has(.booking-page) {
   margin-bottom: 0.3rem;
 }
 
+/* Aviso de pausa (interrupção real e ativa do dono): nas cores do print —
+ * borda TRACEJADA vermelha/rosa clara, fundo rosa bem claro, texto vermelho
+ * escuro. `--ref-alert-ink` sobre `--ref-alert-bg` mede 7.3:1 (AA confortável
+ * até para texto pequeno); a borda tracejada é decoração de estado, não
+ * precisa do mesmo contraste de texto. */
 .booking-notice--alert {
-  border-color: var(--dt-danger-500);
-  background: var(--dt-danger-100);
+  border: 2px dashed var(--ref-alert-border);
+  background: var(--ref-alert-bg);
 }
 
 .booking-notice--alert svg {
-  color: var(--dt-danger-700);
+  color: var(--ref-alert-ink);
 }
 
 .booking-notice--alert strong {
-  color: var(--dt-danger-700);
+  color: var(--ref-alert-ink);
 }
 
 /* === Faixa que abre o card do wizard ========================================
@@ -736,8 +779,11 @@ body:has(.booking-page) {
 
 /* Botões circulares de 44px (toque mínimo) para WhatsApp/ligar — ação rápida
  * que não precisa de rótulo de texto, só do ícone e do `aria-label`. Fundo
- * cheio (tom petróleo claro) em vez de contorno: a mesma regra de "surface
- * por preenchimento, não por borda" usada no resto do cartão. */
+ * cheio em vez de contorno: a mesma regra de "surface por preenchimento, não
+ * por borda" usada no resto do cartão. Cores do print de referência: verde
+ * oficial do WhatsApp no botão de WhatsApp (5.5:1 com branco), cinza neutro
+ * no de telefone (7.6:1) — o telefone fica cinza de propósito, para não
+ * competir visualmente com a ação principal (WhatsApp, mais usada). */
 .booking-card-header__action {
   display: inline-grid;
   width: 2.9rem;
@@ -745,16 +791,28 @@ body:has(.booking-page) {
   place-items: center;
   border: 0;
   border-radius: 50%;
-  background: var(--dt-petrol-900);
+  background: var(--ref-phone);
   color: var(--dt-ice-0);
   transition: background-color var(--dt-transition-fast), transform var(--dt-transition-fast);
 }
 
 .booking-card-header__action:hover,
 .booking-card-header__action:focus-visible {
-  background: var(--dt-coral-500);
+  background: var(--ref-phone-hover);
   color: var(--dt-ice-0);
   transform: translateY(-1px);
+}
+
+/* A versão rotulada (WhatsApp) é sempre o botão verde oficial, mesmo em
+ * hover/foco — ela não deve escurecer para o mesmo cinza do botão de
+ * telefone, senão os dois ficam indistinguíveis em uso. */
+.booking-card-header__action--labelled {
+  background: var(--ref-whatsapp);
+}
+
+.booking-card-header__action--labelled:hover,
+.booking-card-header__action--labelled:focus-visible {
+  background: var(--ref-whatsapp-hover);
 }
 
 /* A versão rotulada (WhatsApp) é a ação primária real do primeiro ecrã —
@@ -801,8 +859,10 @@ body:has(.booking-page) {
   background: var(--dt-ice-0);
 }
 
+/* Barra de seção "Escolha um serviço": azul sólido do print (6.7:1 com
+ * branco), em vez do petróleo escuro genérico do resto do sistema. */
 .service-list__head {
-  background: var(--dt-petrol-700);
+  background: var(--ref-section-blue);
   color: var(--dt-ice-0);
   padding: 0.75rem 1.1rem;
   font-size: 0.95rem;
@@ -895,14 +955,16 @@ body:has(.booking-page) {
   border-radius: var(--dt-radius-sm);
 }
 
+/* Botão "Agendar" de cada linha de serviço: laranja sólido, como no print
+ * (5.2:1 com branco em repouso, 7.3:1 no hover/foco). */
 .service-row__go {
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
   white-space: nowrap;
-  background: var(--dt-coral-500);
+  background: var(--ref-primary-orange);
   color: var(--dt-ice-0);
-  border: 1px solid var(--dt-coral-500);
+  border: 1px solid var(--ref-primary-orange);
   border-radius: var(--dt-radius-sm);
   padding: 0.5rem 1rem;
   font-size: 0.88rem;
@@ -913,8 +975,8 @@ body:has(.booking-page) {
 
 .service-row__go:hover,
 .service-row__go:focus-visible {
-  background: var(--dt-coral-700);
-  border-color: var(--dt-coral-700);
+  background: var(--ref-primary-orange-hover);
+  border-color: var(--ref-primary-orange-hover);
 }
 
 /* === Grade de horários ======================================================
@@ -963,9 +1025,10 @@ body:has(.booking-page) {
 }
 
 /* === Botão ==================================================================
- * O coral fica reservado para o botão primário — a decisão que de fato
- * avança o agendamento ("Confirmar agendamento", "Ver agenda" continua
- * secundário/petróleo porque só troca a data, não confirma nada).
+ * Botão primário laranja (print de referência): a decisão que de fato avança
+ * o agendamento ("Confirmar agendamento", "Agendar"). O petróleo/coral do
+ * resto do sistema fica reservado para o secundário ("Ver agenda" só troca a
+ * data, não confirma nada) — ver `.button--secondary` logo abaixo.
  *
  * Escopado em `.booking-entry`/`.booking-page` (e não só `.booking-page`):
  * a home pública (`.booking-entry`) também usa `.button--secondary` no
@@ -978,10 +1041,10 @@ body:has(.booking-page) {
   align-items: center;
   justify-content: center;
   gap: 0.55rem;
-  border: 1px solid var(--dt-coral-500);
+  border: 1px solid var(--ref-primary-orange);
   border-radius: var(--dt-radius-sm);
   padding: 0.8rem 1.1rem;
-  background: var(--dt-coral-500);
+  background: var(--ref-primary-orange);
   color: var(--dt-ice-0);
   font-size: 0.92rem;
   font-weight: var(--dt-weight-bold);
@@ -994,8 +1057,8 @@ body:has(.booking-page) {
 .booking-entry .button:focus-visible,
 .booking-page .button:hover,
 .booking-page .button:focus-visible {
-  border-color: var(--dt-coral-700);
-  background: var(--dt-coral-700);
+  border-color: var(--ref-primary-orange-hover);
+  background: var(--ref-primary-orange-hover);
   transform: translateY(-1px);
 }
 
@@ -1505,17 +1568,17 @@ body:has(.booking-page) {
  * apagar "sem querer". */
 .booking-entry input[type="submit"].button,
 .booking-page input[type="submit"].button {
-  background: var(--dt-coral-500);
+  background: var(--ref-primary-orange);
   color: var(--dt-ice-0);
-  border-color: var(--dt-coral-500);
+  border-color: var(--ref-primary-orange);
 }
 
 .booking-entry input[type="submit"].button:hover,
 .booking-entry input[type="submit"].button:focus-visible,
 .booking-page input[type="submit"].button:hover,
 .booking-page input[type="submit"].button:focus-visible {
-  background: var(--dt-coral-700);
-  border-color: var(--dt-coral-700);
+  background: var(--ref-primary-orange-hover);
+  border-color: var(--ref-primary-orange-hover);
 }
 
 .booking-entry input[type="submit"].button--secondary,
