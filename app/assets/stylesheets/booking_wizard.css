@@ -31,7 +31,20 @@
 
 .booking-entry,
 .booking-page {
+  /* Sobrescritas locais dos tokens --dt-ink-soft/--dt-ink-faint: os valores
+   * globais (#898989/#b3b3b3) existem para o admin, onde o texto secundário
+   * convive com muito mais densidade de informação. Neste fluxo público o
+   * texto secundário (endereço/telefone, metadados de serviço, rótulos de
+   * etapa futura) é informação que o cliente PRECISA ler para decidir — não
+   * decoração —, e o medidor de contraste real (inspect.mjs da taste-skill)
+   * reprovou os dois tokens originais em cima de fundo branco (2.1:1 e
+   * 3.4–3.5:1, abaixo do mínimo de 4.5:1 para texto). A sobrescrita escopada
+   * aqui é o padrão que `references/css-design-system-traps.md` desta skill
+   * recomenda: vence a cascata sem mexer no token global usado pelo admin. */
+  --dt-ink-soft: #5c5c5c;
+  --dt-ink-faint: #6b6b6b;
   font-family: var(--dt-font-body);
+  font-size: 1rem;
   color: var(--dt-ink);
 }
 
@@ -132,8 +145,8 @@ body:has(.booking-page) {
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 3.25rem;
-  color: var(--dt-ink-faint);
-  font-size: 0.75rem;
+  color: var(--dt-ink-soft);
+  font-size: 0.85rem;
   font-weight: var(--dt-weight-bold);
 }
 
@@ -146,14 +159,14 @@ body:has(.booking-page) {
 
 .booking-progress .progress-step b {
   display: inline-grid;
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 1.9rem;
+  height: 1.9rem;
   place-items: center;
-  border: 1px solid var(--dt-line);
+  border: 0;
   border-radius: 50%;
-  background: var(--dt-ice-0);
-  color: var(--dt-ink-faint);
-  font-size: 0.72rem;
+  background: var(--dt-mist-100);
+  color: var(--dt-ink-soft);
+  font-size: 0.9rem;
   font-weight: var(--dt-weight-bold);
 }
 
@@ -225,37 +238,44 @@ body:has(.booking-page) {
   min-height: 5.25rem;
   align-items: center;
   gap: 0.9rem;
-  border: 1px solid var(--dt-line);
+  border: 0;
   border-radius: var(--dt-radius-lg);
   padding: 1.1rem 1.15rem;
-  background: var(--dt-ice-0);
+  background: var(--dt-mist-100);
   color: var(--dt-ink);
   text-decoration: none;
-  box-shadow: var(--dt-shadow-card);
-  transition: border-color var(--dt-transition-base), transform var(--dt-transition-base);
+  box-shadow: none;
+  transition: background-color var(--dt-transition-base);
 }
 
 .booking-entry .service-choice-card:hover,
 .booking-entry .service-choice-card:focus-visible,
 .booking-page .service-choice-card:hover,
 .booking-page .service-choice-card:focus-visible {
-  border-color: var(--dt-petrol-500);
-  transform: translateY(-1px);
+  background: var(--dt-petrol-100);
+  transform: none;
 }
 
+/* O marcador deixou de ser um número de sequência (01/02/03) — unidades não
+ * são passos de um processo, são opções paralelas, e numerá-las sugeria uma
+ * ordem que não existe. O marcador agora é um pino de localização: a mesma
+ * forma circular do resto do sistema, com um ícone em vez de um dígito. */
 .booking-entry .service-choice-card__number,
 .booking-page .service-choice-card__number {
   display: inline-grid;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
   background: var(--dt-petrol-100);
   color: var(--dt-petrol-700);
-  font-size: 0.72rem;
-  font-weight: var(--dt-weight-bold);
-  letter-spacing: 0.04em;
+}
+
+.booking-entry .service-choice-card__number svg,
+.booking-page .service-choice-card__number svg {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .booking-entry .service-choice-card__body,
@@ -277,7 +297,7 @@ body:has(.booking-page) {
 .booking-entry .service-choice-card__body > span,
 .booking-page .service-choice-card__body > span {
   color: var(--dt-ink-soft);
-  font-size: 0.82rem;
+  font-size: 1rem;
   line-height: var(--dt-leading-normal);
 }
 
@@ -305,11 +325,11 @@ body:has(.booking-page) {
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
-  border: 1px solid var(--dt-line);
+  border: 0;
   border-radius: var(--dt-radius-md);
   padding: 0.9rem 1.1rem;
-  background: var(--dt-ice-0);
-  box-shadow: var(--dt-shadow-card);
+  background: var(--dt-mist-100);
+  box-shadow: none;
 }
 
 .booking-again__text {
@@ -471,29 +491,30 @@ body:has(.booking-page) {
   text-align: right;
 }
 
-/* Estado vazio da galeria: usa o `.empty-state`/`empty_state_illustration`
- * da Fase 1 em vez do ícone de texto solto que havia antes. A moldura é
- * escopada aqui (e não em `design_components.css`) de propósito: carregar o
- * arquivo de componentes inteiro no layout público vazaria `.button`,
+/* Estado vazio da galeria: compacto, de propósito — é um aviso de "ainda
+ * não há fotos", não deve competir pelo espaço do primeiro scroll com o
+ * nome do negócio e os passos do agendamento (ver achado "hero-void" do
+ * inspetor: uma caixa vazia grande no topo não é foco, é vácuo). A moldura
+ * é escopada aqui (e não em `design_components.css`) de propósito: carregar
+ * o arquivo de componentes inteiro no layout público vazaria `.button`,
  * `.input` e `.admin-badge` novos para o admin e o login antes da hora —
  * ver o comentário no topo deste arquivo. */
 .booking-entry .barbershop-carousel--empty {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
+  text-align: left;
   gap: var(--dt-space-3);
-  min-height: 12rem;
-  padding: var(--dt-space-6) var(--dt-space-5);
-  border: 1px dashed var(--dt-line);
+  padding: var(--dt-space-3) var(--dt-space-4);
+  border: 0;
   border-radius: var(--dt-radius-lg);
-  background: var(--dt-ice-0);
+  background: var(--dt-mist-100);
   color: var(--dt-ink-soft);
 }
 
 .booking-entry .barbershop-carousel--empty svg {
-  width: 7rem;
-  height: 7rem;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
 }
 
 .booking-entry .barbershop-carousel--empty strong {
@@ -504,50 +525,49 @@ body:has(.booking-page) {
 }
 
 .booking-entry .barbershop-carousel--empty span {
-  font-size: 0.85rem;
+  font-size: 1rem;
   max-width: 24rem;
 }
 
 /* === Aviso do topo do wizard ================================================
- * O aviso de antecedência usa coral tracejado — ele não bloqueia nada, é
- * regra permanente. O aviso de pausa usa vermelho de status sólido: é uma
- * interrupção real e ativa do dono, e merece a mesma cor que o resto do
- * sistema usa para "atenção", em vez de pedir ao cliente para aprender que
- * um cinza mais escuro aqui significa algo mais grave. */
+ * Estrutura da referência SimplesAgenda ("IMPORTANTE", caixa destacada antes
+ * de qualquer escolha), nas cores do sistema: o aviso de antecedência usa o
+ * tom de alerta neutro (petróleo claro, não vermelho — não é bloqueio, é
+ * regra permanente); o aviso de pausa usa vermelho de status sólido porque é
+ * uma interrupção real e ativa do dono. Borda sólida em vez de tracejada: a
+ * borda tracejada foi removida por ser um clichê de "zona de upload" sem
+ * função aqui (nada se arrasta para dentro desta caixa). */
 .booking-notice {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
-  border: 1px dashed var(--dt-coral-400);
-  border-radius: var(--dt-radius-sm);
-  background: var(--dt-coral-100);
-  padding: 0.85rem 1rem;
+  gap: 0.7rem;
+  border: 0;
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-petrol-100);
+  padding: 1rem 1.1rem;
   text-align: left;
-  font-size: 0.78rem;
-  line-height: 1.7;
-  color: var(--dt-ink-soft);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--dt-ink);
   margin-bottom: 1.5rem;
 }
 
 .booking-notice svg {
   flex-shrink: 0;
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1.2rem;
+  height: 1.2rem;
   margin-top: 0.15rem;
-  color: var(--dt-coral-700);
+  color: var(--dt-petrol-700);
 }
 
 .booking-notice strong {
   display: block;
-  color: var(--dt-coral-700);
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 0.35rem;
+  color: var(--dt-petrol-900);
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
 }
 
 .booking-notice--alert {
-  border-style: solid;
   border-color: var(--dt-danger-500);
   background: var(--dt-danger-100);
 }
@@ -563,15 +583,33 @@ body:has(.booking-page) {
 /* === Faixa que abre o card do wizard ========================================
  * Petróleo escuro com um fio coral no topo: a mesma assinatura visual da
  * identidade antiga (faixa escura + fio de cor de decisão), só com as cores
- * da paleta nova. */
+ * da paleta nova. Entrada suave do cartão ao carregar a página — o único
+ * movimento "automático" desta tela, e ele serve a um propósito: confirma
+ * que a página terminou de montar antes do cliente começar a escolher, sem
+ * atrasar a leitura (420ms, só opacidade + um deslocamento pequeno).
+ * Respeita `prefers-reduced-motion` via a regra já existente mais abaixo
+ * neste arquivo (`transition-duration: 0.01ms !important`), que também
+ * neutraliza esta animação. */
+@keyframes booking-flow-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .booking-flow {
   max-width: 34rem;
   margin-inline: auto;
   background: var(--dt-ice-0);
   border: 1px solid var(--dt-line);
   border-radius: var(--dt-radius-md);
-  box-shadow: var(--dt-shadow-soft);
+  box-shadow: none;
   padding: 1.75rem 1.5rem 2rem;
+  animation: booking-flow-enter 420ms ease-out;
 }
 
 .booking-flow__head {
@@ -631,74 +669,107 @@ body:has(.booking-page) {
 }
 
 /* === Cabeçalho da marca dentro do card único =================================
- * Logo circular + nome + endereço/telefone + dois botões circulares de ação
- * rápida (WhatsApp, ligar), lado a lado — a estrutura da referência
- * SimplesAgenda, com as cores da identidade "litoral urbano". Usado na home
- * (topo do cartão de agendamento), na etapa 1-3 do `new.html.erb` e na tela
- * de sucesso em `show.html.erb`: as três reaproveitam o mesmo partial
- * (`shared/_booking_card_header`), e esta é a única regra de estilo dele. */
+ * Logo grande centralizado + nome em destaque + endereço/telefone em cinza
+ * abaixo + dois botões circulares de ação rápida (WhatsApp, ligar) lado a
+ * lado — a estrutura da referência SimplesAgenda (ver o comentário de
+ * contexto da tarefa de redesenho): o que se reaproveita dali é a
+ * COMPOSIÇÃO (logo grande centralizado → nome → contato → ações), nunca a
+ * paleta azul/verde/laranja do print — aqui tudo continua nos tokens
+ * --dt-* do projeto. Usado na home (topo do cartão de agendamento), na
+ * etapa 1-3 do `new.html.erb` e na tela de sucesso em `show.html.erb`: as
+ * três reaproveitam o mesmo partial (`shared/_booking_card_header`), e
+ * esta é a única regra de estilo dele. */
 .booking-card-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  margin-bottom: 1.5rem;
+  gap: 0.4rem;
+  margin-bottom: 1.75rem;
   text-align: center;
 }
 
 .booking-card-header__logo {
   display: inline-grid;
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 5rem;
+  height: 5rem;
   place-items: center;
   border-radius: 50%;
   background: var(--dt-petrol-900);
   color: var(--dt-ice-0);
   font-family: var(--dt-font-display);
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   font-weight: var(--dt-weight-bold);
   letter-spacing: -0.03em;
 }
 
 .booking-card-header__name {
-  margin: 0.4rem 0 0;
+  margin: 0.6rem 0 0;
   color: var(--dt-ink);
   font-family: var(--dt-font-display);
-  font-size: 1.35rem;
+  font-size: clamp(2.4rem, 6vw, 3.4rem);
   font-weight: var(--dt-weight-bold);
   letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* A frase de apoio resolve o achado "name-only-title" do inspetor
+ * (`inspect.mjs`): um h1 que é só o nome do negócio não diz o que a tela
+ * faz. Fica entre o nome e o endereço — informação de produto antes de
+ * informação de local. */
+.booking-card-header__tagline {
+  margin: 0.3rem 0 0;
+  color: var(--dt-ink-soft);
+  font-size: 1.15rem;
 }
 
 .booking-card-header__meta {
   margin: 0;
   color: var(--dt-ink-soft);
-  font-size: 0.82rem;
+  font-size: 1rem;
 }
 
 .booking-card-header__actions {
   display: flex;
-  gap: 0.6rem;
-  margin-top: 0.5rem;
+  gap: 0.75rem;
+  margin-top: 0.7rem;
 }
 
 /* Botões circulares de 44px (toque mínimo) para WhatsApp/ligar — ação rápida
- * que não precisa de rótulo de texto, só do ícone e do `aria-label`. */
+ * que não precisa de rótulo de texto, só do ícone e do `aria-label`. Fundo
+ * cheio (tom petróleo claro) em vez de contorno: a mesma regra de "surface
+ * por preenchimento, não por borda" usada no resto do cartão. */
 .booking-card-header__action {
   display: inline-grid;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.9rem;
+  height: 2.9rem;
   place-items: center;
-  border: 1px solid var(--dt-petrol-500);
+  border: 0;
   border-radius: 50%;
-  background: var(--dt-ice-0);
-  color: var(--dt-petrol-700);
-  transition: background-color var(--dt-transition-fast), border-color var(--dt-transition-fast);
+  background: var(--dt-petrol-900);
+  color: var(--dt-ice-0);
+  transition: background-color var(--dt-transition-fast), transform var(--dt-transition-fast);
 }
 
 .booking-card-header__action:hover,
 .booking-card-header__action:focus-visible {
-  background: var(--dt-petrol-100);
-  border-color: var(--dt-petrol-700);
+  background: var(--dt-coral-500);
+  color: var(--dt-ice-0);
+  transform: translateY(-1px);
+}
+
+/* A versão rotulada (WhatsApp) é a ação primária real do primeiro ecrã —
+ * pílula sólida com texto, não só um círculo de ícone, para satisfazer o
+ * achado "first-action" do inspetor (`inspect.mjs`): um botão visível de
+ * verdade no primeiro ecrã, não apenas um link de navegação. */
+.booking-card-header__action--labelled {
+  width: auto;
+  height: 2.9rem;
+  gap: 0.5rem;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  font-family: var(--dt-font-body);
+  font-size: 0.95rem;
+  font-weight: var(--dt-weight-bold);
 }
 
 /* === Painéis que alternam dentro da etapa fundida (data/horário vs.
@@ -724,19 +795,18 @@ body:has(.booking-page) {
 .service-list {
   display: grid;
   gap: 0;
-  border: 1px solid var(--dt-line-soft);
+  border: 0;
   border-radius: var(--dt-radius-sm);
   overflow: hidden;
   background: var(--dt-ice-0);
 }
 
 .service-list__head {
-  background: var(--dt-petrol-500);
+  background: var(--dt-petrol-700);
   color: var(--dt-ice-0);
-  padding: 0.6rem 1rem;
-  font-size: 0.75rem;
+  padding: 0.75rem 1.1rem;
+  font-size: 0.95rem;
   font-weight: var(--dt-weight-bold);
-  letter-spacing: 0.04em;
 }
 
 .service-row {
@@ -760,7 +830,7 @@ body:has(.booking-page) {
 
 .service-row__name {
   color: var(--dt-ink);
-  font-size: 0.88rem;
+  font-size: 1rem;
   font-weight: var(--dt-weight-bold);
   line-height: 1.35;
 }
@@ -771,12 +841,12 @@ body:has(.booking-page) {
   gap: 0.5rem 0.75rem;
   align-items: baseline;
   color: var(--dt-ink-soft);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
 }
 
 .service-row__price {
   color: var(--dt-ink);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: var(--dt-weight-bold);
   white-space: nowrap;
 }
@@ -834,11 +904,9 @@ body:has(.booking-page) {
   color: var(--dt-ice-0);
   border: 1px solid var(--dt-coral-500);
   border-radius: var(--dt-radius-sm);
-  padding: 0.45rem 0.9rem;
-  font-size: 0.7rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.88rem;
   font-weight: var(--dt-weight-bold);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
   cursor: pointer;
   transition: background-color var(--dt-transition-fast), border-color var(--dt-transition-fast);
 }
@@ -1192,12 +1260,12 @@ body:has(.booking-page) {
   align-items: center;
   text-align: center;
   gap: var(--dt-space-3);
-  border: 1px dashed var(--dt-line);
+  border: 0;
   border-radius: var(--dt-radius-md);
   padding: var(--dt-space-6) var(--dt-space-5);
-  background: var(--dt-ice-0);
+  background: var(--dt-mist-100);
   color: var(--dt-ink-soft);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 
 .booking-page .customer-empty-state svg,
@@ -1328,7 +1396,7 @@ body:has(.booking-page) {
   gap: 0.5rem;
   margin-top: 3rem;
   color: var(--dt-ink-soft);
-  font-size: 0.7rem;
+  font-size: 1rem;
   font-weight: var(--dt-weight-bold);
   letter-spacing: 0;
   text-transform: none;
@@ -1337,7 +1405,7 @@ body:has(.booking-page) {
 @media (max-width: 760px) {
   .booking-entry,
   .booking-page {
-    width: min(100% - 1.25rem, 64rem);
+    width: min(100% - 2rem, 64rem);
     padding-top: 0.9rem;
   }
 

@@ -97,13 +97,13 @@
     <% if @booking_step == :unit %>
       <% if @booking_units.any? %>
         <ul class="service-choice-list">
-          <% @booking_units.each_with_index do |unidade, index| %>
+          <% @booking_units.each do |unidade| %>
             <li>
               <%= link_to new_appointment_path(unidade_slug: unidade.slug,
                                                service: params[:service],
                                                professional: params[:professional]),
                           class: "service-choice-card", data: { turbo: false, step_link: true } do %>
-                <span class="service-choice-card__number"><%= format("%02d", index + 1) %></span>
+                <span class="service-choice-card__number"><%= icon_tag(:pin, size: 20) %></span>
                 <span class="service-choice-card__body">
                   <strong><%= unidade.name %></strong>
                   <span><%= unidade.address.presence || "Unidade da #{Current.barbershop.name}" %></span>
