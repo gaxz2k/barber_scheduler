@@ -51,6 +51,16 @@
 }
 
 html {
+  /* `scrollbar-gutter: stable both-edges` reserva o espaço da barra de
+   * rolagem nos DOIS lados (não só onde a barra nativa apareceria),
+   * mesmo em páginas curtas que ainda não rolam: com só `stable` (sem
+   * `both-edges`), a reserva valia de um lado só e o
+   * `.site-shell`/`.booking-entry` centralizado por `margin: 0 auto`
+   * ficava ~15px mais perto da borda direita do que da esquerda sempre
+   * que o conteúdo era curto o bastante para não precisar de barra —
+   * medido pelo inspetor da taste-skill como "off-centre". Reservar
+   * nos dois lados sempre elimina a variação, dê ou não dê scroll. */
+  scrollbar-gutter: stable both-edges;
   background: var(--cream);
   color: var(--ink);
   font-family: var(--font-body);

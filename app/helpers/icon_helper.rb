@@ -40,7 +40,11 @@ module IconHelper
     trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
     # Menu (hambúrguer) do painel administrativo em tela estreita — ver
     # `.nav__toggle` em design_components.css.
-    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>'
+    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    # Local/endereço — usado no marcador do cartão de unidade (escolha de
+    # onde ser atendido), no lugar do número de sequência "01/02/03" que
+    # sugeria uma ordem que a lista de unidades não tem.
+    pin: '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/>'
   }.freeze
 
   # Devolve o `<svg>` inline do ícone `name`. `size` é o lado em pixels (o

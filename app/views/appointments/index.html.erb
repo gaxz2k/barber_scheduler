@@ -101,10 +101,10 @@
       </section>
 
       <ul class="service-choice-list" aria-label="Unidades disponíveis">
-        <% @booking_units.each_with_index do |unit, index| %>
+        <% @booking_units.each do |unit| %>
           <li>
             <%= link_to unidade_path(unit), class: "service-choice-card", data: { turbo: false } do %>
-              <span class="service-choice-card__number" aria-hidden="true"><%= format("%02d", index + 1) %></span>
+              <span class="service-choice-card__number"><%= icon_tag(:pin, size: 20) %></span>
               <span class="service-choice-card__body">
                 <strong><%= unit.name %></strong>
                 <span><%= unit.address.presence || "Unidade da #{Current.barbershop.name}" %></span>

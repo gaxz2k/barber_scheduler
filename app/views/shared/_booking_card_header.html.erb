@@ -12,6 +12,9 @@
 <header class="booking-card-header">
   <span class="booking-card-header__logo" aria-hidden="true"><%= Current.barbershop.monograma %></span>
   <h1 class="booking-card-header__name"><%= Current.barbershop.name %></h1>
+  <% if local_assigns.fetch(:tagline, true) %>
+    <p class="booking-card-header__tagline">Agende seu horário em poucos passos</p>
+  <% end %>
   <% if Current.barbershop.address.present? || Current.barbershop.phone.present? %>
     <p class="booking-card-header__meta">
       <%= [ Current.barbershop.address, Current.barbershop.phone ].compact_blank.join(" · ") %>
@@ -21,9 +24,10 @@
   <% if Current.barbershop.whatsapp_link.present? || Current.barbershop.phone.present? %>
     <div class="booking-card-header__actions">
       <% if Current.barbershop.whatsapp_link.present? %>
-        <%= link_to Current.barbershop.whatsapp_link, class: "booking-card-header__action", rel: "noopener",
+        <%= link_to Current.barbershop.whatsapp_link, class: "booking-card-header__action booking-card-header__action--labelled", rel: "noopener",
                     aria: { label: "Falar no WhatsApp com #{Current.barbershop.name}" } do %>
           <%= icon_tag(:whatsapp, size: 20) %>
+          <span>WhatsApp</span>
         <% end %>
       <% end %>
       <% if Current.barbershop.phone.present? %>
