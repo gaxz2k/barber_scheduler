@@ -1,4 +1,20 @@
 module AppointmentsHelper
+  # A duração de um serviço, no formato do cartão de agendamento público:
+  # "30min" (minutos puros), "05min" (minutos com zero à esquerda) ou
+  # "01h 00min" (quando passa de uma hora). `duration_minutes` no banco é
+  # sempre um inteiro de minutos — não existe campo de horas separado — então
+  # a conversão é feita aqui, e só aqui, para o rótulo nunca divergir entre a
+  # home e o card único (`_service_rows` é a única view que chama isto).
+  def duracao_formatada(duration_minutes)
+    minutos = duration_minutes.to_i
+    return "0min" if minutos <= 0
+
+    horas, resto = minutos.divmod(60)
+    return format("%02dmin", minutos) if horas.zero?
+
+    format("%02dh %02dmin", horas, resto)
+  end
+
   # O rótulo de cada etapa do fluxo. Vive aqui, e não espalhado pelas views,
   # porque é o mesmo nome que aparece no título da tela e na barra de etapas —
   # e as duas coisas precisam concordar, ou o cliente lê "Escolha seu

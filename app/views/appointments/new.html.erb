@@ -1,11 +1,11 @@
 <% content_for :title, "Novo agendamento | #{Current.barbershop.name}" %>
 
-<main class="site-shell booking-page">
-  <%# === Card único, três etapas internas ========================================
+<main class="site-shell booking-page" id="top">
+  <%# === Cabeçalho + aviso + lista de serviços =================================
       Arquitetura inspirada no concorrente SimplesAgenda (ver o contexto da
-      tarefa): em vez de uma tela por etapa, as três etapas do agendamento —
-      serviço, data/horário, confirmação — moram dentro do MESMO cartão
-      (`.booking-flow`), e alternam visibilidade por CSS/Stimulus.
+      tarefa): banner, cartão de marca, aviso (só quando pausado) e lista de
+      serviços/agenda moram no MESMO bloco (`.booking-flow`), e alternam
+      visibilidade por CSS/Stimulus.
 
       Sem JavaScript, o cartão inteiro é exibido empilhado: a etapa de serviço
       (`data-step="service"`) mostra só a lista de serviços porque é só isso
@@ -36,44 +36,47 @@
       `service`/`professional`/`date`). %>
   <div class="booking-flow" data-controller="booking-wizard" data-step="<%= @booking_step %>"
        data-action="click->booking-wizard#interceptLink submit->booking-wizard#interceptForm">
-    <div class="booking-flow__head">
-      <% case @booking_step %>
-      <% when :unit %>
-        Escolha onde quer ser atendido
-      <% when :service %>
-        Escolha um serviço
-      <% when :paused %>
-        Agendamento online pausado
-      <% else %>
-        Escolha quem vai cuidar de você
-      <% end %>
-
-      <%= link_to "Voltar",
-                  (params[:service] ? new_appointment_path(unidade_slug: params[:unidade_slug]) : root_path),
-                  class: "button button--secondary",
-                  data: (params[:service] ? { turbo: false, step_link: true } : { turbo: false }) %>
-    </div>
+    <% if params[:service].present? || @booking_step == :professional %>
+      <div class="booking-flow__back-row">
+        <%= link_to "← Voltar",
+                    (params[:service] ? new_appointment_path(unidade_slug: params[:unidade_slug]) : root_path),
+                    class: "booking-flow__back",
+                    data: (params[:service] ? { turbo: false, step_link: true } : { turbo: false }) %>
+      </div>
+    <% end %>
 
     <%= render "shared/booking_card_header" %>
 
-    <%= booking_progress(booking_steps(@booking_step, com_unidade: @booking_step == :unit, unidade_ativa: @booking_step == :unit)) %>
+    <%# Título de etapa visualmente oculto: a referência SimplesAgenda não
+        tem uma barra de título de seção por etapa (o cabeçalho de marca e o
+        conteúdo já comunicam isso visualmente), mas quem usa leitor de tela
+        precisa de um heading dizendo em que etapa do fluxo está — sem ele a
+        página pula do cabeçalho de marca direto para a lista de serviços ou
+        a agenda, sem nenhum marco de navegação entre as duas. %>
+    <h2 class="sr-only">
+      <% case @booking_step %>
+      <% when :unit %>
+        Escolha onde quer ser atendido
+      <% when :paused %>
+        Agendamento online pausado
+      <% when :service %>
+        Escolha um serviço
+      <% else %>
+        Escolha quem vai cuidar de você
+      <% end %>
+    </h2>
 
-    <%# O aviso fica antes de qualquer escolha, e não depois da confirmação:
-        quem descobre a regra da antecedência só no e-mail de confirmação já
-        gastou o gesto. O texto é o que o projeto de fato faz — agendamento
-        de hoje para amanhã, com no mínimo 24h. %>
-    <div class="booking-notice">
-      <%= icon_tag(:clock) %>
-      <div>
+    <%# O aviso de pausa (dashed border, "IMPORTANTE") só existe quando o
+        dono pausou o agendamento online — não há campo de aviso genérico
+        cadastrável no backend (ver a lacuna 1 do contexto). O texto vem de
+        `Current.barbershop.online_booking_pause_message`, com as quebras de
+        linha do cadastro preservadas por `simple_format`. %>
+    <% if @booking_step == :paused %>
+      <div class="booking-notice booking-notice--alert" role="status">
         <strong>Importante</strong>
-        O agendamento precisa de <strong>24 horas de antecedência</strong>, e o
-        horário só é garantido depois da confirmação.
-        <% if Current.barbershop.whatsapp_link.present? %>
-          Dúvidas? Fale com a equipe pelo
-          <%= link_to "WhatsApp", Current.barbershop.whatsapp_link, rel: "noopener" %>.
-        <% end %>
+        <p><%= simple_format(Current.barbershop.online_booking_pause_message, {}, wrapper_tag: "span") %></p>
       </div>
-    </div>
+    <% end %>
 
     <% if @booking_errors.present? || @appointment.errors.any? %>
       <div id="error_explanation" class="form-alert" role="alert">
@@ -121,7 +124,7 @@
     <% end %>
 
     <% if @booking_step == :service %>
-      <%# ETAPA 1 do cartão: lista densa de serviços, igual à da home — ver
+      <%# ETAPA 1: lista densa de serviços, igual à da home — ver
           `appointments/_service_rows`. É a mesma etapa 1 da referência
           SimplesAgenda, só alcançada por esta URL quando o cliente chega aqui
           sem um serviço na querystring (ex.: voltou de outra etapa). %>
@@ -139,10 +142,10 @@
           de cada profissional seria pedir a mesma resposta várias vezes. %>
       <div class="booking-selection-summary">
         <span>Serviço escolhido</span>
-        <strong><%= @selected_service.name %> · <%= @selected_service.duration_minutes %> min</strong>
+        <strong><%= @selected_service.name %> · <%= duracao_formatada(@selected_service.duration_minutes) %></strong>
         <% if @selected_service.price_cents.to_i.positive? %>
           <span class="booking-selection-summary__total">
-            Total: <%= booking_total_duration_minutes %> min
+            Total: <%= duracao_formatada(booking_total_duration_minutes) %>
             · <%= number_to_currency(booking_total_price_cents / 100.0) %>
           </span>
         <% end %>
@@ -160,7 +163,7 @@
       </div>
 
       <fieldset class="form-section">
-        <legend><span class="form-step">01</span> Escolha a data</legend>
+        <legend>Escolha a data</legend>
         <%# O botão "Ver agenda" foi removido a pedido do produto — o campo de
             data já é um `step_link` (GET interceptado pelo booking-wizard), e
             o `change` no input dispara a mesma troca de etapa automaticamente
@@ -203,7 +206,7 @@
               `booking_wizard_controller.js#revealConfirm`. %>
           <div class="step-panel" data-booking-wizard-target="schedulePanel">
             <fieldset class="form-section">
-              <legend><span class="form-step">02</span> Escolha o profissional e o horário</legend>
+              <legend>Escolha o profissional e o horário</legend>
               <%# A instrução está no `aria-describedby` do formulário, e não em
                   um parágrafo visível: escolher entre grades de quatro pessoas
                   é o ponto onde a dúvida real aparece ("é um horário por
@@ -267,7 +270,7 @@
             </fieldset>
           </div>
 
-          <%# ETAPA 3 do cartão: confirmação. Sem JS, fica empilhada logo abaixo
+          <%# ETAPA 3: confirmação. Sem JS, fica empilhada logo abaixo
               da etapa 2 — é a mesma tela fundida de sempre. Com JS, só aparece
               depois de um horário escolhido (`revealConfirm`), e some de novo
               se o cliente clicar "Trocar horário". %>
@@ -279,7 +282,7 @@
             </div>
 
             <fieldset class="form-section">
-              <legend><span class="form-step">03</span> Seus dados</legend>
+              <legend>Seus dados</legend>
               <%= form.label :client_name, "Nome" %>
               <%= form.text_field :client_name,
                     value: params.dig(:appointment, :client_name),
@@ -314,4 +317,6 @@
 
     <p class="booking-footnote">Seus dados são usados somente para concluir este agendamento.</p>
   </div>
+
+  <%= render "shared/back_to_top" %>
 </main>

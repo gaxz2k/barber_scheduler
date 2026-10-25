@@ -58,8 +58,8 @@ RSpec.describe "Customer booking experience", type: :request do
 
       get root_path
 
-      expect(response.body).to include("Escolha um serviço", "Corte", "30 min")
-      expect(response.body).to include("Etapas do agendamento")
+      expect(response.body).to include("Escolha um serviço", "Corte", "30min")
+      expect(response.body).to include(test_barbershop.name)
     end
 
     it "explains when services are not configured yet" do

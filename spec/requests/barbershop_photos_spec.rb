@@ -45,8 +45,8 @@ RSpec.describe 'Barbershop photos', type: :request do
     attach_photo
     get root_path
     html = CGI.unescapeHTML(response.body)
-    main = html[/<main class="site-shell customer-home booking-entry">(.*)<\/main>/m, 1]
-    [ main.index("barbershop-carousel"), main.index("booking-progress"), main.index("booking-intro") ]
+    main = html[/<main class="site-shell customer-home booking-entry" id="top">(.*)<\/main>/m, 1]
+    [ main.index("barbershop-carousel"), main.index("booking-card-header"), main.index("service-list") ]
   end
 
   it 'renders the carousel as the first content of the home' do
