@@ -1634,6 +1634,45 @@ body:has(.booking-page) {
   pointer-events: auto;
 }
 
+/* Ergonomia mobile do item de serviço: o grid de 2 colunas (nome+select à
+ * esquerda, preço+botão à direita) funciona numa tela larga, mas numa tela
+ * de celular real (~375-430px) o select ("NADA SELECIONADO", até 2 linhas)
+ * e o botão "AGENDAR" ficam espremidos lado a lado na mesma linha, sem
+ * respiro — ruim pro toque e visualmente apertado (relatado pelo usuário
+ * num print real do Orca). Abaixo de 480px a linha vira uma coluna só:
+ * nome, select "com quem" em largura cheia (alvo de toque grande, sem
+ * quebrar em 2 linhas), depois preço/duração ao lado do botão "Agendar" —
+ * cada elemento com largura de sobra em vez de dividir ~340px em dois. */
+@media (max-width: 480px) {
+  .service-row {
+    grid-template-columns: 1fr;
+    row-gap: 0.9rem;
+  }
+
+  .service-row__select-wrap,
+  .service-row__select-trigger,
+  .service-row__select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .service-row__select-panel {
+    width: 100%;
+  }
+
+  .service-row__side {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .service-row__price-block {
+    justify-items: start;
+    text-align: left;
+  }
+}
+
 @media (max-width: 760px) {
   .booking-entry,
   .booking-page {
