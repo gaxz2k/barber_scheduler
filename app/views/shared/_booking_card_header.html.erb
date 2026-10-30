@@ -1,26 +1,29 @@
-<%# Cabeçalho do card único de agendamento, na composição da referência
-    SimplesAgenda (ver o comentário de contexto da tarefa de redesenho):
-    banner com textura atrás do card, logo/monograma centralizado, nome,
-    telefone e endereço em linhas separadas, dois botões quadrados de ação
-    rápida (WhatsApp e ligar) e, meio dentro/meio fora da borda do card, o
-    botão estático de "Consultar Agendamento" (ver lacuna 5 do contexto: sem
-    link funcional, a busca de agendamento por telefone não existe no
-    backend hoje).
+<%# Cabeçalho do card único de agendamento, na composição aprovada no
+    mockup "Aço & Couro" (ver `tmp/design-proposal/mockup-1/index.html` e
+    `palettes.md`): banner de cor chapada (carvão) atrás do card,
+    logo/monograma centralizado, nome, telefone e endereço em linhas
+    separadas, dois botões quadrados de ação rápida (WhatsApp e ligar) e,
+    meio dentro/meio fora da borda do card, o botão estático de "Consultar
+    Agendamento" (ver lacuna 5 do contexto: sem link funcional, a busca de
+    agendamento por telefone não existe no backend hoje).
 
     Vive em partial porque as três telas que abrem e fecham o fluxo —
     a home (`index.html.erb`), a etapa 1 do card único (`new.html.erb`) e o
     recibo (`show.html.erb`) — precisam do mesmo cabeçalho.
 
-    O nome da barbearia usa Poppins no print de referência — carregado só
-    aqui (e não no layout inteiro) via `content_for :head`, para não pagar o
-    custo de uma fonte externa em telas que não usam este cabeçalho (admin,
-    login). Se o Google Fonts não carregar (rede bloqueada, CSP), o
-    `font-family` cai para a pilha padrão do projeto — ver
-    `--ref-name-font` em `booking_wizard.css`. %>
+    O nome da barbearia usa Fraunces (display) na paleta aprovada —
+    carregado só aqui (e não no layout inteiro) via `content_for :head`,
+    para não pagar o custo de uma fonte externa em telas que não usam este
+    cabeçalho (admin, login). Public Sans (corpo) é carregado no mesmo
+    `<link>` porque o resto da tela de agendamento (labels, botões, selects,
+    texto corrido) também usa essa família — ver `--ref-font-body` em
+    `booking_wizard.css`. Se o Google Fonts não carregar (rede bloqueada,
+    CSP), os `font-family` caem para a pilha padrão do projeto — ver
+    `--ref-name-font`/`--ref-font-body` em `booking_wizard.css`. %>
 <% content_for :head do %>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <% end %>
 <div class="booking-card-header-shell">
   <div class="booking-card-header-banner" aria-hidden="true"></div>

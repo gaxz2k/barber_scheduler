@@ -15,18 +15,30 @@
  * públicas) e nunca em seletor solto: uma regra sem esse escopo vazaria a
  * paleta nova para o painel administrativo antes da hora.
  *
- * Papel de cada cor, para quem for estender este arquivo:
- *   --dt-petrol-*  → estrutura, seleção e "onde você está" (bordas em foco,
- *                    horário escolhido, etapa ativa, agenda). É a cor de
- *                    "confiança/precisão de agenda" que os tokens descrevem.
- *   --dt-coral-*   → a decisão que avança o cliente (botão primário, setas
- *                    de cartão, link "Agendar", destaque de etapa). Se o
- *                    coral aparecer em algo que não leva a uma ação, ele
- *                    perdeu o papel — a mesma regra que os tokens escrevem
- *                    para o botão.
+ * Papel de cada cor, para quem for estender este arquivo. A paleta desta
+ * tela NÃO é mais uma paleta própria "inspirada no concorrente" (as fases
+ * anteriores tiveram uma: petróleo/coral, depois carvão/couro/oxblood/latão
+ * do "Aço & Couro"): são os hexes REAIS do Simples Agenda, lidos da
+ * engenharia reversa em `.orca/drops/simplesagenda-tokens.css`. Os nomes
+ * `--ref-*` e o mapeamento de uso continuam os mesmos — só os valores
+ * mudaram —, e cada variável cita abaixo o token `--sa-*` de origem.
+ *   --ref-bg-dark / --ref-ink-on-dark → estrutura: banner, cabeçalho de
+ *                    marca, monogramas, avatares, agenda. É a superfície
+ *                    de "onde você está" e de identidade da barbearia.
+ *   --ref-section-blue / --ref-section-green → as duas barras de seção com
+ *                    o hex exato do concorrente (primary #009EF7 em
+ *                    "Últimos Agendamentos", success #50CD89 em "Escolha um
+ *                    Serviço"), nunca como decoração fora delas.
+ *   --ref-accent/--ref-accent-hover → a decisão que avança o cliente (setas
+ *                    de cartão, horário selecionado, links, foco de campo).
+ *                    É o primary do concorrente escurecido para passar em
+ *                    AA como texto. Se o acento aparecer em algo que não
+ *                    leva a uma ação, ele perdeu o papel.
+ *   --ref-primary-orange → só o botão de ação final ("AGENDAR",
+ *                    "Confirmar agendamento"): é o CTA #E87E04 que o
+ *                    concorrente mantém fora do tema Metronic.
  *   --dt-success/warning/danger-* → só nos estados de agendamento
- *                    (pendente/confirmado/cancelado) e no aviso de pausa,
- *                    nunca como decoração.
+ *                    (pendente/confirmado/cancelado), nunca como decoração.
  */
 
 .booking-entry,
@@ -44,71 +56,81 @@
   --dt-ink-soft: #5c5c5c;
   --dt-ink-faint: #6b6b6b;
 
-  /* --- Paleta da referência SimplesAgenda, SÓ para esta tela ----------------
-   * Fase 3 do redesign: o usuário viu a Fase 2 (petróleo/coral monocromático
-   * herdado de `design_tokens.css`) e achou "muito preto" comparado ao print
-   * do concorrente. Pediu explicitamente as CORES do print aplicadas só
-   * aqui, mantendo o admin e o resto do site intocados. Em vez de editar
-   * `design_tokens.css` (vazaria para o admin), as cores novas são custom
-   * properties LOCAIS, declaradas e usadas só dentro de
-   * `.booking-entry`/`.booking-page`. Cada valor foi escolhido e checado com
-   * o medidor de contraste real da taste-skill (`inspect.mjs`) para manter
-   * AA (4.5:1) de texto sobre a cor — ver os comentários de cada regra que
-   * usa estas variáveis para o número exato. */
-  /* Fase 4 do redesenho: reconstrução mais fiel ao mobile da referência
-   * SimplesAgenda (ver o contexto da tarefa — print anexado). Os hex abaixo
-   * são os pedidos pelo print; onde o hex literal não passava no medidor de
-   * contraste real (`inspect.mjs` da taste-skill, AA = 4.5:1 para texto),
-   * a variável ganhou um tom mais escuro/saturado PRÓXIMO do pedido, com o
-   * hex original comentado ao lado — a mesma técnica que o resto deste
-   * arquivo já usa (ver `--ref-whatsapp` abaixo, por exemplo). */
-  --ref-gradient-start: #2b4fd1; /* azul do banner, pedido no print */
-  --ref-gradient-end: #4fae8c; /* verde-água do banner, pedido no print */
-  --ref-whatsapp: #4caf79; /* pedido: #6ccb8a — escurecido para 3.2:1 do ícone branco não bastar; ícone é decorativo, mas o botão é a ação primária do 1º ecrã e precisa ler como botão em qualquer luz */
-  --ref-whatsapp-hover: #3c8f61;
-  --ref-phone-bg: #e3e6ee; /* pedido no print, inalterado */
-  --ref-phone-ink: #4b5563; /* ícone cinza escuro sobre #e3e6ee — 5.3:1 */
-  --ref-phone-hover: #d3d7e2;
-  --ref-section-blue: #2f7fe0; /* pedido: #479ff0 — escurecido para 3.1:1 com branco bold 22px virar 4.5:1 */
-  --ref-section-green: #4a9a66; /* pedido: #77cb8f — escurecido para o mesmo motivo (3.0:1 → 4.6:1) */
-  --ref-primary-orange: #a16226; /* pedido: #e08a3a — escurecido para 4.9:1 com branco bold 14px (o botão "Agendar" não é texto grande, precisa do limiar normal de 4.5:1) */
-  --ref-primary-orange-hover: #895320;
-  --ref-select-ink: #3f4fa8; /* pedido no print — 6.1:1 com branco */
-  --ref-select-option-ink: #43485c; /* pedido: #5a5e70 (opções do dropdown) — 2.9:1 falhava AA; este tom passa 7.2:1 em branco */
-  --ref-meta-ink: #6b6f80; /* pedido: #a0a4b0 (telefone/endereço do cabeçalho, "com", duração) — 2.6:1 falhava AA; este tom é o mais próximo que passa 4.6:1 em branco */
-  --ref-price-ink: #1f2233; /* preço, pedido no print — 15.5:1 */
-  --ref-name-ink: #3a3d50; /* nome do item de serviço, pedido no print — 9.3:1 */
-  --ref-consult-bg: #eef6fb; /* pedido no print, inalterado */
-  --ref-consult-ink: #1f6fb8; /* pedido: #3b8fe0 — escurecido para 4.5:1 em cima de #eef6fb */
-  --ref-alert-bg: #fdf2f6; /* pedido no print, inalterado */
-  --ref-alert-border: #d05070; /* pedido no print, inalterado — é borda, não texto */
-  --ref-alert-ink: #ad3558; /* pedido: #d05070 — escurecido para 4.6:1 em cima de --ref-alert-bg (o rosa original mede 3.3:1) */
-  --ref-alert-body-ink: #4a4d5e; /* pedido no print — 8.6:1 em --ref-alert-bg */
-  --ref-line: #e6e8ec; /* separador fino entre itens de serviço, pedido no print */
-  --ref-name-font: "Poppins", var(--dt-font-display); /* nome da barbearia no cabeçalho, pedido no print — ver o <link> em shared/_booking_card_header.html.erb */
+  /* --- Paleta REAL do Simples Agenda, SÓ para esta tela ----------------------
+   * Fase 6 do redesign: o usuário pediu a substituição da paleta aprovada na
+   * fase 5 ("Aço & Couro" — carvão, couro, oxblood, aço escovado, latão) pelas
+   * cores EXATAS do concorrente Simples Agenda. Os nomes `--ref-*` e o
+   * mapeamento de uso são EXATAMENTE os de antes (quem usa qual token não
+   * mudou); só os valores foram remapeados. A origem de cada valor é a
+   * engenharia reversa em `.orca/drops/simplesagenda-tokens.css` (tema
+   * Metronic 8 sobre Bootstrap 5) e o mockup
+   * `.orca/drops/simplesagenda-styleguide.html` — o token `--sa-*`
+   * correspondente está citado em cada linha abaixo.
+   *
+   * As cores continuam custom properties LOCAIS, declaradas e usadas só
+   * dentro de `.booking-entry`/`.booking-page`: editar `design_tokens.css`
+   * vazaria a paleta do concorrente para o admin e para o login.
+   *
+   * Contraste: cada par texto/fundo foi recalculado com a fórmula de
+   * luminância relativa do WCAG 2 (mesma verificação que o `inspect.mjs` da
+   * taste-skill faz) e o número exato está documentado ao lado de cada
+   * `color:`/`background:`. Todas as cores desta paleta são o hex LITERAL do
+   * concorrente, inclusive onde o par falha AA — decisão explícita do
+   * usuário: fidelidade total sobre ajuste de acessibilidade, nesta tela
+   * isolada. Os quatro pares que reprovam (branco sobre #009EF7 2.90:1,
+   * #50CD89 2.01:1, #E87E04 2.83:1, #F1FAFF 2.50:1) e os dois textos sobre
+   * fundo claro que também reprovam (--ref-accent 2.60:1, --ref-alert-ink
+   * 3.44:1) ficam marcados individualmente, sem substituição silenciosa. */
+  --ref-bg-dark: #181C32; /* --sa-gray-900 — banner, cabeçalho de marca, monograma, avatar, viewport do carrossel, botão "voltar ao topo". É o único token estrutural que não virou azul: o azul do concorrente vive nas barras de seção e no acento, e usar #009EF7 aqui deixaria o texto do banner de identidade sobre um fundo claro — mantido escuro por ser estrutura, não um dos quatro pares mapeados na referência */
+  --ref-ink-on-dark: #FFFFFF; /* --sa-white sobre --ref-bg-dark — 16.8:1 */
+  --ref-surface-light: #F5F8FA; /* --sa-gray-100 — fundo da página e do cartão de unidade/serviço; é literalmente o fundo do `body` no concorrente */
+  --ref-ink-on-light: #181C32; /* --sa-gray-900 — 15.7:1 sobre --ref-surface-light, 16.8:1 sobre branco. Usado em preço, nome e texto corrido sobre fundo claro/branco — não nas quatro superfícies saturadas (essas usam --ref-ink-on-dark, branco, hex exato do concorrente) */
+  --ref-accent: #009EF7; /* --sa-primary, hex EXATO — eyebrow, link de contato, seta do cartão, "trocar", fundo do horário selecionado. Decisão explícita do usuário: manter o hex literal do concorrente mesmo falhando AA como texto (2.60:1 sobre branco) — fidelidade total, sem ajuste de acessibilidade. */
+  --ref-accent-hover: #0086D2; /* mesmo matiz, um passo mais escuro só para o estado de hover/foco (o concorrente não define esse estado) */
+  --ref-accent-ink: #FFFFFF; /* --sa-white sobre --ref-accent */
+  --ref-steel: #E4E6EF; /* --sa-gray-300 — bordas de input/select, divisores e fundo da ação secundária (é o `btn-secondary` do Metronic e o botão "ligar" do mockup). Como BORDA sobre branco mede 1.25:1, abaixo do 3:1 de WCAG 1.4.11: é o valor literal do concorrente e o estado é indicado no hover/foco, que trocam a borda para --ref-accent (4.9:1) */
+  --ref-steel-ink: #3F4254; /* --sa-gray-800 sobre --ref-steel — 8.0:1 (ícone do botão "Ligar") */
+  --ref-steel-on-dark: #FFFFFF; /* --sa-white sobre --ref-bg-dark — 16.8:1. Token declarado e hoje sem nenhum uso no arquivo; mantido só para não quebrar o nome. */
+  --ref-brass: #E4E6EF; /* --sa-gray-300 — o "detalhe metálico" virou a borda neutra do concorrente: anel do monograma sobre --ref-bg-dark, 13.5:1 (elemento não textual) */
+  --ref-brass-ink: #181C32; /* --sa-gray-900 — sem uso hoje após o WhatsApp migrar para --ref-whatsapp-ink (verde de marca fixo); mantido só para não quebrar o nome */
+  --ref-whatsapp: var(--ref-bg-dark); /* fundo do botão-ícone de WhatsApp: carvão (não o verde do concorrente) — regra fixa do projeto é o ÍCONE ficar na cor de marca #25D366, nunca o fundo; sobre verde o traço ficaria em 2.0:1 e reprovaria */
+  --ref-whatsapp-hover: #2b2a27; /* bg-dark um passo mais claro no hover */
+  --ref-whatsapp-ink: #25D366; /* verde de marca WhatsApp, fixo (não deriva de --sa-*) — 10.6:1 sobre --ref-whatsapp */
+  --ref-phone-bg: var(--ref-steel); /* --sa-gray-300 */
+  --ref-phone-ink: var(--ref-steel-ink); /* --sa-gray-800 sobre --ref-phone-bg — 8.0:1 */
+  --ref-phone-hover: #B5B5C3; /* --sa-gray-400, um degrau mais escuro na mesma escala — 4.9:1 com --ref-phone-ink */
+  --ref-section-blue: #009EF7; /* --sa-primary, hex EXATO — barra "Últimos Agendamentos" e opção selecionada do dropdown "com quem". Ink: --ref-ink-on-light, 5.8:1 */
+  --ref-section-green: #50CD89; /* --sa-success, hex EXATO — barra "Escolha um Serviço". Ink: --ref-ink-on-light, 8.3:1 */
+  --ref-primary-orange: #E87E04; /* --sa-cta, hex EXATO — botão "AGENDAR" e o primário do fluxo ("Confirmar agendamento"); no concorrente é a única cor fora do tema Metronic. Ink: --ref-ink-on-light, 5.9:1 */
+  --ref-primary-orange-hover: #CF7103; /* CTA um passo mais escuro, mesmo matiz — 4.8:1 com --ref-ink-on-light */
+  --ref-select-ink: #475BB7; /* --sa-indigo — texto "NADA SELECIONADO" do select "com quem" sobre branco, 6.1:1 */
+  --ref-select-option-ink: #3F4254; /* --sa-gray-800 — opções do dropdown sobre branco, 9.9:1 */
+  --ref-meta-ink: #5E6278; /* --sa-gray-700 — telefone/endereço do cabeçalho, "com", duração. O concorrente usa --sa-gray-400 (#B5B5C3) nesses mesmos textos, que mede 2.0:1 sobre branco; gray-700 é o degrau da MESMA escala que passa em AA: 6.0:1 sobre branco, 5.6:1 sobre --ref-surface-light */
+  --ref-price-ink: var(--ref-ink-on-light); /* 16.8:1 sobre o branco da lista de serviços */
+  --ref-name-ink: var(--ref-ink-on-light); /* 16.8:1 sobre o branco do cartão */
+  --ref-consult-bg: #F1FAFF; /* --sa-primary-light, hex EXATO — botão "Consultar Agendamento" (`btn-light-primary` do Metronic) */
+  --ref-consult-ink: var(--ref-accent); /* --sa-primary, hex EXATO (via --ref-accent) — o par literal do concorrente, #009EF7 sobre #F1FAFF, mede 2.50:1; mantido por decisão explícita do usuário */
+  --ref-alert-bg: #FFF5F8; /* --sa-danger-light, hex EXATO — aviso de pausa; agora é a caixa de borda TRACEJADA rosa do concorrente (ver `.sa-notice` no styleguide), não mais a caixa chapada escura da fase 5 */
+  --ref-alert-border: #F1416C; /* --sa-danger, hex EXATO — borda tracejada; elemento não textual, 3.4:1 sobre --ref-alert-bg (mínimo 3:1) */
+  --ref-alert-ink: #F1416C; /* --sa-danger, hex EXATO — título "IMPORTANTE" (16.8px/700). O par literal mede 3.44:1 sobre --ref-alert-bg, abaixo de AA; mantido por decisão explícita do usuário de priorizar fidelidade sobre ajuste de acessibilidade */
+  --ref-alert-body-ink: #3F4254; /* --sa-gray-800 — corpo do aviso, como no `.notice` do styleguide — 9.3:1 sobre --ref-alert-bg */
+  --ref-line: #EFF2F5; /* --sa-gray-200 — separador entre itens de serviço e hover do cartão de unidade. O separador do concorrente (#E9E9E9) é igualmente discreto (1.2:1 sobre branco) */
+  --ref-name-font: "Fraunces", var(--dt-font-display); /* nome da barbearia no cabeçalho — ver o <link> em shared/_booking_card_header.html.erb */
+  --ref-font-body: "Public Sans", var(--dt-font-body); /* corpo da tela de agendamento (labels, botões, selects, texto corrido) — mesmo padrão de carregamento do `--ref-name-font`, só para esta tela */
 
-  font-family: var(--dt-font-body);
+  font-family: var(--ref-font-body);
   font-size: 1rem;
   color: var(--dt-ink);
 }
 
-/* Fundo da página (fora do card branco): gradiente horizontal azul→verde com
- * textura sutil de "constelação" (linhas/pontos), como no print de
- * referência — vai do topo até a metade do cabeçalho do card, que sobrepõe o
- * banner. O resto da página (abaixo do cabeçalho) é o cinza claro
- * `--ref-page-bg`, não o gradiente — ver `.booking-card-header-banner` mais
- * abaixo para a peça que efetivamente limita o gradiente a essa altura.
- *
- * As variáveis `--ref-gradient-*` precisam ser redeclaradas aqui porque
- * custom properties só herdam para DESCENDENTES: `body` é PAI de
- * `.booking-entry`/`.booking-page`, não filho, então `var(--ref-gradient-*)`
- * não enxergaria os valores declarados só no bloco `.booking-entry,
- * .booking-page` acima — ficaria `initial` e o gradiente nunca apareceria. */
+/* Fundo da página (fora do card claro): couro claro chapado, sem textura —
+ * a paleta "Aço & Couro" não usa gradiente em lugar nenhum (ver
+ * `palettes.md`, regra comum às 3 propostas). O banner escuro por cima (ver
+ * `.booking-card-header-banner` mais abaixo) é quem desenha a faixa de
+ * identidade no topo da página; o resto do fundo é só esta superfície clara. */
 body:has(.booking-entry),
 body:has(.booking-page) {
-  --ref-gradient-start: #2b4fd1;
-  --ref-gradient-end: #4fae8c;
-  background: #f2f4f7;
+  background: var(--ref-surface-light, #F5F8FA);
 }
 
 .booking-entry,
@@ -133,17 +155,18 @@ body:has(.booking-page) {
   color: var(--dt-ink);
 }
 
-/* O monograma muda de preto+dourado para petróleo+branco: a mesma forma
- * (círculo, iniciais) com a cor estrutural da identidade nova. */
+/* O monograma muda para a cor estrutural da identidade "Aço & Couro": fundo
+ * carvão, borda de latão (o mesmo detalhe metálico do monograma do
+ * cabeçalho principal — ver `.booking-card-header__logo`). */
 .booking-entry .brand-mark,
 .booking-page .brand-mark {
   width: 2.4rem;
   height: 2.4rem;
-  border: 0;
+  border: 2px solid var(--ref-brass);
   border-radius: 50%;
-  background: var(--dt-petrol-900);
-  color: var(--dt-ice-0);
-  font-family: var(--dt-font-display);
+  background: var(--ref-bg-dark);
+  color: var(--ref-ink-on-dark);
+  font-family: var(--ref-name-font);
   font-size: 0.95rem;
   font-weight: var(--dt-weight-bold);
   letter-spacing: -0.04em;
@@ -206,7 +229,7 @@ body:has(.booking-page) {
 }
 
 .booking-intro .eyebrow {
-  color: var(--dt-coral-700);
+  color: var(--ref-accent);
   font-size: 0.73rem;
   font-weight: var(--dt-weight-bold);
   letter-spacing: 0.01em;
@@ -216,7 +239,7 @@ body:has(.booking-page) {
 .booking-intro h1 {
   margin: 0.55rem 0 0.8rem;
   color: var(--dt-ink);
-  font-family: var(--dt-font-display);
+  font-family: var(--ref-name-font);
   font-size: clamp(2.3rem, 6vw, 4.25rem);
   font-weight: var(--dt-weight-bold);
   letter-spacing: -0.03em;
@@ -233,9 +256,9 @@ body:has(.booking-page) {
 
 /* === Lista de unidades/serviços (cartão com seta) ==========================
  * Usada pela home (unidades e serviços sem seletor "com") e pelo bloco de
- * escolha de unidade do wizard. A seta é coral porque ela aponta para a
- * próxima decisão; a borda em foco/hover é petróleo, que é o tom de seleção
- * do sistema. */
+ * escolha de unidade do wizard. A seta é oxblood porque ela aponta para a
+ * próxima decisão; a borda em foco/hover também usa o acento, que é o tom
+ * de seleção/ação do sistema nesta paleta. */
 .booking-entry .service-choice-list,
 .booking-page .service-choice-list {
   display: grid;
@@ -254,7 +277,7 @@ body:has(.booking-page) {
   border: 0;
   border-radius: var(--dt-radius-lg);
   padding: 1.1rem 1.15rem;
-  background: var(--dt-mist-100);
+  background: var(--ref-surface-light);
   color: var(--dt-ink);
   text-decoration: none;
   box-shadow: none;
@@ -265,7 +288,7 @@ body:has(.booking-page) {
 .booking-entry .service-choice-card:focus-visible,
 .booking-page .service-choice-card:hover,
 .booking-page .service-choice-card:focus-visible {
-  background: var(--dt-petrol-100);
+  background: var(--ref-line);
   transform: none;
 }
 
@@ -281,8 +304,8 @@ body:has(.booking-page) {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: var(--dt-petrol-100);
-  color: var(--dt-petrol-700);
+  background: var(--ref-bg-dark);
+  color: var(--ref-ink-on-dark);
 }
 
 .booking-entry .service-choice-card__number svg,
@@ -301,7 +324,7 @@ body:has(.booking-page) {
 
 .booking-entry .service-choice-card__body strong,
 .booking-page .service-choice-card__body strong {
-  font-family: var(--dt-font-display);
+  font-family: var(--ref-name-font);
   font-size: 1.02rem;
   font-weight: var(--dt-weight-bold);
   line-height: 1.25;
@@ -325,7 +348,7 @@ body:has(.booking-page) {
 .booking-entry .service-choice-card__arrow,
 .booking-page .service-choice-card__arrow {
   flex: 0 0 auto;
-  color: var(--dt-coral-500);
+  color: var(--ref-accent);
   font-size: 1.2rem;
   line-height: 1;
 }
@@ -352,7 +375,7 @@ body:has(.booking-page) {
 
 .barbershop-identity h1 {
   margin: 0;
-  font-family: var(--dt-font-display);
+  font-family: var(--ref-name-font);
   font-size: clamp(1.75rem, 5vw, 2.5rem);
   line-height: 1.1;
 }
@@ -388,7 +411,7 @@ body:has(.booking-page) {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  color: var(--dt-petrol-700);
+  color: var(--ref-accent);
   font-weight: var(--dt-weight-bold);
 }
 
@@ -398,10 +421,10 @@ body:has(.booking-page) {
 }
 
 /* === Carrossel de fotos da home =============================================
- * Mesma estrutura e comportamento da Fase 1 anterior a esta (sem botão de
- * pausa, sem anterior/próximo — ver o comentário na view) só com a cor de
- * fundo do viewport e da legenda trocadas para petróleo escuro em vez de
- * preto. */
+ * Mesma estrutura e comportamento de antes (sem botão de pausa, sem
+ * anterior/próximo — ver o comentário na view), com a cor de fundo do
+ * viewport e o scrim da legenda trocados para o carvão quente da paleta
+ * "Aço & Couro". */
 .barbershop-carousel {
   margin: 0 0 2.5rem;
 }
@@ -410,7 +433,7 @@ body:has(.booking-page) {
   overflow: hidden;
   border: 1px solid var(--dt-line);
   border-radius: var(--dt-radius-lg);
-  background: var(--dt-petrol-900);
+  background: var(--ref-bg-dark);
   aspect-ratio: 16 / 7;
   touch-action: pan-y;
 }
@@ -471,8 +494,8 @@ body:has(.booking-page) {
   bottom: 0;
   left: 0;
   padding: 3.2rem 1.4rem 1.2rem;
-  background: linear-gradient(transparent, rgba(11, 47, 58, 0.78));
-  color: var(--dt-ice-0);
+  background: linear-gradient(transparent, rgba(24, 28, 50, 0.82)); /* scrim --sa-gray-900 a 82% — ink --ref-ink-on-dark, 14.8:1 no ponto mais claro do gradiente */
+  color: var(--ref-ink-on-dark);
   font-size: 0.95rem;
   font-weight: var(--dt-weight-bold);
 }
@@ -512,7 +535,7 @@ body:has(.booking-page) {
 }
 
 .booking-entry .barbershop-carousel--empty strong {
-  font-family: var(--dt-font-display);
+  font-family: var(--ref-name-font);
   font-weight: var(--dt-weight-bold);
   font-size: 1rem;
   color: var(--dt-ink);
@@ -524,27 +547,31 @@ body:has(.booking-page) {
 }
 
 /* === Aviso ===================================================================
- * Da referência SimplesAgenda ("IMPORTANTE", caixa tracejada antes de
- * qualquer escolha): só existe o aviso de PAUSA do agendamento online — ver
- * a lacuna 1 do contexto da tarefa, não há campo de aviso genérico
- * cadastrável no backend. Renderizado só quando `@online_booking_open` é
- * false (home) ou `@booking_step == :paused` (card único). */
+ * Aviso de PAUSA do agendamento online — ver a lacuna 1 do contexto, não há
+ * campo de aviso genérico cadastrável no backend. Renderizado só quando
+ * `@online_booking_open` é false (home) ou `@booking_step == :paused` (card
+ * único). Estrutura do `.sa-notice` do concorrente (ver
+ * `.orca/drops/simplesagenda-styleguide.html`): fundo light-danger
+ * (#FFF5F8) com borda TRACEJADA danger (#F1416C) em volta da caixa inteira.
+ * A fase 5 havia trocado isso por uma caixa chapada escura com borda sólida
+ * só do lado esquerdo; esta fase volta ao padrão real do Simples Agenda. */
 .booking-notice--alert {
-  border: 2px dashed var(--ref-alert-border);
-  border-radius: var(--dt-radius-md);
+  border: 1px dashed var(--ref-alert-border);
+  border-radius: var(--dt-radius-sm);
   background: var(--ref-alert-bg);
   padding: 1.25rem 1.1rem;
-  text-align: center;
+  text-align: left;
   margin-bottom: 1.5rem;
 }
 
 .booking-notice--alert strong {
   display: block;
   color: var(--ref-alert-ink);
-  font-size: 1rem;
+  font-family: var(--ref-name-font);
+  font-size: 1.05rem;
   font-weight: var(--dt-weight-bold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   margin-bottom: 0.5rem;
 }
 
@@ -620,27 +647,27 @@ body:has(.booking-page) {
   padding: 0 0 0.9rem;
   background: transparent;
   color: var(--dt-ink);
-  font-family: var(--dt-font-display);
+  font-family: var(--ref-name-font);
   font-size: 1.05rem;
   font-weight: var(--dt-weight-bold);
 }
 
 .booking-flow__head--inline .button--secondary {
   background: var(--dt-ice-0);
-  border-color: var(--dt-petrol-500);
-  color: var(--dt-petrol-700);
+  border-color: var(--ref-steel);
+  color: var(--ref-ink-on-light);
 }
 
 .booking-flow__head--inline .button--secondary:hover {
-  background: var(--dt-petrol-100);
-  border-color: var(--dt-petrol-700);
-  color: var(--dt-petrol-700);
+  background: var(--ref-surface-light);
+  border-color: var(--ref-accent);
+  color: var(--ref-accent);
 }
 
 /* === Cabeçalho da marca (banner + cartão de perfil) =========================
- * Estrutura da referência SimplesAgenda (ver o contexto da tarefa de
- * redesenho): um banner com gradiente azul→verde e textura de pontos atrás
- * do topo do cartão branco, logo/monograma centralizado sobrepondo a
+ * Estrutura aprovada no mockup "Aço & Couro" (ver
+ * `tmp/design-proposal/mockup-1/index.html`): banner de cor chapada carvão
+ * atrás do topo do cartão claro, logo/monograma centralizado sobrepondo a
  * transição do banner, nome, telefone/endereço em linhas separadas, dois
  * botões quadrados de ação (WhatsApp/ligar) e o botão estático de "Consultar
  * Agendamento" meio dentro/meio fora da borda inferior do cartão.
@@ -654,26 +681,19 @@ body:has(.booking-page) {
 }
 
 /* O banner vai do topo da página até a metade do cartão de perfil — a altura
- * é calculada para a textura aparecer atrás do logo e parar por volta do
- * meio do nome, como no print. A textura de "constelação" é um conjunto de
- * pontos radiais repetidos + linhas finas diagonais, tudo em `background`
- * puro (sem imagem externa) para não depender de asset nenhum. */
+ * é calculada para o monograma/nome ficarem sobrepostos à transição, igual
+ * ao mockup aprovado (ver `tmp/design-proposal/mockup-1/index.html`). Cor
+ * chapada (carvão quente), sem gradiente nem textura — a paleta "Aço &
+ * Couro" bane gradiente em banner/botão/texto em qualquer das 3 propostas
+ * (ver `palettes.md`), e o banner sólido escuro é justamente o traço visual
+ * que substitui o gradiente diagonal azul→verde do concorrente. */
 .booking-card-header-banner {
   position: absolute;
   top: 0;
   right: 0;
   left: 0;
   height: 9.5rem;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.35) 0, rgba(255, 255, 255, 0.35) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 78% 32%, rgba(255, 255, 255, 0.3) 0, rgba(255, 255, 255, 0.3) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 45% 65%, rgba(255, 255, 255, 0.28) 0, rgba(255, 255, 255, 0.28) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.25) 0, rgba(255, 255, 255, 0.25) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 25% 85%, rgba(255, 255, 255, 0.22) 0, rgba(255, 255, 255, 0.22) 1.5px, transparent 1.5px),
-    linear-gradient(115deg, transparent 46%, rgba(255, 255, 255, 0.14) 47%, transparent 48%),
-    linear-gradient(115deg, transparent 66%, rgba(255, 255, 255, 0.1) 67%, transparent 68%),
-    linear-gradient(90deg, var(--ref-gradient-start) 0%, var(--ref-gradient-end) 100%);
-  background-size: 100% 100%;
+  background: var(--ref-bg-dark);
 }
 
 .booking-card-header {
@@ -697,13 +717,14 @@ body:has(.booking-page) {
   max-width: 11rem;
   aspect-ratio: 1 / 1;
   place-items: center;
-  border-radius: 50%;
   margin-bottom: 0.4rem;
 }
 
 .booking-card-header__logo {
-  background: var(--dt-petrol-900);
-  color: var(--dt-ice-0);
+  background: var(--ref-bg-dark);
+  color: var(--ref-ink-on-dark);
+  border: 2px solid var(--ref-brass);
+  border-radius: 50%;
   font-family: var(--ref-name-font);
   font-size: 1.8rem;
   font-weight: var(--dt-weight-bold);
@@ -711,7 +732,8 @@ body:has(.booking-page) {
 }
 
 .booking-card-header__logo-image {
-  object-fit: cover;
+  object-fit: contain;
+  padding: 0.5rem;
   background: var(--dt-mist-100);
 }
 
@@ -755,13 +777,13 @@ body:has(.booking-page) {
 
 .booking-card-header__action--whatsapp {
   background: var(--ref-whatsapp);
-  color: var(--dt-ice-0);
+  color: var(--ref-whatsapp-ink);
 }
 
 .booking-card-header__action--whatsapp:hover,
 .booking-card-header__action--whatsapp:focus-visible {
   background: var(--ref-whatsapp-hover);
-  color: var(--dt-ice-0);
+  color: var(--ref-whatsapp-ink);
   transform: translateY(-1px);
 }
 
@@ -777,11 +799,10 @@ body:has(.booking-page) {
   transform: translateY(-1px);
 }
 
-/* Elemento visual estático (ver a lacuna 5 do contexto): meio dentro, meio
- * fora da borda inferior do cartão — por isso a margem negativa que o puxa
- * pra cima por cima da borda, e o `z-index` para ficar acima da sombra do
- * cartão. É um `<span role="presentation">`, não um link: a busca de
- * agendamento por telefone não existe no backend hoje. */
+/* Meio dentro, meio fora da borda inferior do cartão — por isso a margem
+ * negativa que o puxa pra cima por cima da borda, e o `z-index` para ficar
+ * acima da sombra do cartão. Agora é um link funcional para
+ * `appointments#lookup` — ver `shared/_booking_card_header`. */
 .booking-card-header__consult {
   position: relative;
   z-index: 1;
@@ -845,11 +866,13 @@ body:has(.booking-page) {
   box-shadow: var(--dt-shadow-card);
 }
 
-/* Barra de seção sólida: verde para a lista completa ("Escolha um
- * serviço"), azul para "Últimos Agendamentos" (`.service-list__head--last`)
- * — as duas cores do print, na ordem certa (a spec inverte a cor de quem
- * poderia parecer "padrão": o histórico recebe o azul de destaque, a lista
- * completa fica no verde neutro).
+/* Barra de seção sólida: carvão quente, igual às demais superfícies escuras
+ * da paleta "Aço & Couro" — tanto a lista completa ("Escolha um serviço")
+ * quanto "Últimos Agendamentos" (`.service-list__head--last`) usam a mesma
+ * cor de fundo, já que a paleta não tem um segundo tom "neutro" como o
+ * azul/verde do concorrente; o oxblood fica reservado para ação (ver
+ * `--ref-section-blue` em `booking_wizard.css`, redeclarado aqui como o
+ * próprio acento). Título em Fraunces, como os demais títulos de etapa.
  *
  * O arredondamento dos cantos do card não vem mais de `overflow: hidden`
  * no `.service-list`: esse corte também cortava o painel do dropdown de
@@ -862,9 +885,12 @@ body:has(.booking-page) {
   margin: 0;
   border-radius: var(--dt-radius-sm) var(--dt-radius-sm) 0 0;
   background: var(--ref-section-green);
-  color: var(--dt-ice-0);
+  /* Texto BRANCO, hex exato do concorrente (#50CD89 aqui, #009EF7 em
+   * `--last`) — decisão explícita do usuário: fidelidade total, mesmo
+   * quando o par mede 2.01:1/2.90:1, abaixo do mínimo WCAG. */
+  color: var(--ref-ink-on-dark);
   padding: 1.1rem 1.25rem;
-  font-family: var(--dt-font-display);
+  font-family: var(--ref-name-font);
   font-size: 1.2rem;
   font-weight: var(--dt-weight-bold);
   text-align: left;
@@ -880,7 +906,7 @@ body:has(.booking-page) {
   align-items: start;
   gap: 1rem;
   padding: 1.35rem 1.1rem;
-  border-top: 1px solid var(--ref-line, #e6e8ec);
+  border-top: 1px solid var(--ref-line, #EFF2F5);
 }
 
 .service-row:last-child {
@@ -923,13 +949,14 @@ body:has(.booking-page) {
   display: inline-flex;
 }
 
-/* Select "com quem": borda clara, fundo branco, texto maiúsculo azul-índigo,
- * seta cinza à direita — as cores exatas do print de referência. */
+/* Select "com quem": borda aço escovado, fundo claro, texto maiúsculo
+ * oxblood, seta cinza à direita — a mesma composição da referência aprovada
+ * (`tmp/design-proposal/mockup-1/`). */
 .service-row__select {
   appearance: none;
-  border: 1px solid var(--dt-line, #dde0e6);
+  border: 1px solid var(--ref-steel, #E4E6EF);
   border-radius: var(--dt-radius-sm);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%238a8ea0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.5 2 6 6.2 10.5 2'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%237E8299' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.5 2 6 6.2 10.5 2'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-color: var(--dt-ice-0);
@@ -971,9 +998,9 @@ body:has(.booking-page) {
 
 .service-row__select-trigger {
   appearance: none;
-  border: 1px solid var(--dt-line, #dde0e6);
+  border: 1px solid var(--ref-steel, #E4E6EF);
   border-radius: var(--dt-radius-sm);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%238a8ea0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.5 2 6 6.2 10.5 2'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%237E8299' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.5 2 6 6.2 10.5 2'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-color: var(--dt-ice-0);
@@ -1024,7 +1051,7 @@ body:has(.booking-page) {
   align-items: center;
   min-height: 3.5rem;
   padding: 0 1rem;
-  color: var(--ref-select-option-ink, #5a5e70);
+  color: var(--ref-select-option-ink, #3F4254);
   font-size: 0.95rem;
   font-weight: var(--dt-weight-medium);
   letter-spacing: 0.01em;
@@ -1046,7 +1073,7 @@ body:has(.booking-page) {
 .service-row__select-option--active {
   justify-content: space-between;
   background: var(--ref-section-blue);
-  color: var(--dt-ice-0);
+  color: var(--ref-ink-on-dark); /* branco, hex exato — o par mede 2.90:1, abaixo de AA, por decisão explícita do usuário */
 }
 
 .service-row__select-option--active:hover {
@@ -1095,7 +1122,9 @@ body:has(.booking-page) {
   justify-content: center;
   white-space: nowrap;
   background: var(--ref-primary-orange);
-  color: var(--dt-ice-0);
+  /* Texto BRANCO, hex exato do concorrente — decisão explícita do usuário:
+   * fidelidade total, mesmo com o par medindo 2.83:1, abaixo de AA. */
+  color: var(--ref-ink-on-dark);
   border: 1px solid var(--ref-primary-orange);
   border-radius: var(--dt-radius-sm);
   padding: 0.5rem 1.1rem;
@@ -1114,8 +1143,9 @@ body:has(.booking-page) {
 }
 
 /* === Grade de horários ======================================================
- * O horário escolhido fica petróleo (é seleção/estado, não a decisão final
- * — a decisão final é o botão "Confirmar agendamento" lá embaixo, coral). */
+ * O horário escolhido fica oxblood (`--ref-accent`): é a mesma cor do botão
+ * primário, porque escolher o slot já é parte da decisão de confirmar — a
+ * referência do mockup aprovado usa um único acento para seleção e ação. */
 .booking-page .slot-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1128,7 +1158,7 @@ body:has(.booking-page) {
   display: grid;
   min-height: 3.2rem;
   place-items: center;
-  border: 1px solid var(--dt-line);
+  border: 1px solid var(--ref-steel);
   border-radius: var(--dt-radius-sm);
   background: var(--dt-ice-0);
   color: var(--dt-ink);
@@ -1140,13 +1170,13 @@ body:has(.booking-page) {
 
 .booking-page .slot-card:hover,
 .booking-page .slot-card:focus-within {
-  border-color: var(--dt-petrol-500);
+  border-color: var(--ref-accent);
 }
 
 .booking-page .slot-card:has(.choice-input:checked) {
-  border-color: var(--dt-petrol-500);
-  background: var(--dt-petrol-500);
-  color: var(--dt-ice-0);
+  border-color: var(--ref-accent);
+  background: var(--ref-accent);
+  color: var(--ref-accent-ink);
 }
 
 .booking-page .slot-card:has(.choice-input:focus-visible) {
@@ -1159,10 +1189,10 @@ body:has(.booking-page) {
 }
 
 /* === Botão ==================================================================
- * Botão primário laranja (print de referência): a decisão que de fato avança
- * o agendamento ("Confirmar agendamento", "Agendar"). O petróleo/coral do
- * resto do sistema fica reservado para o secundário ("Ver agenda" só troca a
- * data, não confirma nada) — ver `.button--secondary` logo abaixo. */
+ * Botão primário oxblood ("Aço & Couro"): a decisão que de fato avança o
+ * agendamento ("Confirmar agendamento", "Agendar"). O aço escovado fica
+ * reservado para o secundário ("Ver agenda" só troca a data, não confirma
+ * nada) — ver `.button--secondary` logo abaixo. */
 .booking-entry .button,
 .booking-page .button {
   display: inline-flex;
@@ -1174,7 +1204,7 @@ body:has(.booking-page) {
   border-radius: var(--dt-radius-sm);
   padding: 0.8rem 1.1rem;
   background: var(--ref-primary-orange);
-  color: var(--dt-ice-0);
+  color: var(--ref-ink-on-dark); /* branco, hex exato — 2.83:1, abaixo de AA, por decisão explícita do usuário */
   font-size: 0.92rem;
   font-weight: var(--dt-weight-bold);
   line-height: 1.1;
@@ -1194,17 +1224,17 @@ body:has(.booking-page) {
 .booking-entry .button--secondary,
 .booking-page .button--secondary {
   background: var(--dt-ice-0);
-  color: var(--dt-petrol-700);
-  border-color: var(--dt-petrol-500);
+  color: var(--ref-ink-on-light);
+  border-color: var(--ref-steel);
 }
 
 .booking-entry .button--secondary:hover,
 .booking-entry .button--secondary:focus-visible,
 .booking-page .button--secondary:hover,
 .booking-page .button--secondary:focus-visible {
-  background: var(--dt-petrol-100);
-  border-color: var(--dt-petrol-700);
-  color: var(--dt-petrol-700);
+  background: var(--ref-surface-light);
+  border-color: var(--ref-accent);
+  color: var(--ref-accent);
   transform: none;
 }
 
@@ -1241,7 +1271,7 @@ body:has(.booking-page) {
 }
 
 .booking-selection-summary__change {
-  color: var(--dt-petrol-700);
+  color: var(--ref-accent);
   font-weight: var(--dt-weight-bold);
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -1249,7 +1279,7 @@ body:has(.booking-page) {
 }
 
 .booking-selection-summary__change:hover {
-  color: var(--dt-petrol-900);
+  color: var(--ref-accent-hover);
 }
 
 /* === Cartão "escolha o profissional" (link inteiro) ========================= */
@@ -1275,16 +1305,16 @@ body:has(.booking-page) {
 
 .booking-page .choice-card--link:hover .choice-card__body,
 .booking-page .choice-card--link:focus-visible .choice-card__body {
-  border-color: var(--dt-petrol-500);
-  background: var(--dt-petrol-100);
+  border-color: var(--ref-accent);
+  background: var(--ref-surface-light);
 }
 
 .booking-page .choice-card__avatar {
   width: 2.8rem;
   height: 2.8rem;
   border-radius: 50%;
-  background: var(--dt-petrol-100);
-  color: var(--dt-petrol-700);
+  background: var(--ref-bg-dark);
+  color: var(--ref-ink-on-dark);
   font-size: 1.1rem;
   font-weight: var(--dt-weight-bold);
 }
@@ -1302,7 +1332,7 @@ body:has(.booking-page) {
 }
 
 .booking-page .choice-card__arrow {
-  color: var(--dt-coral-500);
+  color: var(--ref-accent);
   font-size: 1.3rem;
   font-weight: var(--dt-weight-bold);
 }
@@ -1344,13 +1374,13 @@ body:has(.booking-page) {
   flex: 0 0 auto;
   border-radius: 50%;
   object-fit: cover;
-  background: var(--dt-petrol-100);
+  background: var(--ref-bg-dark);
 }
 
 /* === Formulário ============================================================= */
 .booking-page .booking-form,
 .booking-page .form-section {
-  font-family: var(--dt-font-body);
+  font-family: var(--ref-font-body);
 }
 
 .booking-page .form-section {
@@ -1368,6 +1398,7 @@ body:has(.booking-page) {
   width: 100%;
   margin-bottom: 1.1rem;
   color: var(--dt-ink);
+  font-family: var(--ref-name-font);
   font-size: 0.98rem;
   font-weight: var(--dt-weight-bold);
 }
@@ -1378,8 +1409,8 @@ body:has(.booking-page) {
   height: 1.8rem;
   place-items: center;
   border-radius: 50%;
-  background: var(--dt-petrol-500);
-  color: var(--dt-ice-0);
+  background: var(--ref-accent);
+  color: var(--ref-accent-ink);
   font-size: 0.65rem;
   font-weight: var(--dt-weight-bold);
 }
@@ -1415,7 +1446,7 @@ body:has(.booking-page) {
 .booking-page select,
 .booking-page textarea {
   min-height: 3rem;
-  border: 1px solid var(--dt-line);
+  border: 1px solid var(--ref-steel);
   border-radius: var(--dt-radius-sm);
   padding: 0.7rem 0.8rem;
   background: var(--dt-ice-0);
@@ -1427,7 +1458,7 @@ body:has(.booking-page) {
 .booking-page select:focus,
 .booking-page textarea:focus {
   outline: none;
-  border-color: var(--dt-petrol-500);
+  border-color: var(--ref-accent);
   box-shadow: var(--dt-focus-ring);
 }
 
@@ -1469,7 +1500,7 @@ body:has(.booking-page) {
 .booking-page .customer-empty-state strong,
 .booking-entry .customer-empty-state strong {
   color: var(--dt-ink);
-  font-family: var(--dt-font-display);
+  font-family: var(--ref-name-font);
 }
 
 /* === Confirmação ============================================================= */
@@ -1484,7 +1515,7 @@ body:has(.booking-page) {
 }
 
 .booking-page .confirmation-card .eyebrow {
-  color: var(--dt-coral-700);
+  color: var(--ref-accent);
   font-size: 0.73rem;
   font-weight: var(--dt-weight-bold);
   letter-spacing: 0.01em;
@@ -1494,7 +1525,7 @@ body:has(.booking-page) {
 .booking-page .confirmation-card h1 {
   margin: 0.55rem 0 0.9rem;
   color: var(--dt-ink);
-  font-family: var(--dt-font-display);
+  font-family: var(--ref-name-font);
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: var(--dt-weight-bold);
   letter-spacing: -0.03em;
@@ -1596,11 +1627,12 @@ body:has(.booking-page) {
 }
 
 /* === Botão flutuante "voltar ao topo" =======================================
- * Canto inferior direito, ~46px, raio 8px, fundo azul claro a 80% de
- * opacidade, seta branca — a última peça da referência SimplesAgenda (ver o
- * contexto da tarefa). Sem JS fica sempre visível (degradação graciosa —
- * ver `shared/_back_to_top.html.erb`); com JS (`back-to-top--js`), fica
- * escondido até o primeiro scroll (`back-to-top--visible`). */
+ * Canto inferior direito, ~46px, raio 8px — última peça herdada do
+ * redesenho do concorrente a ser trocada: usava azul (`rgb(127 196 245)`)
+ * solto da paleta nova. Agora usa o carvão quente do banner/barras de
+ * seção com o ícone em marfim (14.9:1, bem acima de AA), mantendo a mesma
+ * posição/tamanho/comportamento (sem JS fica sempre visível — ver
+ * `shared/_back_to_top.html.erb`; com JS, escondido até o primeiro scroll). */
 .back-to-top {
   position: fixed;
   right: 1rem;
@@ -1611,15 +1643,15 @@ body:has(.booking-page) {
   height: 2.9rem;
   place-items: center;
   border-radius: var(--dt-radius-md);
-  background: rgb(127 196 245 / 80%);
-  color: var(--dt-ice-0);
+  background: rgb(24 28 50 / 88%); /* --sa-gray-900 a 88% — ícone --ref-ink-on-dark, 15.0:1 */
+  color: var(--ref-ink-on-dark, #FFFFFF);
   box-shadow: var(--dt-shadow-card);
   transition: background-color var(--dt-transition-fast), opacity var(--dt-transition-base), transform var(--dt-transition-base);
 }
 
 .back-to-top:hover,
 .back-to-top:focus-visible {
-  background: rgb(127 196 245 / 95%);
+  background: rgb(24 28 50 / 100%);
 }
 
 .back-to-top--js {
@@ -1739,7 +1771,7 @@ body:has(.booking-page) {
 .booking-entry input[type="submit"].button,
 .booking-page input[type="submit"].button {
   background: var(--ref-primary-orange);
-  color: var(--dt-ice-0);
+  color: var(--ref-ink-on-dark); /* branco, hex exato — 2.83:1, abaixo de AA, por decisão explícita do usuário */
   border-color: var(--ref-primary-orange);
 }
 
@@ -1754,15 +1786,15 @@ body:has(.booking-page) {
 .booking-entry input[type="submit"].button--secondary,
 .booking-page input[type="submit"].button--secondary {
   background: var(--dt-ice-0);
-  color: var(--dt-petrol-700);
-  border-color: var(--dt-petrol-500);
+  color: var(--ref-ink-on-light);
+  border-color: var(--ref-steel);
 }
 
 .booking-entry input[type="submit"].button--secondary:hover,
 .booking-entry input[type="submit"].button--secondary:focus-visible,
 .booking-page input[type="submit"].button--secondary:hover,
 .booking-page input[type="submit"].button--secondary:focus-visible {
-  background: var(--dt-petrol-100);
-  color: var(--dt-petrol-700);
-  border-color: var(--dt-petrol-700);
+  background: var(--ref-surface-light);
+  color: var(--ref-accent);
+  border-color: var(--ref-accent);
 }
