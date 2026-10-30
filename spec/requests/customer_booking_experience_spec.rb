@@ -578,6 +578,31 @@ RSpec.describe "Customer booking experience", type: :request do
     end
   end
 
+  describe "GET /, professional selector with photos" do
+    it "carries the photo url and initial as data attributes for the JS avatar" do
+      professional
+      professional.update!(photo_upload: Rack::Test::UploadedFile.new(
+        Rails.root.join("spec/fixtures/files/barbershop.png"), "image/png"
+      ))
+      service
+
+      get root_path
+
+      expect(response.body).to include("data-photo-url=")
+      expect(response.body).to include(%(data-initial="#{professional.name.first}"))
+    end
+
+    it "falls back to just the initial when there is no photo" do
+      professional
+      service
+
+      get root_path
+
+      expect(response.body).to include('data-photo-url=""')
+      expect(response.body).to include(%(data-initial="#{professional.name.first}"))
+    end
+  end
+
   describe "GET /appointments/new, client email and cpf" do
     it "always offers an optional email field" do
       service

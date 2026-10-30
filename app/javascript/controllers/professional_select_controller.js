@@ -6,13 +6,19 @@ import { Controller } from "@hotwired/stimulus"
 // branco colado abaixo do campo, mesma largura, opções em maiúsculo, opção
 // selecionada em azul sólido com marca de check.
 //
+// Melhoria sobre a referência (pedida pelo usuário): cada opção — e o
+// próprio gatilho, quando um profissional está selecionado — mostra a foto
+// dele, do mesmo jeito que a agenda da etapa 2 (`agenda-card__photo`). Sem
+// foto cadastrada, cai no avatar de inicial (`choice-card__avatar`), a
+// mesma regra das duas telas.
+//
 // Progressive enhancement: sem JS, o <select> nativo continua sozinho no
 // DOM e funciona do jeito que sempre funcionou (ver a skill
 // `barber-scheduler-js-toolchain` — nada no fluxo público pode depender de
 // JS). Com JS, este controller esconde visualmente o select original
 // (ele continua "vivo": é ele quem dispara o `change` que o
-// `service-agendar` controller escuta para reescrever o link "Agendar") e
-// desenha um botão + painel de opções por cima, sincronizados com ele.
+// `service-agendar` controller escuta para reescrever o link "Agendar")
+// e desenha um botão + painel de opções por cima, sincronizados com ele.
 export default class extends Controller {
   connect() {
     this.selectEl = this.element.querySelector("select")
@@ -44,6 +50,15 @@ export default class extends Controller {
       this.toggle()
     })
 
+    this.avatarEl = document.createElement("span")
+    this.avatarEl.className = "service-row__select-avatar"
+    this.avatarEl.hidden = true
+
+    this.labelEl = document.createElement("span")
+    this.labelEl.className = "service-row__select-label"
+
+    button.append(this.avatarEl, this.labelEl)
+
     this.triggerEl = button
     this.element.appendChild(button)
   }
@@ -59,7 +74,15 @@ export default class extends Controller {
       item.className = "service-row__select-option"
       item.setAttribute("role", "option")
       item.dataset.value = option.value
-      item.textContent = option.textContent
+
+      const avatar = this.buildAvatar(option)
+      if (avatar) item.appendChild(avatar)
+
+      const label = document.createElement("span")
+      label.className = "service-row__select-option-label"
+      label.textContent = option.textContent
+      item.appendChild(label)
+
       item.addEventListener("click", (event) => {
         event.stopPropagation()
         this.choose(option.value)
@@ -69,6 +92,28 @@ export default class extends Controller {
 
     this.panelEl = panel
     this.element.appendChild(panel)
+  }
+
+  // Um avatar circular por opção: foto do profissional quando cadastrada,
+  // inicial do nome quando não — nunca para a opção vazia ("Nada
+  // selecionado"), que não representa uma pessoa.
+  buildAvatar(option) {
+    if (!option.value) return null
+
+    const photoUrl = option.dataset.photoUrl
+    if (photoUrl) {
+      const img = document.createElement("img")
+      img.className = "service-row__select-avatar-img"
+      img.src = photoUrl
+      img.alt = ""
+      img.loading = "lazy"
+      return img
+    }
+
+    const initial = document.createElement("span")
+    initial.className = "service-row__select-avatar-initial"
+    initial.textContent = option.dataset.initial || ""
+    return initial
   }
 
   toggle() {
@@ -94,7 +139,16 @@ export default class extends Controller {
 
   syncTrigger() {
     const selecionada = this.selectEl.options[this.selectEl.selectedIndex]
-    this.triggerEl.textContent = selecionada ? selecionada.textContent : "Nada selecionado"
+    this.labelEl.textContent = selecionada ? selecionada.textContent : "Nada selecionado"
+
+    this.avatarEl.replaceChildren()
+    const avatar = selecionada ? this.buildAvatar(selecionada) : null
+    if (avatar) {
+      this.avatarEl.appendChild(avatar)
+      this.avatarEl.hidden = false
+    } else {
+      this.avatarEl.hidden = true
+    }
 
     this.panelEl.querySelectorAll(".service-row__select-option").forEach((item) => {
       const ativo = item.dataset.value === this.selectEl.value

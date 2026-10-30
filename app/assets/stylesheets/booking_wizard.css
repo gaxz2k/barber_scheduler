@@ -988,6 +988,9 @@ body:has(.booking-page) {
 
 .service-row__select-trigger {
   appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   border: 1px solid var(--ref-steel, #E4E6EF);
   border-radius: var(--dt-radius-sm);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%237E8299' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.5 2 6 6.2 10.5 2'/%3E%3C/svg%3E");
@@ -1039,6 +1042,7 @@ body:has(.booking-page) {
 .service-row__select-option {
   display: flex;
   align-items: center;
+  gap: 0.6rem;
   min-height: 3.5rem;
   padding: 0 1rem;
   color: var(--ref-select-option-ink, #3F4254);
@@ -1047,6 +1051,11 @@ body:has(.booking-page) {
   letter-spacing: 0.01em;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+.service-row__select-option-label {
+  flex: 1;
+  min-width: 0;
 }
 
 .service-row__select-option:not(:last-child) {
@@ -1061,7 +1070,6 @@ body:has(.booking-page) {
  * direita — as cores exatas do print de referência (mesmo azul da barra de
  * seção "Últimos Agendamentos"). */
 .service-row__select-option--active {
-  justify-content: space-between;
   background: var(--ref-section-blue);
   color: var(--ref-ink-on-dark); /* branco, hex exato — o par mede 2.90:1, abaixo de AA, por decisão explícita do usuário */
 }
@@ -1074,6 +1082,57 @@ body:has(.booking-page) {
   content: "✓";
   margin-left: 0.75rem;
   font-weight: var(--dt-weight-bold);
+}
+
+/* Avatar circular — foto do profissional (melhoria pedida pelo usuário
+ * sobre a referência, que só usa texto neste seletor) ou inicial do nome,
+ * mesma regra visual de `.agenda-card__photo`/`.choice-card__avatar` na
+ * etapa seguinte, só menor para caber no gatilho/painel compactos. */
+.service-row__select-avatar {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.service-row__select-avatar-img,
+.service-row__select-avatar-initial {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.service-row__select-avatar-img {
+  object-fit: cover;
+  background: var(--ref-bg-dark);
+}
+
+.service-row__select-avatar-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ref-bg-dark);
+  color: var(--ref-ink-on-dark);
+  font-size: 0.75rem;
+  font-weight: var(--dt-weight-bold);
+  text-transform: uppercase;
+}
+
+.service-row__select-option--active .service-row__select-avatar-initial {
+  background: var(--ref-ink-on-dark);
+  color: var(--ref-section-blue);
+}
+
+.service-row__select-label,
+.service-row__select-option-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .service-row__side {

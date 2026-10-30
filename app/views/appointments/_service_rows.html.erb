@@ -39,7 +39,9 @@
                         data-action="change->service-agendar#selectProfessional">
                   <option value="">Nada selecionado</option>
                   <% professionals.each do |profissional| %>
-                    <option value="<%= profissional.id %>"><%= profissional.name %></option>
+                    <option value="<%= profissional.id %>"
+                            data-photo-url="<%= rails_blob_url(profissional.photo_blob) if profissional.photo? %>"
+                            data-initial="<%= profissional.name.first %>"><%= profissional.name %></option>
                   <% end %>
                 </select>
               </span>
