@@ -11,5 +11,15 @@ RSpec.describe "parameter filtering" do
       "client_name" => "[FILTERED]", "client_phone" => "[FILTERED]"
     )
   end
+
+  it "filters public booking visitor email and cpf" do
+    filtered = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters).filter(
+      "appointment" => { "client_email" => "maria@example.com", "client_cpf" => "529.982.247-25" }
+    )
+
+    expect(filtered.fetch("appointment")).to include(
+      "client_email" => "[FILTERED]", "client_cpf" => "[FILTERED]"
+    )
+  end
 end
 # rubocop:enable RSpec/DescribeClass, RSpec/ExampleLength

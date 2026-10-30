@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_24_222557) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_162905) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -113,6 +113,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_222557) do
     t.string "name"
     t.string "phone"
     t.datetime "updated_at", null: false
+    t.string "email"
+    t.string "cpf"
+    t.index ["barbershop_id", "cpf"], name: "index_clients_on_barbershop_id_and_cpf", unique: true, where: "(cpf IS NOT NULL)"
     t.index ["barbershop_id"], name: "index_clients_on_barbershop_id"
   end
 
@@ -145,6 +148,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_24_222557) do
     t.text "online_booking_message"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "collect_cpf", default: false, null: false
     t.index ["barbershop_id"], name: "index_shop_settings_on_barbershop_id", unique: true
   end
 

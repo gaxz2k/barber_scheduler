@@ -524,6 +524,105 @@ RSpec.describe "Customer booking experience", type: :request do
     end
   end
 
+  describe "GET /agendamentos/consultar" do
+    it "shows the search form without searching when no phone is given" do
+      get appointments_lookup_path
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include("Consultar meus Agendamentos")
+    end
+
+    it "finds the client's appointments by phone" do
+      service
+      professional
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
+
+      get appointments_lookup_path(phone: "19999998888")
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include(service.name, professional.name)
+    end
+
+    it "accepts a formatted phone number" do
+      service
+      professional
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
+
+      get appointments_lookup_path(phone: "(19) 99999-8888")
+
+      expect(response.body).to include(service.name)
+    end
+
+    it "reports nothing found for an unknown phone" do
+      get appointments_lookup_path(phone: "19988887777")
+
+      expect(response.body).to include("Nenhum agendamento encontrado")
+    end
+
+    it "does not leak another tenant's appointments" do
+      service
+      professional
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: confirmation_params
+
+      host! tenant_host(other_barbershop)
+      get appointments_lookup_path(phone: "19999998888")
+
+      expect(response.body).not_to include(service.name)
+      expect(response.body).to include("Nenhum agendamento encontrado")
+    end
+
+    it "the booking card header links here instead of the old static span" do
+      get root_path
+
+      expect(response.body).to include(%(href="#{appointments_lookup_path}"))
+    end
+  end
+
+  describe "GET /appointments/new, client email and cpf" do
+    it "always offers an optional email field" do
+      service
+      professional
+
+      get unidade_nova(service: service.id, professional: professional.id, date: tomorrow.iso8601)
+
+      expect(response.body).to include('name="appointment[client_email]"')
+    end
+
+    it "hides the cpf field when the barbershop did not opt in" do
+      service
+      professional
+
+      get unidade_nova(service: service.id, professional: professional.id, date: tomorrow.iso8601)
+
+      expect(response.body).not_to include('name="appointment[client_cpf]"')
+    end
+
+    it "shows the cpf field when the barbershop opted in" do
+      service
+      professional
+      within_tenant { ShopSetting.create!(barbershop: test_barbershop, collect_cpf: true) }
+
+      get unidade_nova(service: service.id, professional: professional.id, date: tomorrow.iso8601)
+
+      expect(response.body).to include('name="appointment[client_cpf]"')
+    end
+
+    it "stores the email and cpf collected at the confirmation step" do
+      service
+      professional
+      within_tenant { ShopSetting.create!(barbershop: test_barbershop, collect_cpf: true) }
+      params = confirmation_params
+      params[:appointment][:client_email] = "maria@example.com"
+      params[:appointment][:client_cpf] = "529.982.247-25"
+
+      post appointments_path(unidade_slug: test_unit_for(test_barbershop).slug), params: params
+
+      cliente = within_tenant { tenant_records(Appointment).last.client }
+      expect(cliente.email).to eq("maria@example.com")
+      expect(cliente.cpf).to eq("52998224725")
+    end
+  end
+
   describe "GET /appointments/confirmation/:token" do
     it "nao expoe nome e telefone completos enquanto o token valer" do
       service

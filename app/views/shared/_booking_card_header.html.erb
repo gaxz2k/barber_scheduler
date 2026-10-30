@@ -67,9 +67,8 @@
     <% end %>
   </header>
 
-  <%# Elemento visual estático (ver lacuna 5 do contexto): a busca de
-      agendamento por telefone não existe no backend hoje, então este botão
-      não tem `href`/ação — é um `<span>`, não um link, para não prometer uma
-      navegação que não leva a lugar nenhum. %>
-  <span class="booking-card-header__consult" role="presentation">Consultar Agendamento</span>
+  <%# "Consultar Agendamento" agora é um link funcional (ver
+      `Appointments::PhoneLookup` e `appointments#lookup`): a busca por
+      telefone existe no backend desde o cadastro de e-mail/CPF/consulta. %>
+  <%= link_to "Consultar Agendamento", appointments_lookup_path, class: "booking-card-header__consult" %>
 </div>

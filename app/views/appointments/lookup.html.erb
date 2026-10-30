@@ -1,0 +1,41 @@
+<% content_for :title, "Consultar agendamento | #{Current.barbershop.name}" %>
+
+<main class="site-shell booking-page" id="top">
+  <div class="booking-flow">
+    <div class="booking-flow__back-row">
+      <%= link_to "← Voltar", root_path, class: "booking-flow__back" %>
+    </div>
+
+    <%= render "shared/booking_card_header" %>
+
+    <h2 class="booking-lookup__title">Consultar meus Agendamentos</h2>
+
+    <%# Formulário simples, só com o telefone — igual à referência
+        SimplesAgenda, sem confirmação por SMS/e-mail. GET, não POST: é uma
+        busca, não uma escrita, e assim funciona com Enter no campo mesmo sem
+        JavaScript nenhum, com a URL carregando o resultado direto. %>
+    <%= form_with url: appointments_lookup_path, method: :get, class: "booking-inline-form" do |form| %>
+      <%= form.label :phone, "Informe seu Celular" %>
+      <%= form.telephone_field :phone, name: "phone", value: @phone, required: true,
+            autocomplete: "tel", placeholder: "Informe seu celular..." %>
+      <%= form.submit "Consultar", class: "button button--primary button--full" %>
+    <% end %>
+
+    <% if @lookup_appointments %>
+      <% if @lookup_appointments.any? %>
+        <ul class="booking-lookup__results">
+          <% @lookup_appointments.each do |appointment| %>
+            <li class="booking-lookup__result">
+              <strong><%= appointment.service.name %></strong>
+              <span>com <%= appointment.professional.name %></span>
+              <span><%= appointment.start_at.strftime("%d/%m/%Y às %H:%M") %></span>
+              <span class="booking-lookup__status"><%= appointment.status_label %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="booking-intro">Nenhum agendamento encontrado para este telefone.</p>
+      <% end %>
+    <% end %>
+  </div>
+</main>

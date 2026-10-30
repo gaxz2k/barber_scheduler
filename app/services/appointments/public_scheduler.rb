@@ -4,7 +4,8 @@ module Appointments
       new(...).call
     end
 
-    def initialize(name:, phone:, professional:, service:, start_at:, barbershop_unit:, customer_note: nil)
+    def initialize(name:, phone:, professional:, service:, start_at:, barbershop_unit:, customer_note: nil,
+                   email: nil, cpf: nil)
       @name = name.to_s.strip
       @phone = phone.to_s.gsub(/\D/, "")
       @professional = professional
@@ -12,6 +13,8 @@ module Appointments
       @start_at = start_at
       @barbershop_unit = barbershop_unit
       @customer_note = customer_note.presence
+      @email = email.to_s.strip.presence
+      @cpf = cpf.to_s.gsub(/\D/, "").presence
     end
 
     def call
@@ -24,7 +27,7 @@ module Appointments
 
       scheduler_result = nil
       Client.transaction do
-        client = Client.create!(name: @name, phone: @phone)
+        client = Client.create!(name: @name, phone: @phone, email: @email, cpf: @cpf)
         scheduler_result = Scheduler.call(
           client: client,
           professional: @professional,

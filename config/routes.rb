@@ -50,6 +50,12 @@ Rails.application.routes.draw do
 
   get "appointments/confirmation/:token", to: "appointments#confirmation", as: :appointment_confirmation
 
+  # "Consultar meus Agendamentos", fiel à gaveta da referência SimplesAgenda:
+  # busca pelo telefone, sem login. Fora do escopo de unidade de propósito —
+  # o cliente pode ter agendamentos em mais de uma unidade da mesma barbearia,
+  # e a consulta é "meus agendamentos", não "meus agendamentos nesta loja".
+  get "agendamentos/consultar", to: "appointments#lookup", as: :appointments_lookup
+
   # A unidade é escolhida na URL, e não em campo de formulário: a escolha
   # sobrevive à troca de unidade depois, e o link de confirmação aponta para
   # a mesma unidade. A unidade é o mesmo tenant com `slug` próprio, então a

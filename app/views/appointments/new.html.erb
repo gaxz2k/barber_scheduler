@@ -301,6 +301,25 @@
                     maxlength: 280,
                     rows: 3,
                     placeholder: "Alguma preferência ou observação para o atendimento?" %>
+              <%# E-mail e CPF seguem o padrão da referência SimplesAgenda:
+                  "Nome*, Celular*, E-mail, CPF" — só os dois primeiros levam
+                  asterisco. O CPF só aparece quando a barbearia liga a opção
+                  em Admin > Agendamento online (`collect_cpf_on_booking?`);
+                  sem a opção ligada, nem o campo nem a validação do model
+                  entram no caminho do cliente (o model aceita CPF em branco). %>
+              <%= form.label :client_email, "E-mail", class: "field-label-spaced" %>
+              <%= form.email_field :client_email,
+                    value: params.dig(:appointment, :client_email),
+                    autocomplete: "email",
+                    placeholder: "Informe seu email..." %>
+              <% if Current.barbershop.collect_cpf_on_booking? %>
+                <%= form.label :client_cpf, "CPF", class: "field-label-spaced" %>
+                <%= form.text_field :client_cpf,
+                      value: params.dig(:appointment, :client_cpf),
+                      inputmode: "numeric",
+                      autocomplete: "off",
+                      placeholder: "Informe seu CPF..." %>
+              <% end %>
             </fieldset>
 
             <%= form.submit "Confirmar agendamento", class: "button button--primary button--large button--full" %>

@@ -5,10 +5,12 @@ RSpec.describe Appointments::PublicScheduler, type: :service do
   let(:service) { Service.create!(name: "Corte", duration_minutes: 30) }
   let(:start_at) { 1.day.from_now.change(hour: 10, min: 0) }
 
-  def schedule(name: "Maria da Silva", phone: "19999998888", customer_note: nil)
+  def schedule(name: "Maria da Silva", phone: "19999998888", customer_note: nil, email: nil, cpf: nil)
     described_class.call(
       name: name,
       phone: phone,
+      email: email,
+      cpf: cpf,
       professional: professional,
       service: service,
       start_at: start_at,
@@ -72,5 +74,40 @@ RSpec.describe Appointments::PublicScheduler, type: :service do
 
     expect(result).not_to be_persisted
     expect(result.errors[:customer_note]).to include("é muito longo (máximo: 280 caracteres)")
+  end
+
+  it "stores an optional email" do
+    result = schedule(email: "maria@example.com")
+
+    expect(result).to be_persisted
+    expect(result.client.email).to eq("maria@example.com")
+  end
+
+  it "leaves email blank when none is given" do
+    result = schedule
+
+    expect(result).to be_persisted
+    expect(result.client.email).to be_nil
+  end
+
+  it "rejects a malformed email" do
+    result = schedule(email: "não-é-email")
+
+    expect(result).not_to be_persisted
+    expect(Client.where(name: "Maria da Silva")).not_to exist
+  end
+
+  it "stores an optional cpf, normalized to digits" do
+    result = schedule(cpf: "529.982.247-25")
+
+    expect(result).to be_persisted
+    expect(result.client.cpf).to eq("52998224725")
+  end
+
+  it "rejects an invalid cpf" do
+    result = schedule(cpf: "11111111111")
+
+    expect(result).not_to be_persisted
+    expect(Client.where(name: "Maria da Silva")).not_to exist
   end
 end

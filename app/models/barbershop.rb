@@ -202,6 +202,14 @@ class Barbershop < ApplicationRecord
       "Agendamento online pausado no momento. Fale com a equipe para marcar seu horário."
   end
 
+  # Se a tela pública de agendamento deve pedir CPF do cliente na etapa de
+  # confirmação. Opt-in do dono (ver `Admin::ShopSettingsController`): a
+  # referência SimplesAgenda mostra o campo "conforme a configuração da
+  # empresa", e nem toda barbearia quer coletar CPF.
+  def collect_cpf_on_booking?
+    shop_setting&.collect_cpf? || false
+  end
+
   private
 
   def create_primary_unit

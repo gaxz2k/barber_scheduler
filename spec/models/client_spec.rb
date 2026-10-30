@@ -22,6 +22,59 @@ RSpec.describe Client, type: :model do
     expect(result).to include("name", "phone")
   end
 
+  describe "#email" do
+    it "accepts a well formed email" do
+      client = described_class.new(phone: "11999998888", name: "John", email: "john@example.com")
+      expect(client).to be_valid
+    end
+
+    it "rejects a malformed email" do
+      client = described_class.new(phone: "11999998888", name: "John", email: "not-an-email")
+      expect(client).not_to be_valid
+    end
+
+    it "is optional" do
+      client = described_class.new(phone: "11999998888", name: "John", email: nil)
+      expect(client).to be_valid
+    end
+  end
+
+  describe "#cpf" do
+    it "accepts a valid cpf" do
+      client = described_class.new(phone: "11999998888", name: "John", cpf: "52998224725")
+      expect(client).to be_valid
+    end
+
+    it "accepts a valid cpf with punctuation" do
+      client = described_class.new(phone: "11999998888", name: "John", cpf: "529.982.247-25")
+      expect(client).to be_valid
+    end
+
+    it "rejects a cpf with wrong check digits" do
+      client = described_class.new(phone: "11999998888", name: "John", cpf: "52998224700")
+      client.valid?
+      expect(client.errors[:cpf]).to include("é inválido")
+    end
+
+    it "rejects a cpf made of a single repeated digit" do
+      client = described_class.new(phone: "11999998888", name: "John", cpf: "11111111111")
+      expect(client).not_to be_valid
+    end
+
+    it "is optional" do
+      client = described_class.new(phone: "11999998888", name: "John", cpf: nil)
+      expect(client).to be_valid
+    end
+
+    it "is unique within the tenant" do
+      within_tenant { described_class.create!(phone: "11999998888", name: "John", cpf: "52998224725") }
+
+      duplicate = within_tenant { described_class.new(phone: "11988887777", name: "Jane", cpf: "52998224725") }
+
+      expect(duplicate).not_to be_valid
+    end
+  end
+
   describe "#masked_phone" do
     # A página de confirmação é acessada por link e mostra o telefone do
     # cliente. Nome e telefone completos são PII desnecessária ali; o cliente se

@@ -6,7 +6,7 @@
 Rails.application.config.filter_redirect += [ %r{/appointments/confirmation/} ]
 Rails.application.config.filter_parameters += [
   :passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc,
-  :client_name, :client_phone
+  :client_name, :client_phone, :client_email, :client_cpf, :cpf
 ]
 
 # The public booking form posts :client_name and :client_phone, but
@@ -26,4 +26,4 @@ Rails.application.config.filter_parameters += [
 # also mask columns such as active_storage_blobs.filename and service_name,
 # and they apply to the request Parameters: line as well as the SQL log. That
 # is over-redaction, not a leak, and it is the safer direction.
-Rails.application.config.filter_parameters += [ "name", "phone" ]
+Rails.application.config.filter_parameters += [ "name", "phone", "cpf" ]

@@ -33,6 +33,14 @@
             placeholder: "Agendamento online pausado no momento. Fale com a equipe para marcar seu horário." %>
     </div>
 
+    <label class="toggle-card">
+      <%= form.check_box :collect_cpf %>
+      <span>
+        <strong>Pedir CPF na confirmação do agendamento</strong>
+        <small>Mostra um campo opcional de CPF na última etapa do agendamento online.</small>
+      </span>
+    </label>
+
     <div class="admin-form__actions">
       <%= form.submit "Salvar", class: "button button--primary" %>
     </div>

@@ -107,6 +107,8 @@ class AppointmentsController < ApplicationController
                Appointments::PublicScheduler.call(
                  name: booking_params[:client_name],
                  phone: booking_params[:client_phone],
+                 email: booking_params[:client_email],
+                 cpf: booking_params[:client_cpf],
                  professional: @selected_professional,
                  service: @selected_service,
                  start_at: booking_start_at,
@@ -167,6 +169,15 @@ class AppointmentsController < ApplicationController
 
     Current.barbershop = @appointment.barbershop
     render :show
+  end
+
+  # "Consultar meus Agendamentos": busca pelo telefone informado, sem login —
+  # ver o comentário de contexto em `Appointments::PhoneLookup` sobre a troca
+  # de privacidade que isso implica. Sem telefone na querystring, a tela só
+  # mostra o formulário (não roda busca nenhuma com telefone vazio).
+  def lookup
+    @phone = params[:phone].to_s
+    @lookup_appointments = @phone.present? ? Appointments::PhoneLookup.call(phone: @phone) : nil
   end
 
   helper_method :confirmation_eyebrow, :confirmation_title, :confirmation_message
@@ -453,7 +464,8 @@ class AppointmentsController < ApplicationController
     return ActionController::Parameters.new unless appointment_params.is_a?(ActionController::Parameters)
 
     appointment_params.permit(
-      :service_id, :professional_id, :date, :start_at, :client_name, :client_phone, :customer_note
+      :service_id, :professional_id, :date, :start_at, :client_name, :client_phone,
+      :client_email, :client_cpf, :customer_note
     )
   end
 

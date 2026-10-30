@@ -23,6 +23,6 @@ class Admin::ShopSettingsController < Admin::BaseController
   end
 
   def shop_setting_params
-    params.expect(shop_setting: [ :online_booking_enabled, :online_booking_message ])
+    params.expect(shop_setting: [ :online_booking_enabled, :online_booking_message, :collect_cpf ])
   end
 end
