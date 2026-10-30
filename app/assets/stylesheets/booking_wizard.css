@@ -723,8 +723,6 @@ body:has(.booking-page) {
 
 .booking-card-header__logo-image {
   object-fit: contain;
-  padding: 0.5rem;
-  background: var(--dt-mist-100);
 }
 
 .booking-card-header__name {
@@ -875,10 +873,11 @@ body:has(.booking-page) {
   margin: 0;
   border-radius: var(--dt-radius-sm) var(--dt-radius-sm) 0 0;
   background: var(--ref-section-green);
-  /* Texto BRANCO, hex exato do concorrente (#50CD89 aqui, #009EF7 em
-   * `--last`) — decisão explícita do usuário: fidelidade total, mesmo
-   * quando o par mede 2.01:1/2.90:1, abaixo do mínimo WCAG. */
-  color: var(--ref-ink-on-dark);
+  /* Texto escuro sobre o fundo exato do concorrente (#50CD89 aqui, #009EF7
+   * em `--last`): o branco literal (2.01:1/2.90:1) ficou com contraste ruim
+   * na prática — revertido para `--ref-ink-on-light` a pedido do usuário,
+   * mantendo o fundo 100% fiel. */
+  color: var(--ref-ink-on-light);
   padding: 1.1rem 1.25rem;
   font-family: var(--ref-name-font);
   font-size: 1.2rem;
@@ -1071,7 +1070,7 @@ body:has(.booking-page) {
  * seção "Últimos Agendamentos"). */
 .service-row__select-option--active {
   background: var(--ref-section-blue);
-  color: var(--ref-ink-on-dark); /* branco, hex exato — o par mede 2.90:1, abaixo de AA, por decisão explícita do usuário */
+  color: var(--ref-ink-on-light); /* texto escuro sobre o azul exato — branco ficou ruim na prática, revertido a pedido do usuário */
 }
 
 .service-row__select-option--active:hover {
@@ -1090,8 +1089,8 @@ body:has(.booking-page) {
  * etapa seguinte, só menor para caber no gatilho/painel compactos. */
 .service-row__select-avatar {
   display: inline-flex;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2.25rem;
+  height: 2.25rem;
   flex: 0 0 auto;
   border-radius: 50%;
   overflow: hidden;
@@ -1099,8 +1098,8 @@ body:has(.booking-page) {
 
 .service-row__select-avatar-img,
 .service-row__select-avatar-initial {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2.25rem;
+  height: 2.25rem;
   flex: 0 0 auto;
   border-radius: 50%;
 }
@@ -1171,9 +1170,9 @@ body:has(.booking-page) {
   justify-content: center;
   white-space: nowrap;
   background: var(--ref-primary-orange);
-  /* Texto BRANCO, hex exato do concorrente — decisão explícita do usuário:
-   * fidelidade total, mesmo com o par medindo 2.83:1, abaixo de AA. */
-  color: var(--ref-ink-on-dark);
+  /* Texto escuro sobre o laranja exato do concorrente — branco ficou ruim
+   * na prática, revertido a pedido do usuário. */
+  color: var(--ref-ink-on-light);
   border: 1px solid var(--ref-primary-orange);
   border-radius: var(--dt-radius-sm);
   padding: 0.5rem 1.1rem;
@@ -1253,7 +1252,7 @@ body:has(.booking-page) {
   border-radius: var(--dt-radius-sm);
   padding: 0.8rem 1.1rem;
   background: var(--ref-primary-orange);
-  color: var(--ref-ink-on-dark); /* branco, hex exato — 2.83:1, abaixo de AA, por decisão explícita do usuário */
+  color: var(--ref-ink-on-light); /* texto escuro sobre o laranja exato — branco ficou ruim na prática, revertido a pedido do usuário */
   font-size: 0.92rem;
   font-weight: var(--dt-weight-bold);
   line-height: 1.1;
@@ -1820,7 +1819,7 @@ body:has(.booking-page) {
 .booking-entry input[type="submit"].button,
 .booking-page input[type="submit"].button {
   background: var(--ref-primary-orange);
-  color: var(--ref-ink-on-dark); /* branco, hex exato — 2.83:1, abaixo de AA, por decisão explícita do usuário */
+  color: var(--ref-ink-on-light); /* texto escuro sobre o laranja exato — branco ficou ruim na prática, revertido a pedido do usuário */
   border-color: var(--ref-primary-orange);
 }
 
@@ -1866,11 +1865,10 @@ body:has(.booking-page) {
  *     a verificação de `document.documentElement.scrollWidth == innerWidth`
  *     nos 5 viewports é o que garante que o nosso equivalente (as faixas e
  *     fieldsets dentro do card) nunca passa da borda.
- *   - O branco que o concorrente usa sobre #009EF7/#50CD89/#E87E04 agora é
- *     branco de verdade (`--ref-ink-on-dark`) em todas as quatro superfícies
- *     — fidelidade total, por decisão explícita do usuário, mesmo abaixo do
- *     mínimo WCAG AA (ver cada `color:` ao lado do `background:` dessas
- *     superfícies para a razão de contraste exata).
+ *   - O branco que o concorrente usa sobre #009EF7/#50CD89/#E87E04 ficou
+ *     com contraste ruim na prática (2.01-2.90:1); revertido para
+ *     `--ref-ink-on-light` (texto escuro) a pedido do usuário, mantendo o
+ *     fundo dessas quatro superfícies 100% fiel ao hex exato.
  */
 
 /* --- 9.1 Fonte-base: 13px (web) → 12px (mobile/tablet) --------------------
