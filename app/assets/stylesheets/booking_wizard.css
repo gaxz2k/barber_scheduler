@@ -1798,3 +1798,677 @@ body:has(.booking-page) {
   color: var(--ref-accent);
   border-color: var(--ref-accent);
 }
+
+/* ===========================================================================
+ * SEÇÃO 9 do styleguide — Responsivo: mobile × web
+ * ===========================================================================
+ * Fonte: `.orca/drops/simplesagenda-styleguide (1).html`, seção 9 (tabela de
+ * medidas em 360/390/768/1024/1440px) e seção 10 (letreiros: tamanho/peso de
+ * cada texto fixo da interface). Este bloco fica no FIM do arquivo de
+ * propósito: várias regras abaixo empatam em especificidade com as regras de
+ * cima (e com `application.css`), e o desempate por ordem de cascata é o que
+ * faz a medida da tabela valer. Mover este bloco para cima desfaz a tarefa.
+ *
+ * O que NÃO foi replicado, e por quê:
+ *   - O "bug visual" citado no fim da seção 9 (a faixa "Selecione um horário"
+ *     da etapa 2 vazando alguns px para fora do card no mobile, por uma row
+ *     com margem negativa) é um DEFEITO do concorrente, não uma medida de
+ *     design. Nenhuma regra aqui introduz margem negativa horizontal nova, e
+ *     a verificação de `document.documentElement.scrollWidth == innerWidth`
+ *     nos 5 viewports é o que garante que o nosso equivalente (as faixas e
+ *     fieldsets dentro do card) nunca passa da borda.
+ *   - O branco que o concorrente usa sobre #009EF7/#50CD89/#E87E04 agora é
+ *     branco de verdade (`--ref-ink-on-dark`) em todas as quatro superfícies
+ *     — fidelidade total, por decisão explícita do usuário, mesmo abaixo do
+ *     mínimo WCAG AA (ver cada `color:` ao lado do `background:` dessas
+ *     superfícies para a razão de contraste exata).
+ */
+
+/* --- 9.1 Fonte-base: 13px (web) → 12px (mobile/tablet) --------------------
+ * O concorrente troca o `font-size` da RAIZ no breakpoint `lg` do Bootstrap
+ * (991.98px), então tudo que é `rem` encolhe ~7.7% abaixo dele. Nosso projeto
+ * tem `html { font-size: 16px }` em `application.css` e o fluxo público
+ * inteiro é dimensionado em `rem` a partir daí — reproduzir a troca sem
+ * reescrever o arquivo todo exige mexer na raiz, mas mexer em `html` solto
+ * encolheria TAMBÉM o admin e o login, que estão fora do escopo desta fase.
+ *
+ * `html:has(.booking-page)` resolve os dois lados: a raiz só muda nas páginas
+ * que contêm o fluxo público (as views `appointments/*` são as únicas que
+ * aplicam `.booking-page`/`.booking-entry` no `<main>`), e o admin continua em
+ * 16px. É o mesmo padrão de escopo que `body:has(.booking-entry)` já usa mais
+ * acima neste arquivo para o fundo da página.
+ * 16px × (12 ÷ 13) = 14.77px — a mesma razão da referência, não um valor novo. */
+@media (max-width: 991.98px) {
+  html:has(.booking-page),
+  html:has(.booking-entry) {
+    font-size: 14.77px;
+  }
+}
+
+/* --- 9.2 Coluna central (cards) e margem lateral --------------------------
+ * Tabela da seção 9: 311px @360 · 341px @390 · 352px @768 · 464px @1024 ·
+ * 617px @1440, com margem lateral de 15px no mobile e card centralizado a
+ * partir do tablet.
+ *
+ * No mobile a largura é 100% menos um gutter de 15px de cada lado (medida
+ * pedida na tarefa). Isso dá 330px @360 e 360px @390, ~6% acima dos 311/341
+ * da referência — a diferença é o padding interno do `container` do Bootstrap
+ * que o concorrente ainda soma dentro do gutter; reproduzir o número exato
+ * exigiria um segundo gutter aninhado sem ganho visual. Os gutters ficam em
+ * `px` (e não `rem`) para não encolherem junto com a raiz em 9.1.
+ *
+ * Os degraus de largura usam os breakpoints do Bootstrap que a seção 9 lista
+ * (768 · 992 · 1200), e não os valores de coluna da tabela como breakpoint:
+ * 1024 e 1440 são viewports de AMOSTRA da tabela, e caem respectivamente nos
+ * degraus de 992 (464px) e 1200 (617px). */
+.booking-entry,
+.booking-page {
+  width: calc(100% - 30px);
+}
+
+.booking-flow {
+  max-width: none;
+}
+
+@media (min-width: 768px) {
+  .booking-entry,
+  .booking-page {
+    width: min(100% - 30px, 64rem);
+  }
+
+  .booking-flow {
+    max-width: 352px;
+  }
+}
+
+@media (min-width: 992px) {
+  .booking-flow {
+    max-width: 464px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .booking-flow {
+    max-width: 617px;
+  }
+}
+
+/* `application.css` ainda estilizava `.booking-flow` como um cartão próprio
+ * (borda de 1px + padding de 1.5rem). Com `box-sizing: border-box` isso comia
+ * ~46px da coluna: no viewport de 360px a faixa verde media 283.7px em vez
+ * dos 330px da coluna, e nenhum dos números da tabela da seção 9 fechava. A
+ * moldura visível do nosso layout são os blocos brancos de dentro (cabeçalho
+ * de marca e lista de serviços), não este wrapper — ele é só a coluna. */
+.booking-flow {
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* O `shell` do cabeçalho sangrava 1rem para cada lado para o banner escuro
+ * passar da borda do cartão. Isso deixou de ser necessário quando o banner
+ * virou full-bleed de 100vw (ver 9.9): agora o cartão branco ocupa EXATAMENTE
+ * a largura da coluna da tabela, sem sangria horizontal nenhuma — que é
+ * também o que garante que nada do cabeçalho passe da borda no mobile. */
+.booking-card-header-shell {
+  margin: -1.5rem 0 2.75rem;
+}
+
+.booking-card-header {
+  margin: 0;
+}
+
+/* --- 9.3 h1 (nome da empresa) ---------------------------------------------
+ * Tabela: 17.7px @360 · 17.9px @390 · 20.2px @768 · 23px @1024 · 22.75px
+ * @1440. Abaixo de 992px a curva é praticamente linear em vw (o concorrente
+ * tem um h1 em rem sobre a raiz de 12px dentro de um container fluido), então
+ * um `clamp()` com termo em vw reproduz os três primeiros pontos; acima de
+ * 992px o valor é fixo. 1.75rem sobre a raiz de 13px da referência = 22.75px.
+ * Os 23px medidos em 1024 são o mesmo degrau com arredondamento do navegador
+ * (0.25px, ~1%) — não é um quarto ponto de curva. */
+.booking-card-header__name {
+  font-size: clamp(17.7px, 15.3px + 0.667vw, 20.2px);
+}
+
+@media (min-width: 992px) {
+  .booking-card-header__name {
+    font-size: 22.75px;
+  }
+}
+
+/* --- 9.4 / 10 Botões, selects e campos ------------------------------------
+ * Alturas da tabela da seção 9 e tamanho/peso da tabela da seção 10. Tudo em
+ * px: são medidas de alvo de toque e de letreiro, não devem escalar com a
+ * raiz de 9.1 (a referência também as mantém fixas por breakpoint).
+ *
+ * Nota de acessibilidade: 34–37px fica abaixo dos 44px de alvo de toque que o
+ * resto do projeto persegue. A medida foi aplicada porque a tarefa pede
+ * fidelidade explícita à tabela e autoriza sobrescrever o que for preciso; o
+ * espaçamento entre os alvos (gap de 0.9rem na coluna do item de serviço
+ * abaixo de 480px) é o que mantém o toque errado improvável. */
+
+/* Botão "AGENDAR" da lista de serviço — 85×34 · 11.1px no mobile,
+ * 92×37 · 12px no desktop; letreiro `btn-sm · 12.025/500 · uppercase`. */
+.service-row__go {
+  min-width: 85px;
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 11.1px;
+  font-weight: 500;
+}
+
+/* Botão "Consultar Agendamento" — 203×40 · 13.2px no mobile,
+ * 220×43 · 14.3px no desktop (`btn-light-primary · 14.3/500`). Deixa de ser
+ * 62% da largura do card para ter a largura fixa da tabela, com
+ * `max-width: 100%` para nunca estourar o card no viewport de 360px. */
+.booking-card-header__consult {
+  width: 203px;
+  max-width: calc(100% - 30px);
+  min-height: 40px;
+  padding: 10px 12px;
+  font-size: 13.2px;
+  font-weight: 500;
+}
+
+/* Selects "com quem" da lista de serviço — 37px no mobile, 40px no desktop;
+ * letreiro `select · 14.3/500 · uppercase`. */
+.service-row__select,
+.service-row__select-trigger {
+  min-height: 37px;
+  padding-block: 0;
+  font-size: 13.2px;
+  font-weight: 500;
+}
+
+/* Campos do formulário (data da etapa 2 e dados da etapa 3) — 37px · 13.2px
+ * no mobile; 43px · 14.3/500 no desktop (a tabela separa "inputs da etapa 3:
+ * 43px" dos 40px dos selects). O `textarea` fica de fora da altura fixa:
+ * `rows="3"` já o deixa mais alto, e um `min-height` de campo de uma linha
+ * encolheria a caixa de mensagem. */
+.booking-page input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]),
+.booking-page select {
+  min-height: 37px;
+  font-size: 13.2px;
+  font-weight: 500;
+}
+
+.booking-page textarea {
+  font-size: 13.2px;
+}
+
+/* Botão primário de largura total ("Confirmar agendamento", "Consultar") —
+ * `btn largura total · 14.3/500`; altura 37px no mobile, 43px no desktop. */
+.booking-entry .button,
+.booking-page .button,
+.booking-entry input[type="submit"].button,
+.booking-page input[type="submit"].button {
+  min-height: 37px;
+  padding: 8px 14px;
+  font-size: 13.2px;
+  font-weight: 500;
+}
+
+/* Botões pequenos ("Trocar horário") — `btn-sm · 12.025/500 · uppercase`.
+ * `design_components.css` tem um `.button--sm` próprio, mas ele NÃO é
+ * carregado no layout público (ver o comentário no topo deste arquivo), então
+ * a variante precisa existir aqui. */
+.booking-entry .button--sm,
+.booking-page .button--sm {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 12.025px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Link "← Voltar" — o concorrente usa um `btn-danger sm` (12.025/500,
+ * uppercase) nesse lugar. Adotamos o TAMANHO, o PESO e o uppercase; não a
+ * cor de botão vermelho: voltar uma etapa não é uma ação destrutiva, e
+ * pintá-la de danger contradiz o uso de vermelho no resto do projeto
+ * (cancelamento/erro). */
+.booking-flow__back {
+  min-height: 34px;
+  font-size: 12.025px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 992px) {
+  .service-row__go {
+    min-width: 92px;
+    min-height: 37px;
+    font-size: 12.025px;
+  }
+
+  .booking-card-header__consult {
+    width: 220px;
+    min-height: 43px;
+    font-size: 14.3px;
+  }
+
+  .service-row__select,
+  .service-row__select-trigger {
+    min-height: 40px;
+    font-size: 14.3px;
+  }
+
+  .booking-page input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]),
+  .booking-page select {
+    min-height: 43px;
+    font-size: 14.3px;
+  }
+
+  .booking-page textarea {
+    font-size: 14.3px;
+  }
+
+  .booking-entry .button,
+  .booking-page .button,
+  .booking-entry input[type="submit"].button,
+  .booking-page input[type="submit"].button {
+    min-height: 43px;
+    font-size: 14.3px;
+  }
+}
+
+/* --- 9.5 / 10 Header de seção --------------------------------------------
+ * Tabela: 50–51px de altura com padding 5px 5px 5px 15px em TODOS os
+ * tamanhos; letreiro `header primary/success · 16.575/500`. O padding
+ * assimétrico (15px só à esquerda) é o que alinha o título da barra com o
+ * nome do serviço da linha de baixo. */
+.service-list__head {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  padding: 5px 5px 5px 15px;
+  font-size: 15.3px;
+  font-weight: 500;
+}
+
+@media (min-width: 992px) {
+  .service-list__head {
+    font-size: 16.575px;
+  }
+}
+
+/* --- 9.6 Aviso (padding 18px mobile / 19.5px desktop) ---------------------
+ * Letreiros da seção 10 para o bloco de aviso: título "IMPORTANTE" em
+ * `h4 · 16.25/600` e corpo em `13/400`. O texto do corpo continua vindo do
+ * cadastro do estabelecimento (`online_booking_pause_message`) — aqui só o
+ * tamanho/peso/padding mudam. */
+.booking-notice--alert {
+  padding: 18px;
+}
+
+.booking-notice--alert strong {
+  font-size: 16.25px;
+  font-weight: 600;
+}
+
+.booking-notice--alert p {
+  font-size: 13px;
+}
+
+@media (min-width: 992px) {
+  .booking-notice--alert {
+    padding: 19.5px;
+  }
+
+  .booking-notice--alert p {
+    font-size: 13px;
+  }
+}
+
+/* --- 10 Letreiros da lista de serviço ------------------------------------
+ * Tabela da seção 10, etapa 1: nome do serviço `14.3/400`, "com" `13/400`,
+ * preço `14.3/600`, duração `12/400`. O peso 400 do nome é o da referência:
+ * a hierarquia da linha não vem do peso do nome, vem do preço em 600 e do
+ * botão laranja. As CORES continuam as nossas (`--ref-meta-ink` em vez do
+ * #B5B5C3 do concorrente, que mede 2.0:1 sobre branco). */
+.service-row__name {
+  font-size: 13.2px;
+  font-weight: 400;
+}
+
+.service-row__with-label {
+  font-size: 12px;
+}
+
+.service-row__price {
+  font-size: 13.2px;
+  font-weight: 600;
+}
+
+.service-row__duration {
+  font-size: 11.1px;
+}
+
+@media (min-width: 992px) {
+  .service-row__name {
+    font-size: 14.3px;
+  }
+
+  .service-row__with-label {
+    font-size: 13px;
+  }
+
+  .service-row__price {
+    font-size: 14.3px;
+  }
+
+  .service-row__duration {
+    font-size: 12px;
+  }
+}
+
+/* --- 10 Letreiros do cartão da empresa e do formulário -------------------
+ * Telefone/endereço/cidade: `13/400, centralizado`. Rótulos de campo:
+ * `label 13.65/500 #3F4254`. Título do bloco de dados ("Informe seus
+ * Dados"): `16.25/600`. Título da etapa de conferência: `17.55/400` — aqui
+ * usamos 500, porque no nosso layout esse título divide a linha com o botão
+ * "Trocar horário" e em 400 ele deixava de se ler como cabeçalho da seção. */
+.booking-card-header__meta {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.booking-page .form-section legend {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.booking-page .booking-form label,
+.booking-page .form-section label:not(.slot-card),
+.booking-page .field-label-spaced {
+  font-size: 12.6px;
+  font-weight: 500;
+  color: var(--ref-alert-body-ink);
+}
+
+.booking-flow__head--inline {
+  font-size: 16.2px;
+  font-weight: 500;
+}
+
+@media (min-width: 992px) {
+  .booking-card-header__meta {
+    font-size: 13px;
+  }
+
+  .booking-page .form-section legend {
+    font-size: 16.25px;
+  }
+
+  .booking-page .booking-form label,
+  .booking-page .form-section label:not(.slot-card),
+  .booking-page .field-label-spaced {
+    font-size: 13.65px;
+  }
+
+  .booking-flow__head--inline {
+    font-size: 17.55px;
+  }
+}
+
+/* --- 10 Indicação de campo obrigatório -----------------------------------
+ * A referência marca "Nome*" e "Celular*" com asterisco vermelho (#F1416C) e
+ * deixa E-mail/CPF sem marca. Adotado, com a legenda "* Campos obrigatórios"
+ * no topo do bloco: um asterisco sem legenda é um símbolo que o cliente tem
+ * de adivinhar. O asterisco é `aria-hidden` na view — o `required` do campo
+ * já é o que o leitor de tela anuncia, e ouvir "asterisco" depois de
+ * "obrigatório" é ruído. */
+.booking-page .field-required {
+  margin-left: 2px;
+  color: var(--ref-alert-border);
+  font-weight: 600;
+}
+
+.booking-page .field-required-note {
+  margin: -0.5rem 0 1rem;
+  color: var(--ref-meta-ink);
+  font-size: 11.1px;
+}
+
+.booking-page .field-required-note span {
+  color: var(--ref-alert-border);
+  font-weight: 600;
+}
+
+@media (min-width: 992px) {
+  .booking-page .field-required-note {
+    font-size: 12px;
+  }
+}
+
+/* --- 10 Bloco de erro (#error_explanation / .form-alert) ------------------
+ * Fidelidade de FORMATO, não de texto: a redação das nossas mensagens é do
+ * nosso produto (ver `app/services/appointments/*`, `pt-BR.yml`) e não foi
+ * trocada pelas do concorrente. O que mudou é a paleta do alerta, que ainda
+ * usava os tokens genéricos `--dt-danger-*` enquanto o resto da tela já
+ * tinha migrado para os `--ref-*`: agora é o par danger real do Simples
+ * Agenda (#FFF5F8 de fundo, #F1416C de borda), o mesmo do aviso de pausa
+ * logo acima, com o ink escurecido para passar em AA (ver `--ref-alert-ink`
+ * no topo deste arquivo). */
+.booking-page .form-alert,
+.booking-entry .form-alert {
+  border: 1px solid var(--ref-alert-border);
+  border-radius: var(--dt-radius-sm);
+  padding: 14px 16px;
+  background: var(--ref-alert-bg);
+  color: var(--ref-alert-body-ink);
+  font-size: 13px;
+}
+
+.booking-page .form-alert strong,
+.booking-entry .form-alert strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--ref-alert-ink);
+  font-size: 13.65px;
+  font-weight: 600;
+}
+
+.booking-page .form-alert ul,
+.booking-entry .form-alert ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+/* --- 10 Gaveta "Consultar meus Agendamentos" -----------------------------
+ * No concorrente é uma gaveta lateral de 475px; no nosso fluxo é uma PÁGINA
+ * própria (`appointments#lookup`), porque a consulta por telefone aqui é uma
+ * rota de servidor com resultado, não um painel de JS. O letreiro segue a
+ * tabela: título `16.25/600`, rótulo `13.65/500`. Estas classes não tinham
+ * nenhum CSS antes desta fase. */
+.booking-page .booking-lookup__title {
+  margin: 1.75rem 0 1rem;
+  color: var(--ref-ink-on-light);
+  font-family: var(--ref-name-font);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.booking-page .booking-lookup__results {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.booking-page .booking-lookup__result {
+  display: grid;
+  gap: 0.2rem;
+  border: 1px solid var(--ref-steel);
+  border-radius: var(--dt-radius-sm);
+  padding: 12px 14px;
+  background: var(--dt-ice-0);
+  font-size: 13px;
+}
+
+.booking-page .booking-lookup__result strong {
+  color: var(--ref-name-ink);
+  font-size: 13.2px;
+  font-weight: 600;
+}
+
+.booking-page .booking-lookup__result span {
+  color: var(--ref-meta-ink);
+}
+
+.booking-page .booking-lookup__status {
+  color: var(--ref-accent);
+  font-weight: 600;
+}
+
+@media (min-width: 992px) {
+  .booking-page .booking-lookup__title {
+    font-size: 16.25px;
+  }
+
+  .booking-page .booking-lookup__result strong {
+    font-size: 14.3px;
+  }
+}
+
+/* --- 9.7 Etapa 3 no mobile: campos empilhados em largura total -----------
+ * A referência tira o `col-md-6` de "Celular"/"E-mail" abaixo de 768px para
+ * os dois empilharem. O nosso formulário de dados JÁ é uma coluna só em
+ * qualquer viewport (ver `appointments/new.html.erb`: rótulo e campo em
+ * sequência, sem grid de duas colunas), então não havia nada para empilhar.
+ * O que faltava era a largura: sem `width: 100%` os `input` herdavam a
+ * largura intrínseca do atributo `size` do navegador e ficavam mais estreitos
+ * que o card. Esta regra é o que de fato entrega o item da tarefa. */
+.booking-page .form-section input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]),
+.booking-page .form-section select,
+.booking-page .form-section textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* O form de data da etapa 2 (`.booking-inline-form`) empilha abaixo de 768px
+ * — o breakpoint da seção 9 — e não nos 760px que a regra antiga usava. */
+@media (max-width: 767.98px) {
+  .booking-inline-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+/* --- 9.8 Contenção: nada vaza da borda do card ---------------------------
+ * O inverso do bug da referência. Três fontes de overflow possíveis no card
+ * estreito (352px no tablet): a grade de horários, o painel flutuante do
+ * select "com quem" e qualquer texto longo sem ponto de quebra (nome de
+ * serviço, endereço, e-mail digitado). */
+.booking-flow {
+  min-width: 0;
+}
+
+.booking-page .form-section,
+.booking-entry .form-section,
+.booking-page .service-list,
+.booking-entry .service-list {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.booking-page .slot-grid {
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+}
+
+.service-row__select-panel {
+  max-width: calc(100vw - 60px);
+}
+
+/* --- 9.9 Hero/banner e logo ----------------------------------------------
+ * Tabela da seção 9: "Hero (fundo) 100% de largura × 350px em todos os
+ * tamanhos" e "Logo 170 × 135px fixo em todos os tamanhos".
+ *
+ * O banner era absoluto dentro do `shell`, que agora tem a largura do card
+ * (352–617px). Mantê-lo assim deixava duas abas escuras de 15px aparecendo
+ * ao lado do cartão branco — o contrário do hero da referência, que é uma
+ * faixa de ponta a ponta da janela com o cartão por cima. `100vw` com
+ * `left: 50%` + `translateX(-50%)` é o full-bleed clássico; `overflow-x`
+ * contido no `body` (9.8) impede que os 100vw criem rolagem horizontal
+ * quando existe barra de rolagem clássica. */
+.booking-card-header-banner {
+  left: 50%;
+  right: auto;
+  width: 100vw;
+  max-width: 100vw;
+  transform: translateX(-50%);
+  height: 350px;
+}
+
+body:has(.booking-entry),
+body:has(.booking-page) {
+  overflow-x: hidden;
+}
+
+/* Logo 170×135 fixo. O monograma (usado quando a barbearia não subiu logo)
+ * continua circular — é um círculo em todas as telas do projeto —, só passa a
+ * ter o lado fixo de 135px em vez de 45% da largura do card, que no card de
+ * 617px virava um disco de 277px. */
+.booking-card-header__logo-image {
+  width: 170px;
+  max-width: 100%;
+  height: 135px;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.booking-card-header__logo {
+  width: 135px;
+  max-width: 100%;
+  height: 135px;
+  aspect-ratio: auto;
+}
+
+/* --- 9.10 Link "← VOLTAR" acima do cartão --------------------------------
+ * O `shell` do cabeçalho sobe 1.5rem (margem negativa) para o banner começar
+ * no topo da página. Nas etapas 2 e 3 existe um `.booking-flow__back-row`
+ * ANTES dele, e a margem negativa fazia o cartão branco subir por cima do
+ * link — "VOLTAR" aparecia cortado pela metade e ilegível. Quando o link
+ * existe, o cartão não sobe; quando não existe (home, etapa 1), a subida
+ * continua valendo. */
+.booking-flow__back-row {
+  position: relative;
+  z-index: 1;
+}
+
+.booking-flow__back-row + .booking-card-header-shell {
+  margin-top: 0;
+}
+
+/* Form da consulta por telefone: empilhado em qualquer viewport, dentro de um
+ * bloco branco igual aos demais cartões da tela. Na referência isso é uma
+ * gaveta lateral; aqui é uma página, e o que importa reproduzir é o
+ * empilhamento rótulo → campo → botão de largura total (`14.3/500`). */
+.booking-page .booking-lookup__form {
+  display: grid;
+  gap: 0.5rem;
+  align-items: stretch;
+  border: 1px solid var(--dt-line);
+  border-radius: var(--dt-radius-md);
+  padding: clamp(1rem, 2.5vw, 1.45rem);
+  background: var(--dt-ice-0);
+  box-shadow: var(--dt-shadow-card);
+}
+
+.booking-page .booking-lookup__form .button {
+  width: 100%;
+  margin-top: 0.35rem;
+}
+
+.booking-page .booking-lookup__title {
+  text-align: left;
+}
+
+.booking-page .booking-lookup__form + .booking-intro,
+.booking-page .booking-lookup__form + .booking-lookup__results {
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
+}

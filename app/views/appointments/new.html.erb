@@ -282,25 +282,47 @@
             </div>
 
             <fieldset class="form-section">
-              <legend>Seus dados</legend>
-              <%= form.label :client_name, "Nome" %>
+              <%# "Informe seus dados" é o letreiro da seção 10 do styleguide
+                  de referência para este bloco (16.25/600). %>
+              <legend>Informe seus dados</legend>
+
+              <%# A referência marca só os campos obrigatórios com asterisco
+                  vermelho ("Nome*", "Celular*") e deixa E-mail/CPF sem marca.
+                  Adotado — com esta legenda logo acima dos campos, para o
+                  asterisco não ficar solto: sem ela o símbolo é uma convenção
+                  que o cliente tem de adivinhar. O asterisco em si é
+                  `aria-hidden`; quem usa leitor de tela já ouve "obrigatório"
+                  do próprio atributo `required` do campo. %>
+              <p class="field-required-note"><span aria-hidden="true">*</span> Campos obrigatórios</p>
+
+              <%= form.label :client_name do %>Nome<span class="field-required" aria-hidden="true">*</span><% end %>
               <%= form.text_field :client_name,
                     value: params.dig(:appointment, :client_name),
                     required: true,
                     autocomplete: "name",
-                    placeholder: "Como podemos te chamar?" %>
-              <%= form.label :client_phone, "Telefone", class: "field-label-spaced" %>
+                    placeholder: "Informe seu nome..." %>
+              <%# O rótulo continua "Telefone", e não "Celular" como na
+                  referência: é o nome do campo no nosso modelo e no admin
+                  (`client_phone`), e a barbearia também atende quem deixa um
+                  fixo. O que foi alinhado é o PADRÃO do placeholder
+                  ("Informe seu X..."), que antes era um exemplo de máscara
+                  ("(19) 99999-8888"). %>
+              <%= form.label :client_phone, class: "field-label-spaced" do %>Telefone<span class="field-required" aria-hidden="true">*</span><% end %>
               <%= form.telephone_field :client_phone,
                     value: params.dig(:appointment, :client_phone),
                     required: true,
                     autocomplete: "tel",
-                    placeholder: "(19) 99999-8888" %>
-              <%= form.label :customer_note, "Mensagem para o profissional (opcional)", class: "field-label-spaced" %>
+                    placeholder: "Informe seu telefone..." %>
+              <%# Letreiro da seção 10: "Deixe uma mensagem para o
+                  profissional", com o placeholder repetindo o rótulo. O
+                  "(opcional)" é nosso e fica: é o contraponto do asterisco
+                  dos obrigatórios. %>
+              <%= form.label :customer_note, "Deixe uma mensagem para o profissional (opcional)", class: "field-label-spaced" %>
               <%= form.text_area :customer_note,
                     value: params.dig(:appointment, :customer_note),
                     maxlength: 280,
                     rows: 3,
-                    placeholder: "Alguma preferência ou observação para o atendimento?" %>
+                    placeholder: "Deixe uma mensagem para o profissional..." %>
               <%# E-mail e CPF seguem o padrão da referência SimplesAgenda:
                   "Nome*, Celular*, E-mail, CPF" — só os dois primeiros levam
                   asterisco. O CPF só aparece quando a barbearia liga a opção

@@ -14,7 +14,11 @@
         SimplesAgenda, sem confirmação por SMS/e-mail. GET, não POST: é uma
         busca, não uma escrita, e assim funciona com Enter no campo mesmo sem
         JavaScript nenhum, com a URL carregando o resultado direto. %>
-    <%= form_with url: appointments_lookup_path, method: :get, class: "booking-inline-form" do |form| %>
+    <%# A gaveta "Consultar meus Agendamentos" da referência empilha rótulo,
+        campo e botão de largura total — e não lado a lado como o form de data
+        da etapa 2, que divide a mesma classe `booking-inline-form`. Daí a
+        classe extra: o empilhamento é desta tela, não do componente. %>
+    <%= form_with url: appointments_lookup_path, method: :get, class: "booking-inline-form booking-lookup__form" do |form| %>
       <%= form.label :phone, "Informe seu Celular" %>
       <%= form.telephone_field :phone, name: "phone", value: @phone, required: true,
             autocomplete: "tel", placeholder: "Informe seu celular..." %>
