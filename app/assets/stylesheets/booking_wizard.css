@@ -619,19 +619,9 @@ body:has(.booking-page) {
   margin-bottom: 0.5rem;
 }
 
-.booking-flow__back {
-  display: inline-flex;
-  min-height: 2.5rem;
-  align-items: center;
-  color: var(--ref-meta-ink);
-  font-size: 0.88rem;
-  font-weight: var(--dt-weight-bold);
-}
-
-.booking-flow__back:hover,
-.booking-flow__back:focus-visible {
-  color: var(--dt-ink);
-}
+/* A regra cheia (cor vermelha, padding, radius) mora logo depois dos tokens
+ * de botão pequeno — ver `.booking-flow__back` mais abaixo neste arquivo,
+ * perto de `.button--sm`, onde o resto do mapeamento "VOLTAR" fica junto. */
 
 /* Variante do cabeçalho usada DENTRO da etapa de confirmação ("Confirmação" +
  * "Trocar horário"): só um título de seção com uma ação secundária ao lado,
@@ -2022,17 +2012,30 @@ body:has(.booking-page) {
   text-transform: uppercase;
 }
 
-/* Link "← Voltar" — o concorrente usa um `btn-danger sm` (12.025/500,
- * uppercase) nesse lugar. Adotamos o TAMANHO, o PESO e o uppercase; não a
- * cor de botão vermelho: voltar uma etapa não é uma ação destrutiva, e
- * pintá-la de danger contradiz o uso de vermelho no resto do projeto
- * (cancelamento/erro). */
+/* Link "← Voltar" — réplica fiel do `btn-danger sm` do concorrente
+ * (12.025/500, uppercase, branco sobre #F1416C). Decisão explícita do
+ * usuário de fidelidade total: aplicamos a cor vermelha também aqui, mesmo
+ * "voltar" não sendo uma ação destrutiva no resto do projeto. */
 .booking-flow__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   min-height: 34px;
+  padding: 0 0.85rem;
+  border-radius: var(--dt-radius-sm);
+  background: var(--ref-alert-border);
+  color: var(--ref-ink-on-dark);
   font-size: 12.025px;
   font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  transition: background-color var(--dt-transition-fast);
+}
+
+.booking-flow__back:hover,
+.booking-flow__back:focus-visible {
+  background: #CA375B; /* #F1416C escurecido, só para o estado de hover/foco */
+  color: var(--ref-ink-on-dark);
 }
 
 @media (min-width: 992px) {
