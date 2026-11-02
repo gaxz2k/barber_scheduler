@@ -9,12 +9,42 @@
   <%= link_to "Novo agendamento", new_admin_appointment_path, class: "button button--primary" %>
 </section>
 
+<%# Busca por cliente + chips de status — os dois filtram de verdade via
+    querystring (ver `Admin::AppointmentsController#index`), nenhum é
+    decoração client-side sobre uma lista já carregada inteira. %>
+<div class="card admin-filters-card">
+  <%= form_with url: admin_appointments_path, method: :get, class: "admin-filters-card__search" do |form| %>
+    <%= hidden_field_tag :status, @status_filter if @status_filter %>
+    <div class="field" style="margin-bottom: 0;">
+      <%= form.label :q, "Buscar por cliente", class: "field__label" %>
+      <%= form.text_field :q, value: @search, placeholder: "Nome do cliente…", class: "input" %>
+    </div>
+  <% end %>
+
+  <div class="admin-chip-row">
+    <%= link_to admin_appointments_path(q: @search.presence), class: ["admin-chip", ("admin-chip--active" if @status_filter.nil?)] do %>
+      Todos <span class="admin-chip__count"><%= @status_counts.values.sum %></span>
+    <% end %>
+    <% Admin::AppointmentsController::STATUS_FILTERS.each do |status| %>
+      <%= link_to admin_appointments_path(status: status, q: @search.presence), class: ["admin-chip", ("admin-chip--active" if @status_filter == status)] do %>
+        <%= Appointment.new(status: status).status_label %> <span class="admin-chip__count"><%= @status_counts[status].to_i %></span>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
 <% if @appointments.empty? %>
   <div class="empty-state card">
     <%= empty_state_illustration(:no_appointments) %>
-    <p class="empty-state__title">Nenhum agendamento cadastrado</p>
-    <p class="empty-state__text">Quando você ou um cliente marcar um horário, ele aparece aqui.</p>
-    <%= link_to "Novo agendamento", new_admin_appointment_path, class: "button button--primary" %>
+    <% if @status_filter || @search.present? %>
+      <p class="empty-state__title">Nenhum agendamento encontrado</p>
+      <p class="empty-state__text">Nenhum resultado para os filtros aplicados. Tente limpar a busca ou o status.</p>
+      <%= link_to "Limpar filtros", admin_appointments_path, class: "button button--secondary" %>
+    <% else %>
+      <p class="empty-state__title">Nenhum agendamento cadastrado</p>
+      <p class="empty-state__text">Quando você ou um cliente marcar um horário, ele aparece aqui.</p>
+      <%= link_to "Novo agendamento", new_admin_appointment_path, class: "button button--primary" %>
+    <% end %>
   </div>
 <% else %>
   <div class="table-wrap">
