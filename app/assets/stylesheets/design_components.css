@@ -63,7 +63,7 @@
  * trocar de cor no hover criaria uma segunda cor de marca onde o produto
  * decidiu que só existe uma (preto). */
 .button--primary {
-  background: var(--dt-petrol-700); /* Charcoal #242424 */
+  background: var(--dt-petrol-700); /* teal médio #2E6F73 — cor primária de marca */
   color: var(--dt-ice-0);
 }
 
@@ -192,7 +192,7 @@
   letter-spacing: 0.04em;
   padding: var(--dt-space-1) var(--dt-space-3);
   border-radius: var(--dt-radius-pill);
-  background: var(--dt-petrol-900); /* Midnight #111111 */
+  background: var(--dt-petrol-900); /* verde-petróleo escuro #0F3D3E */
   color: var(--dt-ice-0);
 }
 
@@ -373,7 +373,7 @@
  * verdade no sistema: Link Blue, sublinhado, exatamente como o Cal.com
  * trata link em texto corrido. */
 .link {
-  color: var(--dt-coral-500); /* Link Blue #0099ff */
+  color: var(--dt-coral-500); /* laranja queimado, passo que passa AA de texto (5.21:1) */
   text-decoration: underline;
   text-decoration-color: currentColor;
   font-weight: var(--dt-weight-regular);
@@ -458,8 +458,11 @@
   border-bottom-color: var(--dt-coral-500);
 }
 
+/* Branco translúcido em vez de um cinza fixo: funciona sobre qualquer tom
+ * escuro do fundo petróleo sem precisar recalcular um hex cada vez que o
+ * fundo muda de tom — e sem reintroduzir cinza puro dissociado da marca. */
 .nav--admin .nav__link {
-  color: #a3a3a3;
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .nav--admin .nav__link:hover {

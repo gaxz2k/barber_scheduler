@@ -340,7 +340,7 @@
   left: var(--dt-space-2);
   padding: var(--dt-space-1) var(--dt-space-2);
   border-radius: var(--dt-radius-pill);
-  background: rgba(14, 32, 36, 0.8);
+  background: rgba(10, 15, 20, 0.8); /* RGB de --dt-ink, não um preto solto */
   color: var(--dt-ice-0);
   font-size: var(--dt-text-xs);
   font-weight: var(--dt-weight-medium);
