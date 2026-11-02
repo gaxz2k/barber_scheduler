@@ -9,6 +9,16 @@
     <%= render "shared/booking_card_header" %>
 
     <section class="confirmation-card">
+      <%# Redesenho (protótipo aprovado `cliente-confirmacao.html`, ver o
+          contexto da tarefa): o círculo de sucesso substitui o bloco de
+          texto solto (eyebrow + título) como primeiro elemento visual —
+          confirma de longe, antes de ler qualquer palavra, que o pedido
+          foi recebido. Cor neutra de sucesso mesmo quando o status real é
+          "pending": o ÍCONE marca "o pedido chegou", não "está confirmado"
+          — essa segunda informação é só do `status-pill` mais abaixo, que
+          continua lendo `@appointment.status` de verdade. %>
+      <div class="confirmation-card__icon" aria-hidden="true"><%= icon_tag(:check, size: 32) %></div>
+
       <div class="eyebrow"><%= confirmation_eyebrow %></div>
       <h1><%= confirmation_title %></h1>
       <p><%= confirmation_message %></p>
@@ -17,16 +27,47 @@
         <%# Sem nome e telefone completos: a página é aberta por um link que vive no
             e-mail do cliente por 48 horas, e quem tiver o link vê tudo. Os últimos
             dígitos do telefone bastam para o cliente se reconhecer. %>
-        <div><dt>Telefone</dt><dd><%= @appointment.client.masked_phone %></dd></div>
-        <div><dt>Profissional</dt><dd><%= @appointment.professional.name %></dd></div>
-        <div><dt>Serviço</dt><dd><%= @appointment.service.name %></dd></div>
-        <div><dt>Início</dt><dd><%= l(@appointment.start_at, format: :long) %></dd></div>
-        <div><dt>Término</dt><dd><%= l(@appointment.end_at, format: :long) %></dd></div>
-        <div><dt>Status</dt><dd><span class="status-pill status-pill--<%= @appointment.status %>"><%= @appointment.status_label %></span></dd></div>
+        <div>
+          <dt><%= icon_tag(:phone, size: 15) %> Telefone</dt>
+          <dd><%= @appointment.client.masked_phone %></dd>
+        </div>
+        <div>
+          <dt><%= icon_tag(:user, size: 15) %> Profissional</dt>
+          <dd><%= @appointment.professional.name %></dd>
+        </div>
+        <div>
+          <dt><%= icon_tag(:calendar, size: 15) %> Serviço</dt>
+          <dd><%= @appointment.service.name %></dd>
+        </div>
+        <div>
+          <dt><%= icon_tag(:calendar, size: 15) %> Início</dt>
+          <dd><%= l(@appointment.start_at, format: :long) %></dd>
+        </div>
+        <div>
+          <dt><%= icon_tag(:clock, size: 15) %> Término</dt>
+          <dd><%= l(@appointment.end_at, format: :long) %></dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd><span class="status-pill status-pill--<%= @appointment.status %>"><%= @appointment.status_label %></span></dd>
+        </div>
       </dl>
 
       <p class="field-hint">Quando o link de calendário e o WhatsApp estiverem disponíveis, eles aparecerão aqui.</p>
-      <%= link_to "Fazer outro agendamento", root_path, class: "button button--primary button--large" %>
+
+      <%# Duas ações, como no protótipo — mas as duas levam para `root_path`:
+          diferente do protótipo estático (que tinha `cliente-home.html` e
+          `cliente-agendar.html` como páginas separadas), o app real resolve
+          serviço/unidade dinamicamente a partir da mesma home, então não
+          existe um "início" e um "novo agendamento" como destinos
+          distintos hoje. Mantemos as duas ações visualmente (secundária +
+          primária) por fidelidade ao layout aprovado; o botão secundário
+          fica pronto para apontar a outro lugar no dia em que a home e o
+          início do fluxo se separarem de fato. %>
+      <div class="confirmation-card__actions">
+        <%= link_to "Voltar para o início", root_path, class: "button button--secondary button--large" %>
+        <%= link_to "Fazer outro agendamento", root_path, class: "button button--primary button--large" %>
+      </div>
     </section>
   </div>
 

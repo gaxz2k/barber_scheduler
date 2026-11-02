@@ -1806,7 +1806,12 @@ body:has(.booking-page) {
   font-family: var(--dt-font-display);
 }
 
-/* === Confirmação ============================================================= */
+/* === Confirmação =============================================================
+ * Redesenho (protótipo aprovado `cliente-confirmacao.html`, ver o contexto da
+ * tarefa): círculo de sucesso no topo, linhas de detalhe com ícone, e duas
+ * ações lado a lado em vez de um botão solo — ver os comentários na view
+ * (`appointments/show.html.erb`) sobre por que o ícone é sempre neutro de
+ * sucesso e por que as duas ações hoje levam ao mesmo lugar. */
 .booking-page .confirmation-card {
   max-width: 42rem;
   border: 1px solid var(--dt-line);
@@ -1815,6 +1820,19 @@ body:has(.booking-page) {
   background: var(--dt-ice-0);
   color: var(--dt-ink);
   box-shadow: var(--dt-shadow-soft);
+  text-align: center;
+}
+
+.booking-page .confirmation-card__icon {
+  display: inline-flex;
+  width: 4.5rem;
+  height: 4.5rem;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--dt-space-4);
+  border-radius: 50%;
+  background: var(--dt-success-100);
+  color: var(--dt-success-700);
 }
 
 .booking-page .confirmation-card .eyebrow {
@@ -1836,6 +1854,8 @@ body:has(.booking-page) {
 }
 
 .booking-page .confirmation-card > p {
+  max-width: 34rem;
+  margin: 0 auto;
   color: var(--dt-ink-soft);
   font-size: 0.95rem;
 }
@@ -1847,6 +1867,7 @@ body:has(.booking-page) {
   border-top: 1px solid var(--dt-line-soft);
   border-bottom: 1px solid var(--dt-line-soft);
   padding: 0;
+  text-align: left;
 }
 
 .booking-page .confirmation-details > div {
@@ -1863,9 +1884,17 @@ body:has(.booking-page) {
 }
 
 .booking-page .confirmation-details dt {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   color: var(--dt-ink-soft);
   font-size: 0.8rem;
   font-weight: var(--dt-weight-bold);
+}
+
+.booking-page .confirmation-details dt svg {
+  flex: 0 0 auto;
+  color: var(--dt-ink-faint);
 }
 
 .booking-page .confirmation-details dd {
@@ -1874,6 +1903,24 @@ body:has(.booking-page) {
   font-size: 0.86rem;
   font-weight: var(--dt-weight-bold);
   text-align: right;
+}
+
+/* Duas ações lado a lado (protótipo `.conf-actions`) — cada uma ocupa a
+ * mesma largura (`flex: 1`), diferente do botão único e solto de antes. */
+.booking-page .confirmation-card__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: var(--dt-space-5);
+}
+
+.booking-page .confirmation-card__actions .button {
+  flex: 1;
+}
+
+@media (max-width: 520px) {
+  .booking-page .confirmation-card__actions {
+    flex-direction: column;
+  }
 }
 
 /* Pílula de status do agendamento. Não reutiliza `.admin-badge` — aquele
