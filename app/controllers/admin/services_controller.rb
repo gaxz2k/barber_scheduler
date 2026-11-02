@@ -49,7 +49,7 @@ class Admin::ServicesController < Admin::BaseController
   private
 
   def service_params
-    params.expect(service: [ :name, :duration_minutes ])
+    params.expect(service: [ :name, :duration_minutes, :price_reais ])
   end
 
   def set_service

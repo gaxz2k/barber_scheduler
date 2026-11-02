@@ -4,7 +4,7 @@
   <div>
     <div class="admin-kicker">Cardápio</div>
     <h1 class="admin-page-title">Serviços</h1>
-    <p class="admin-page-description">Mantenha os serviços e as durações que aparecem para o cliente atualizados.</p>
+    <p class="admin-page-description">Mantenha os serviços, durações e preços que aparecem para o cliente atualizados.</p>
   </div>
   <%= link_to "Novo serviço", new_admin_service_path, class: "button button--primary" %>
 </section>
@@ -23,14 +23,27 @@
         <tr>
           <th>Serviço</th>
           <th>Duração</th>
+          <th>Preço</th>
           <th><span class="visually-hidden">Ações</span></th>
         </tr>
       </thead>
       <tbody>
         <% @services.each do |service| %>
           <tr>
-            <td><strong><%= service.name %></strong></td>
+            <td>
+              <div class="admin-service-name">
+                <span class="admin-service-icon" aria-hidden="true"><%= icon_tag(:clock, size: 18) %></span>
+                <strong><%= service.name %></strong>
+              </div>
+            </td>
             <td><%= service.duration_minutes %> min</td>
+            <td>
+              <% if service.price_label %>
+                <span class="admin-service-price"><%= service.price_label %></span>
+              <% else %>
+                <span class="admin-service-price--empty">Sem preço</span>
+              <% end %>
+            </td>
             <td>
               <div class="table__actions">
                 <%= link_to edit_admin_service_path(service), class: "button button--secondary button--sm", aria: { label: "Editar #{service.name}" } do %>

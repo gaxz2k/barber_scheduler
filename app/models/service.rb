@@ -23,6 +23,26 @@ class Service < ApplicationRecord
     ActionController::Base.helpers.number_to_currency(price_cents / 100.0)
   end
 
+  # Preço em reais, como o formulário do admin manda e o dono lê — a coluna
+  # real guarda centavos (`price_cents`), porque dinheiro em ponto flutuante
+  # acumula erro de arredondamento em cada soma. O par de acessores existe só
+  # para o `_form.html.erb` poder usar `form.text_field :price_reais` sem o
+  # dono precisar fazer a conta de cabeça para digitar centavos.
+  #
+  # Vazio vira nil, e não zero: um serviço sem preço cadastrado continua sem
+  # preço (`price_label` devolve nil e a view esconde o campo), em vez de
+  # aparecer como "R$ 0,00" para todo serviço que a migration antiga nunca
+  # preencheu.
+  def price_reais
+    return nil if price_cents.blank?
+
+    price_cents / 100.0
+  end
+
+  def price_reais=(value)
+    self.price_cents = value.blank? ? nil : (value.to_s.tr(",", ".").to_f * 100).round
+  end
+
   private
 
   def duration_cannot_change_with_appointments

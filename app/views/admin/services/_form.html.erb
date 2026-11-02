@@ -24,6 +24,14 @@
           class: "input#{' input--error' if service.errors[:duration_minutes].any?}" %>
   </div>
 
+  <div class="field">
+    <%= form.label :price_reais, "Preço (R$)", class: "field__label" %>
+    <% preco_atual = service.price_reais ? format("%.2f", service.price_reais).tr(".", ",") : nil %>
+    <%= form.text_field :price_reais, value: preco_atual, inputmode: "decimal", placeholder: "Ex.: 80,00",
+          class: "input#{' input--error' if service.errors[:price_cents].any?}" %>
+    <span class="field__hint">Deixe em branco para não mostrar preço ao cliente.</span>
+  </div>
+
   <div class="admin-form__actions">
     <%= form.submit service.new_record? ? "Criar serviço" : "Salvar alterações", class: "button button--primary" %>
     <%= link_to "Cancelar", admin_services_path, class: "button button--ghost" %>
