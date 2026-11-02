@@ -149,4 +149,60 @@ RSpec.describe "unidades de uma barbearia", type: :model do
       expect(jardim.barbershop.services).to include(servico)
     end
   end
+
+  # Profissional padrão: quem a tela de agendamento pré-seleciona no seletor
+  # "com quem" quando o dono configurou um padrão em Admin::Professionals.
+  describe "profissional padrão" do
+    it "aceita nenhum padrão configurado" do
+      expect(centro.default_professional).to be_nil
+    end
+
+    it "aceita um profissional da mesma unidade como padrão" do
+      rafael = Professional.create!(name: "Rafael", barbershop_unit: centro)
+
+      centro.update!(default_professional: rafael)
+
+      expect(centro.reload.default_professional).to eq(rafael)
+    end
+
+    it "recusa um profissional de outra barbearia como padrão" do
+      invasor = within_tenant(outra_barbershop) { Professional.create!(name: "Invasor") }
+
+      centro.default_professional = invasor
+
+      expect(centro).to be_invalid
+      expect(centro.errors[:default_professional]).to be_present
+    end
+
+    describe "#default_professional_among" do
+      it "devolve o padrão quando ele está entre os profissionais oferecidos" do
+        rafael = Professional.create!(name: "Rafael", barbershop_unit: centro)
+        bruno = Professional.create!(name: "Bruno", barbershop_unit: centro)
+        centro.update!(default_professional: rafael)
+
+        expect(centro.default_professional_among([ rafael, bruno ])).to eq(rafael)
+      end
+
+      it "cai no primeiro da lista quando não há padrão configurado" do
+        rafael = Professional.create!(name: "Rafael", barbershop_unit: centro)
+        bruno = Professional.create!(name: "Bruno", barbershop_unit: centro)
+
+        expect(centro.default_professional_among([ rafael, bruno ])).to eq(rafael)
+      end
+
+      it "cai no primeiro da lista quando o padrão configurado não está mais entre as opções" do
+        # O padrão foi definido quando a Camila ainda atendia o Centro; ela
+        # mudou de unidade depois, e o seletor não deve mais pré-selecioná-la.
+        camila = Professional.create!(name: "Camila", barbershop_unit: jardim)
+        rafael = Professional.create!(name: "Rafael", barbershop_unit: centro)
+        centro.update_column(:default_professional_id, camila.id)
+
+        expect(centro.default_professional_among([ rafael ])).to eq(rafael)
+      end
+
+      it "devolve nil quando não há nenhum profissional oferecido" do
+        expect(centro.default_professional_among([])).to be_nil
+      end
+    end
+  end
 end

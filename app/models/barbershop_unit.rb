@@ -11,12 +11,35 @@ class BarbershopUnit < ApplicationRecord
 
   has_many :professionals, dependent: :nullify
 
+  # O profissional pré-selecionado no seletor "com quem" da etapa de serviço
+  # (ver `appointments/_service_rows`), configurado pelo dono em
+  # Admin::Professionals ("Definir como padrão"). Mora aqui, e não em
+  # `barbershops` ou como um booleano em `professionals` — ver o comentário
+  # da migration `AddDefaultProfessionalToBarbershopUnits` para o raciocínio
+  # completo: o resumo é que profissionais já são organizados por unidade
+  # neste projeto inteiro, e um padrão por barbearia inteira ignoraria que
+  # cada unidade pode ter uma equipe diferente.
+  #
+  # `optional: true` porque a maioria das barbearias nunca vai configurar
+  # isto — sem padrão, a tela cai no primeiro profissional da lista, o
+  # mesmo comportamento implícito de sempre (ver `default_professional_among`
+  # abaixo). `validates_tenant_associations` entra na lista já declarada mais
+  # abaixo: sem ela, a unidade do Centro aceitaria um profissional da
+  # barbearia vizinha como "padrão", e o seletor da etapa de serviço
+  # pré-selecionaria um nome que não faz sentido ali.
+  belongs_to :default_professional, class_name: "Professional", optional: true
+
   validates :name, presence: true
   # Unique no escopo da barbearia, e não `unique: true` global: duas
   # barbearias podem ter ambas a unidade "centro", e tornar o slug global
   # transferiria a fronteira de isolamento do tenant para o slug.
   validates :slug, presence: true, uniqueness: { scope: :barbershop_id }
   validates :slug, format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/ }
+  # `default_professional` é a única associação tenant-scoped nova desta
+  # tabela; `barbershop` continua fora da lista por ser a própria âncora de
+  # tenant, não um apontamento PARA outro model de tenant (ver o comentário
+  # de `tenant_associations` em `TenantScoped`).
+  validates_tenant_associations :default_professional
 
   validate :opening_hours_are_well_formed
 
@@ -98,6 +121,28 @@ class BarbershopUnit < ApplicationRecord
 
   def to_param
     slug
+  end
+
+  # O profissional padrão desta unidade, mas só quando ele ainda está entre
+  # os profissionais de fato oferecidos agora (`professionals`, já filtrado
+  # pela unidade em `Professional.for_unit`/`AppointmentsController`).
+  #
+  # A checagem existe porque o padrão pode ficar "orfão" sem nenhum erro de
+  # validação: o dono define a Camila como padrão do Centro, e meses depois
+  # ela sai da equipe (`destroy`, se não houver agendamentos — e aí a FK vira
+  # nula pelo `dependent: :nullify` de `has_many :professionals`) ou muda de
+  # unidade. Sem este filtro, `default_professional` sozinho devolveria uma
+  # pessoa que a tela de agendamento nem lista mais, e o seletor
+  # pré-selecionaria uma opção que não existe entre as opções.
+  #
+  # Quando não há padrão válido, cai no primeiro da lista — o mesmo
+  # comportamento implícito que a tela de agendamento já tinha antes de este
+  # recurso existir (ver o protótipo aprovado: a mesma regra de dois níveis,
+  # antes simulada em localStorage, agora persistida aqui).
+  def default_professional_among(professionals)
+    return default_professional if default_professional && professionals.include?(default_professional)
+
+    professionals.first
   end
 
   class << self

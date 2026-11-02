@@ -10,6 +10,10 @@ pt-BR:
       destroy:
         success: "Profissional removido com sucesso."
         failure: "Falha ao remover profissional."
+      set_default:
+        success: "Profissional definido como padrão da unidade."
+        failure: "Falha ao definir o profissional padrão."
+        no_unit: "Este profissional não tem uma unidade fixa, então não pode ser o padrão de nenhuma — defina a unidade dele primeiro."
     appointments:
       create:
         success: "Agendamento criado com sucesso."

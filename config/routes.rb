@@ -38,7 +38,17 @@ Rails.application.routes.draw do
 
   namespace :admin do
     root to: "home#index"
-    resources :professionals
+    # `set_default` é uma rota de membro extra, e não mais um dos sete
+    # verbos REST do `resources`: o recurso em si continua sendo o
+    # profissional (não existe uma tela própria de "padrão da unidade"), só
+    # que esta ação muda um atributo da UNIDADE dele (`default_professional`)
+    # em vez de um atributo do próprio profissional — por isso é PATCH, como
+    # o `update` comum, e não `POST`/`CREATE` de um recurso novo.
+    resources :professionals do
+      member do
+        patch :set_default
+      end
+    end
     resources :services
     resources :appointments
     resources :barbershop_photos, only: [ :index, :new, :create, :edit, :update, :destroy ]

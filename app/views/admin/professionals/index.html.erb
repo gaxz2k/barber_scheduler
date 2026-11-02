@@ -37,9 +37,35 @@
                 <span class="admin-table__avatar admin-table__avatar--placeholder" aria-hidden="true"><%= professional.name.first %></span>
               <% end %>
             </td>
-            <td><strong><%= professional.name %></strong></td>
+            <td>
+              <strong><%= professional.name %></strong>
+              <%# O selo só aparece quando ESTE profissional é de fato o
+                  padrão gravado na unidade dele — não quando a unidade não
+                  tem padrão nenhum (nesse caso ninguém tem o selo, e a tela
+                  de agendamento cai no primeiro da lista, que é um
+                  comportamento implícito e não uma escolha do dono para
+                  mostrar como se fosse). %>
+              <% if professional.barbershop_unit&.default_professional_id == professional.id %>
+                <span class="admin-badge" title="Padrão da unidade <%= professional.barbershop_unit.name %>">
+                  <%= icon_tag(:check, size: 12) %> Padrão
+                </span>
+              <% end %>
+            </td>
             <td>
               <div class="table__actions">
+                <% if professional.barbershop_unit.present? && professional.barbershop_unit.default_professional_id != professional.id %>
+                  <%# PATCH, e não link: a ação grava estado (muda a unidade),
+                      e um `link_to` comum seria um GET — um crawler ou um
+                      prefetch do navegador poderia disparar a troca sem
+                      ninguém ter clicado em nada. `button_to` é o mesmo
+                      padrão já usado em "Excluir" logo abaixo. %>
+                  <%= button_to set_default_admin_professional_path(professional), method: :patch,
+                        class: "button button--secondary button--sm",
+                        form: { data: { turbo_confirm: "Definir #{professional.name} como padrão da unidade #{professional.barbershop_unit.name}?" } },
+                        aria: { label: "Definir #{professional.name} como padrão" } do %>
+                    <%= icon_tag(:check, size: 16) %> <span class="visually-hidden">Definir como padrão</span> Definir como padrão
+                  <% end %>
+                <% end %>
                 <%= link_to edit_admin_professional_path(professional), class: "button button--secondary button--sm", aria: { label: "Editar #{professional.name}" } do %>
                   <%= icon_tag(:edit, size: 16) %> <span class="visually-hidden">Editar</span>
                 <% end %>
