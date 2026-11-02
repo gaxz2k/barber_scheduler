@@ -1,0 +1,29 @@
+<%# Alternador rápido de unidade (item 5 do audit de fidelidade visual da
+    tarefa de redesenho): mesmo visual/classes do `#unitToggle` do protótipo
+    aprovado (`cliente-agendar.html` — ver `.unit-picker`/`.unit-toggle` em
+    `booking_wizard.css`), só trocando `<button onclick>` por `<a>` de
+    verdade. No protótipo cada "unidade" era uma entrada de um array em
+    memória (SPA simulado só em JS); aqui cada unidade é uma URL real
+    (`/barbearia/unidades/<slug>`, ver `unidade_path`), então a troca
+    PRECISA navegar — o que continua idêntico ao protótipo é a sensação:
+    Turbo Drive padrão (link normal, SEM `data: { turbo: false }`) troca só
+    o <body> sem reload cheio, pela mesma razão que o protótipo troca o
+    catálogo sem recarregar — é uma unidade diferente, não uma ETAPA
+    diferente do mesmo agendamento (os links "Agendar"/"Voltar" deste fluxo
+    desligam Turbo de propósito por serem parte da troca de etapa via fetch
+    manual do `booking_wizard_controller.js`; este link não participa
+    daquela máquina de estados, então não tem motivo para desligar Turbo).
+
+    Só aparece com 2+ unidades: com uma unidade só não há o que alternar —
+    mesma regra de `unidades_com_expediente`/`booking_units`. %>
+<% if unit_toggle_options.size > 1 %>
+  <div class="unit-picker">
+    <span class="unit-picker-label">Unidade</span>
+    <div class="unit-toggle" role="group" aria-label="Selecionar unidade">
+      <% unit_toggle_options.each do |unidade| %>
+        <%= link_to unidade.name, unidade_path(unidade),
+                     class: [ "unit-toggle__pill", ("is-active" if barbershop_unit == unidade) ].compact.join(" ") %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

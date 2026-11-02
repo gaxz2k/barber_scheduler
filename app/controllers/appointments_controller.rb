@@ -177,7 +177,7 @@ class AppointmentsController < ApplicationController
   # sozinho não serve, porque a view precisa da unidade resolvida, e não do
   # slug que o cliente pode ter digitado errado.
   helper_method :barbershop_unit, :booking_units, :unidade_path, :slot_preselecionado?,
-                :booking_total_duration_minutes, :booking_total_price_cents
+                :booking_total_duration_minutes, :booking_total_price_cents, :unit_toggle_options
 
   private
 
@@ -205,6 +205,20 @@ class AppointmentsController < ApplicationController
     BarbershopUnit.for_barbershop(Current.barbershop)
                   .select(&:serves_on_any_day?)
                   .sort_by(&:name)
+  end
+
+  # Opções do alternador rápido de unidade (item 5 do audit de fidelidade,
+  # ver `shared/_unit_toggle`): ao contrário de `booking_units` (que só
+  # lista quando NENHUMA unidade foi escolhida ainda — a etapa `:unit` do
+  # wizard, para o caso de `unidade_slug` ausente/inválido), este método
+  # sempre devolve a lista cheia, porque o toggle "Centro | Jardim" do
+  # protótipo aprovado (`cliente-agendar.html`, `#unitToggle`) precisa
+  # aparecer MESMO depois de uma unidade já estar selecionada — é assim que
+  # o cliente troca de unidade sem voltar para a home. Reusa
+  # `unidades_com_expediente` em vez de duplicar a consulta: a lista de
+  # "para onde dá para trocar" é a mesma lista de "onde dá para escolher".
+  def unit_toggle_options
+    unidades_com_expediente
   end
 
   # Recusa o fluxo de agendamento quando o dono pausou o agendamento online.

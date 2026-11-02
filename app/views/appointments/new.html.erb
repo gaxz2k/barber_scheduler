@@ -124,6 +124,11 @@
     <% end %>
 
     <% if @booking_step == :service %>
+      <%# Item 5 do audit de fidelidade: alternador rápido "Centro | Jardim"
+          — só faz sentido aqui, na etapa de escolha de serviço, que é a
+          mesma etapa do protótipo aprovado que tem o `#unitToggle`. %>
+      <%= render "shared/unit_toggle" %>
+
       <%# ETAPA 1: lista densa de serviços, igual à da home — ver
           `appointments/_service_rows`. É a mesma etapa 1 da referência
           SimplesAgenda, só alcançada por esta URL quando o cliente chega aqui

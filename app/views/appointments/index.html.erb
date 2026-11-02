@@ -182,6 +182,11 @@
         <% end %>
       </ul>
     <% else %>
+      <%# Item 5 do audit de fidelidade: alternador rápido "Centro | Jardim"
+          — mesma posição relativa (acima da lista de serviços) do
+          `#unitToggle` no protótipo aprovado. %>
+      <%= render "shared/unit_toggle" %>
+
       <%# "Últimos agendamentos" é SÓ o último registro de @ultimo_agendamento
           (pending/confirmed) — não um histórico com paginação, que o backend
           não tem (ver a lacuna 4 do contexto). Reaproveita o mesmo componente
