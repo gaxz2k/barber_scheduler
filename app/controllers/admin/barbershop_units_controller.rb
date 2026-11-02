@@ -87,6 +87,8 @@ class Admin::BarbershopUnitsController < Admin::BaseController
     params.require(:barbershop_unit).permit(
       :name,
       :slug,
+      :address,
+      :phone,
       opening_hours: [ :open, :close ]
     )
   end

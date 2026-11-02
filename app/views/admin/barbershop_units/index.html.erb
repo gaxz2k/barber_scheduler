@@ -17,46 +17,56 @@
     <%= link_to "Nova unidade", new_admin_barbershop_unit_path, class: "button button--primary" %>
   </div>
 <% else %>
-  <div class="table-wrap">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Unidade</th>
-          <th>Endereço</th>
-          <th>Horário</th>
-          <th><span class="visually-hidden">Ações</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @barbershop_units.each do |unit| %>
-          <%# A listagem usa `window_on?`, o mesmo método que decide a prontidão e
-              a agenda: um dia guardado com janela quebrada é dia fechado para o
-              cliente, e mostrá-lo como expediente seria a tela mentindo. %>
-          <% expediente = Admin::BarbershopUnitsController::WEEK_DAYS.filter_map do |dia, nome| %>
-            <% janela = unit.window_on?(dia) %>
-            <% next unless janela %>
-            <% format("%s %s–%s", nome, formatar_minutos(janela[:open]), formatar_minutos(janela[:close])) %>
-          <% end %>
-          <tr>
-            <td><strong><%= unit.name %></strong></td>
-            <td><code>/barbearia/unidades/<%= unit.slug %></code></td>
-            <td>
-              <% if expediente.any? %>
-                <%= expediente.join(" · ") %>
-              <% else %>
-                <span class="field__hint">Sem horário — a agenda aparece vazia para o cliente</span>
-              <% end %>
-            </td>
-            <td>
-              <div class="table__actions">
-                <%= link_to edit_admin_barbershop_unit_path(unit), class: "button button--secondary button--sm", aria: { label: "Editar #{unit.name}" } do %>
-                  <%= icon_tag(:edit, size: 16) %> <span class="visually-hidden">Editar</span>
-                <% end %>
-              </div>
-            </td>
-          </tr>
+  <div class="admin-unit-grid">
+    <% @barbershop_units.each do |unit| %>
+      <%# A listagem usa `window_on?`, o mesmo método que decide a prontidão e
+          a agenda: um dia guardado com janela quebrada é dia fechado para o
+          cliente, e mostrá-lo como expediente seria a tela mentindo. %>
+      <div class="card admin-unit-card">
+        <div class="admin-unit-card__head">
+          <h3><%= unit.name %></h3>
+          <span class="badge badge--neutral"><%= pluralize(unit.professionals.size, "profissional") %></span>
+        </div>
+
+        <% if unit.address.present? %>
+          <div class="admin-unit-card__row admin-unit-card__row--address">
+            <%= icon_tag(:pin, size: 15) %> <%= unit.address %>
+          </div>
+        <% else %>
+          <div class="admin-unit-card__row">
+            <%= icon_tag(:pin, size: 15) %> <span class="field__hint" style="margin: 0;">Endereço físico não cadastrado</span>
+          </div>
         <% end %>
-      </tbody>
-    </table>
+
+        <% if unit.phone.present? %>
+          <div class="admin-unit-card__row">
+            <%= icon_tag(:phone, size: 15) %> <%= unit.phone %>
+          </div>
+        <% end %>
+
+        <div class="admin-unit-card__hours-title">Horário de funcionamento</div>
+        <table class="admin-hours-table">
+          <% Admin::BarbershopUnitsController::WEEK_DAYS.each do |dia, nome| %>
+            <% janela = unit.window_on?(dia) %>
+            <tr class="<%= "admin-hours-table__row--closed" unless janela %>">
+              <td class="admin-hours-table__day"><%= nome %></td>
+              <td class="admin-hours-table__window">
+                <% if janela %>
+                  <%= formatar_minutos(janela[:open]) %> – <%= formatar_minutos(janela[:close]) %>
+                <% else %>
+                  Fechado
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </table>
+
+        <div class="admin-unit-card__actions">
+          <%= link_to edit_admin_barbershop_unit_path(unit), class: "button button--secondary button--sm", aria: { label: "Editar #{unit.name}" } do %>
+            <%= icon_tag(:edit, size: 16) %> Editar
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </div>
 <% end %>

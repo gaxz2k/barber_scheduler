@@ -26,6 +26,19 @@
     <span class="field__hint">O cliente acessa /barbearia/unidades/<strong>este-texto</strong>. Único dentro da barbearia.</span>
   </div>
 
+  <div class="field">
+    <%= form.label :address, "Endereço físico", class: "field__label" %>
+    <%= form.text_field :address, placeholder: "Ex.: Rua Augusta, 1200 — Centro, São Paulo - SP",
+          class: "input#{' input--error' if @barbershop_unit.errors[:address].any?}" %>
+    <span class="field__hint">Mostrado ao cliente na confirmação do agendamento. Opcional.</span>
+  </div>
+
+  <div class="field">
+    <%= form.label :phone, "Telefone", class: "field__label" %>
+    <%= form.text_field :phone, placeholder: "(11) 3344-5566",
+          class: "input#{' input--error' if @barbershop_unit.errors[:phone].any?}" %>
+  </div>
+
   <fieldset class="unit-schedule">
     <legend>Horário de funcionamento</legend>
     <p class="field__hint">O cliente só vê horários dentro desta janela, e o último agendamento precisa terminar antes do fechamento. Dia sem horário aparece como agenda vazia.</p>
