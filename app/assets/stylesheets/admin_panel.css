@@ -13,14 +13,232 @@
  * mortas no CSS, sem nenhuma view usando-as mais, e podem ser removidas numa
  * limpeza futura fora do escopo desta fase. */
 
-/* === Casca do painel ======================================================= */
+/* === Casca do painel (sidebar) ==============================================
+ * Fase 4 do redesign (esta): sidebar fixa à esquerda + área de conteúdo, no
+ * padrão do protótipo estático aprovado (ver admin-dashboard.html /
+ * design-system.html do protótipo). Antes desta fase o admin reusava a mesma
+ * barra superior horizontal do site público (`.nav--admin`, ainda viva em
+ * `design_components.css` e usada pela vitrine de `/style-guide` — não
+ * removida, só parou de ser a navegação real) com até sete links disputando
+ * espaço com o monograma da barbearia; a sidebar vertical dá à navegação a
+ * largura que ela precisa e deixa as sete entradas sempre visíveis em telas
+ * largas, sem empurrar o conteúdo para baixo.
+ *
+ * Sem topbar própria de propósito: cada tela do admin já tem o seu próprio
+ * cabeçalho (`.admin-page-header`, kicker + h1 + descrição) logo no topo do
+ * conteúdo — duplicar o título numa barra superior fixa repetiria a mesma
+ * informação duas vezes na mesma tela, que é ruído, não hierarquia. O
+ * protótipo tem uma topbar com um "seletor de unidade"; ele não virou nada
+ * aqui porque não existe troca de unidade dentro do mesmo login neste
+ * produto (o escopo é a barbearia inteira via `Current.barbershop`, que pode
+ * ter várias unidades) — um botão com a aparência de dropdown que não
+ * dropa nada seria decoração fingindo ser funcionalidade. */
 
 .admin-shell {
+  display: grid;
+  grid-template-columns: 16rem 1fr;
   min-height: 100vh;
   background: var(--dt-ice-50);
 }
 
-.admin-shell__content {
+.admin-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-5);
+  padding: var(--dt-space-5) var(--dt-space-4);
+  background: var(--dt-petrol-900);
+  color: var(--dt-ice-50);
+  overflow-y: auto;
+}
+
+.admin-sidebar__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dt-space-2);
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-space-3);
+  min-width: 0;
+  color: var(--dt-ice-0);
+  text-decoration: none;
+}
+
+.admin-brand:hover {
+  color: var(--dt-ice-0);
+  text-decoration: none;
+}
+
+.admin-brand__mark {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-petrol-500);
+  color: var(--dt-ice-0);
+  font-family: var(--dt-font-display);
+  font-weight: var(--dt-weight-bold);
+  font-size: var(--dt-text-sm);
+}
+
+.admin-brand__name {
+  overflow: hidden;
+  font-family: var(--dt-font-display);
+  font-weight: var(--dt-weight-bold);
+  font-size: var(--dt-text-base);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Só aparece em tela estreita — ver a media query no fim do arquivo. Reusa
+ * o MESMO controller Stimulus (`nav-toggle`) e a MESMA classe de alternância
+ * (`nav__links--open`) que a antiga `.nav--admin` já usava, então nenhum JS
+ * novo foi escrito para a sidebar colapsar. */
+.admin-sidebar__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--dt-radius-sm);
+  background: transparent;
+  color: var(--dt-ice-0);
+  cursor: pointer;
+}
+
+.admin-sidebar__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--dt-focus-ring);
+}
+
+.admin-sidebar-collapsible {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-5);
+  flex: 1;
+  min-height: 0;
+}
+
+.admin-sidebar-nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-space-3);
+  padding: var(--dt-space-3);
+  border-radius: var(--dt-radius-sm);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--dt-text-sm);
+  font-weight: var(--dt-weight-medium);
+  text-decoration: none;
+  transition: background var(--dt-transition-fast), color var(--dt-transition-fast);
+}
+
+.admin-sidebar-link svg {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.admin-sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dt-ice-0);
+  text-decoration: none;
+}
+
+.admin-sidebar-link--active {
+  background: var(--dt-petrol-700);
+  color: var(--dt-ice-0);
+}
+
+.admin-sidebar-link--active svg {
+  opacity: 1;
+}
+
+.admin-sidebar__foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-3);
+  padding-top: var(--dt-space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-space-3);
+  min-width: 0;
+}
+
+.admin-sidebar__user-avatar {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--dt-petrol-500);
+  color: var(--dt-ice-0);
+  font-weight: var(--dt-weight-bold);
+  font-size: var(--dt-text-xs);
+}
+
+.admin-sidebar__user-email {
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--dt-text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-sidebar__logout {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-space-2);
+  padding: 0;
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-medium);
+  cursor: pointer;
+}
+
+.admin-sidebar__logout:hover {
+  color: var(--dt-ice-0);
+}
+
+.admin-sidebar__logout:focus-visible {
+  outline: none;
+  box-shadow: var(--dt-focus-ring);
+}
+
+.admin-main {
+  min-width: 0;
+}
+
+.admin-flash {
+  padding: var(--dt-space-5) min(1rem, 2.5vw) 0;
+}
+
+.admin-content {
   width: min(100% - 2rem, 76rem);
   margin: 0 auto;
   padding: var(--dt-space-6) 0 var(--dt-space-8);
@@ -597,9 +815,337 @@
   color: var(--dt-petrol-700);
 }
 
+/* === Agendamentos: filtros ==================================================
+ * Busca por cliente + chips de status, no padrão do protótipo aprovado
+ * (admin-agendamentos.html) — mas filtrando dados de verdade via querystring
+ * (`?status=...&q=...`), não um `display:none` em JS sobre uma tabela
+ * inteira já carregada: ver `Admin::AppointmentsController#index`. Os chips
+ * usam os mesmos quatro valores do enum `Appointment#status` — nenhum rótulo
+ * novo, para o filtro nunca divergir da verdade do banco. */
+.admin-filters-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-4);
+  margin-bottom: var(--dt-space-5);
+}
+
+.admin-filters-card__search {
+  max-width: 24rem;
+}
+
+.admin-filters-card__search .field__label {
+  margin-bottom: var(--dt-space-2);
+}
+
+.admin-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dt-space-2);
+}
+
+.admin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--dt-space-2) var(--dt-space-4);
+  border-radius: var(--dt-radius-pill);
+  box-shadow: var(--dt-shadow-ring);
+  background: var(--dt-ice-0);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-medium);
+  text-decoration: none;
+  transition: background var(--dt-transition-fast), color var(--dt-transition-fast);
+}
+
+.admin-chip:hover {
+  color: var(--dt-ink);
+  text-decoration: none;
+}
+
+.admin-chip--active {
+  background: var(--dt-petrol-700);
+  box-shadow: none;
+  color: var(--dt-ice-0);
+}
+
+.admin-chip__count {
+  padding: 0 6px;
+  border-radius: var(--dt-radius-pill);
+  background: rgba(10, 15, 20, 0.08);
+  font-size: var(--dt-text-xs);
+}
+
+.admin-chip--active .admin-chip__count {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* === Serviços: ícone + preço ================================================= */
+.admin-service-name {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-space-3);
+}
+
+.admin-service-icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: var(--dt-radius-sm);
+  background: var(--dt-petrol-100);
+  color: var(--dt-petrol-700);
+}
+
+.admin-service-price {
+  color: var(--dt-ink);
+  font-weight: var(--dt-weight-bold);
+}
+
+.admin-service-price--empty {
+  color: var(--dt-ink-faint);
+  font-weight: var(--dt-weight-regular);
+}
+
+/* === Profissionais: grade de cartões =========================================
+ * Substitui a tabela por um cartão por profissional, no padrão do protótipo
+ * (admin-profissionais.html) — a foto/avatar, a unidade e o controle
+ * "Definir como padrão" (já real, ver `Admin::ProfessionalsController
+ * #set_default`) ganham mais espaço do que uma linha de tabela permitia. */
+.admin-pro-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-space-3);
+  padding: var(--dt-space-4) var(--dt-space-5);
+  margin-bottom: var(--dt-space-5);
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-petrol-100);
+  color: var(--dt-petrol-900);
+  font-size: var(--dt-text-sm);
+}
+
+.admin-pro-hint svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--dt-petrol-700);
+}
+
+.admin-pro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--dt-space-5);
+}
+
+.admin-pro-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.admin-pro-card__photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 7.5rem;
+  background: var(--dt-petrol-900);
+}
+
+.admin-pro-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-pro-card__photo .admin-table__avatar,
+.admin-pro-card__photo .admin-table__avatar--placeholder {
+  width: 4rem;
+  height: 4rem;
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  font-size: var(--dt-text-xl);
+}
+
+.admin-pro-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-space-1);
+  padding: var(--dt-space-4) var(--dt-space-5) var(--dt-space-5);
+}
+
+.admin-pro-card__body h3 {
+  margin: 0;
+  font-family: var(--dt-font-display);
+  font-size: var(--dt-text-base);
+  font-weight: var(--dt-weight-bold);
+  color: var(--dt-ink);
+}
+
+.admin-pro-card__specialty {
+  margin-bottom: var(--dt-space-2);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+}
+
+.admin-pro-card__unit {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--dt-radius-pill);
+  background: var(--dt-mist-100);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-medium);
+}
+
+.admin-pro-card__unit svg {
+  width: 11px;
+  height: 11px;
+}
+
+.admin-pro-card__actions {
+  display: flex;
+  gap: var(--dt-space-2);
+  margin-top: var(--dt-space-4);
+}
+
+.admin-pro-card__actions .button {
+  flex: 1;
+}
+
+.admin-pro-card__default-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dt-space-2);
+  margin-top: var(--dt-space-3);
+  padding-top: var(--dt-space-3);
+  border-top: 1px dashed var(--dt-line);
+}
+
+.admin-pro-card__default-row form {
+  display: inline;
+}
+
+.admin-pro-card__default-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--dt-petrol-700);
+  font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-bold);
+}
+
+.admin-set-default-btn {
+  padding: 2px 4px;
+  border: none;
+  background: none;
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-medium);
+  cursor: pointer;
+}
+
+.admin-set-default-btn:hover {
+  color: var(--dt-petrol-700);
+}
+
+/* === Unidades: grade de cartões =============================================
+ * Substitui a tabela por um cartão por unidade (admin-unidades.html do
+ * protótipo): endereço e telefone reais (colunas `address`/`phone`, já
+ * existentes no schema e já mostradas ao cliente em `appointments/index`,
+ * só não editáveis pelo admin até esta fase) e o expediente como tabela de
+ * 7 linhas, usando o mesmo `window_on?`/`formatar_minutos` que a listagem
+ * antiga já usava — nenhuma lógica de horário nova, só a apresentação. */
+.admin-unit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: var(--dt-space-6);
+}
+
+.admin-unit-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--dt-space-3);
+  margin-bottom: var(--dt-space-4);
+}
+
+.admin-unit-card__head h3 {
+  margin: 0;
+  font-family: var(--dt-font-display);
+  font-size: var(--dt-text-lg);
+  font-weight: var(--dt-weight-bold);
+  color: var(--dt-ink);
+}
+
+.admin-unit-card__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-space-2);
+  margin-bottom: var(--dt-space-2);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-sm);
+}
+
+.admin-unit-card__row svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--dt-ink-faint);
+}
+
+.admin-unit-card__row--address {
+  color: var(--dt-ink);
+  font-weight: var(--dt-weight-medium);
+}
+
+.admin-unit-card__hours-title {
+  margin: var(--dt-space-4) 0 var(--dt-space-2);
+  color: var(--dt-ink-soft);
+  font-size: var(--dt-text-xs);
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-hours-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--dt-text-sm);
+}
+
+.admin-hours-table td {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--dt-line-soft);
+}
+
+.admin-hours-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-hours-table td.admin-hours-table__day {
+  color: var(--dt-ink-soft);
+}
+
+.admin-hours-table td.admin-hours-table__window {
+  color: var(--dt-ink);
+  font-weight: var(--dt-weight-bold);
+  text-align: right;
+}
+
+.admin-hours-table tr.admin-hours-table__row--closed td.admin-hours-table__window {
+  color: var(--dt-danger-700);
+}
+
+.admin-unit-card__actions {
+  margin-top: var(--dt-space-4);
+}
+
 /* === Responsivo ============================================================= */
 @media (max-width: 760px) {
-  .admin-shell__content {
+  .admin-content {
     padding-top: var(--dt-space-4);
   }
 
@@ -627,5 +1173,30 @@
 
   .admin-metrics__grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    position: sticky;
+    top: 0;
+    height: auto;
+    z-index: 20;
+  }
+
+  .admin-sidebar__toggle {
+    display: inline-flex;
+  }
+
+  .admin-sidebar-collapsible {
+    display: none;
+  }
+
+  .admin-sidebar-collapsible.nav__links--open {
+    display: flex;
   }
 }

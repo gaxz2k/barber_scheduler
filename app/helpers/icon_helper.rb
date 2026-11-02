@@ -41,6 +41,12 @@ module IconHelper
     # Menu (hambúrguer) do painel administrativo em tela estreita — ver
     # `.nav__toggle` em design_components.css.
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    # Painel/dashboard — quatro blocos, como a primeira tela que o dono vê ao
+    # entrar. Vive só na sidebar do admin (ver `admin_panel.css`), as outras
+    # cinco entradas já reusam ícones existentes (calendar/user/clock/phone/
+    # edit/lock) para não duplicar sentido com um ícone novo por duplicar.
+    grid: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>' \
+      '<rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
     # Local/endereço — usado no marcador do cartão de unidade (escolha de
     # onde ser atendido), no lugar do número de sequência "01/02/03" que
     # sugeria uma ordem que a lista de unidades não tem.
