@@ -851,6 +851,155 @@ body:has(.booking-page) {
   padding: 0.85rem 0.75rem;
 }
 
+/* === Vitrine da home: carrossel + cartão de perfil como UM bloco só =========
+ * "Opção A" aprovada por Nicholas no protótipo de descoberta (avatar
+ * sobreposto, padrão Airbnb/Instagram/Google Business — ver
+ * `vitrine-options.html` no contexto desta tarefa, classes `.optA-*`): a
+ * queixa original era duas caixas flutuantes com vão entre elas ("ficou
+ * estranho e meio desconexo"); a correção é puramente visual, escopada
+ * pelo wrapper `.barbershop-vitrine-card` que só existe em
+ * `appointments/index.html.erb`, e só quando há foto (ver o comentário lá).
+ * NADA aqui toca `shared/_booking_card_header` nem o controller do
+ * carrossel — é tudo seletor descendente de um ancestral que não existe em
+ * `new.html.erb`/`show.html.erb`, então aquelas duas telas (que reusam o
+ * mesmo partial, sem foto acima) continuam exatamente como eram. */
+.barbershop-vitrine-card {
+  position: relative;
+  /* Mesma margem inferior que `.barbershop-carousel` tinha sozinho — o
+   * bloco combinado ocupa o lugar das duas caixas antigas. */
+  margin: 0 0 2.5rem;
+  border-radius: var(--dt-radius-lg);
+  /* UMA sombra pro bloco inteiro (foto + avatar + cartão) — ver abaixo a
+   * foto e o cartão perderem a sombra PRÓPRIA que tinham quando eram duas
+   * caixas separadas, senão o olho veria duas sombras empilhadas. */
+  box-shadow: var(--dt-shadow-card);
+  /* `visible`, não `hidden`: o avatar precisa "furar" pra fora da borda de
+   * baixo da foto (margem negativa, ver `__logo` abaixo) — `overflow:
+   * hidden` aqui cortaria exatamente a parte que faz o efeito existir. */
+  overflow: visible;
+}
+
+.barbershop-vitrine-card .barbershop-carousel {
+  /* A margem inferior da faixa some: agora é o wrapper que separa o bloco
+   * do resto da página (ver `.barbershop-vitrine-card` acima), e o
+   * cabeçalho precisa ficar colado direto na borda de baixo da foto. */
+  margin: 0;
+}
+
+.barbershop-vitrine-card .barbershop-carousel__viewport {
+  /* Raio só nos cantos de cima: os de baixo quem desenha agora é o
+   * cabeçalho, colado sem vão nenhum (ver `.booking-card-header-shell`
+   * abaixo). Sombra própria sai — ver o comentário na regra do wrapper.
+   * Borda própria também sai: com a foto colada direto no cartão, uma
+   * borda de 1px no encontro das duas apareceria como uma costura visível
+   * — o contrário do "bloco único" que esta tarefa pede. `position:
+   * relative` é pro `.barbershop-carousel__dots` (ver a view e a regra
+   * abaixo) ter em quem ancorar: eles agora vivem DENTRO do viewport no
+   * HTML, e `position: absolute` sem isso ia ancorar num ancestral mais
+   * distante (`.barbershop-vitrine-card`), não na foto. */
+  position: relative;
+  border: 0;
+  border-radius: var(--dt-radius-lg) var(--dt-radius-lg) 0 0;
+  box-shadow: none;
+}
+
+/* Bolinhas de posição: no protótipo aprovado (`.optA-dots`) elas ficam POR
+ * CIMA da foto, não numa faixa própria abaixo dela. Mesmas bolinhas, mesmo
+ * `data-barbershop-carousel-target="dot"` e o mesmo `#show` do controller
+ * só alternando `is-active` — isto só reposiciona o elemento (`absolute` em
+ * vez de fluxo normal), não muda uma linha de JavaScript.
+ *
+ * `bottom: 4.5rem`, não coladas na borda de baixo como no protótipo: aqui
+ * (diferente do mockup, que tem o avatar alinhado à ESQUERDA) o avatar fica
+ * centralizado — mesmo alinhamento que o cabeçalho de marca já usa em
+ * `new.html.erb`/`show.html.erb`, ver `.booking-card-header` — e sobe
+ * `2.75rem` (metade da própria altura) por cima da borda da foto, bem no
+ * centro horizontal. Bolinhas coladas na borda ficariam embaixo do avatar,
+ * escondidas; `4.5rem` dá folga suficiente pra sobrarem visíveis acima
+ * dele, ainda bem dentro da foto. */
+.barbershop-vitrine-card .barbershop-carousel__dots {
+  position: absolute;
+  bottom: 4.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  margin-top: 0;
+}
+
+.barbershop-vitrine-card .barbershop-carousel__dot {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.barbershop-vitrine-card .barbershop-carousel__dot.is-active {
+  background: var(--dt-ice-0);
+}
+
+/* O texto de status (`aria-live="polite"`, preenchido por
+ * `barbershop_carousel_controller.js#show`) continua existindo e sendo
+ * anunciado por leitor de tela do mesmo jeito — só não ocupa mais espaço
+ * visual PRÓPRIO aqui dentro: com o cabeçalho colado direto na foto, uma
+ * linha de texto visível entre as duas reabriria o vão que esta tarefa
+ * existe pra fechar, e a contagem "N/total" já aparece pro olho pelo selo
+ * (`__badge`) sobre a própria foto. Mesmo truque de `.sr-only` (ver
+ * `application.css`): fora da vista, não fora do fluxo de acessibilidade. */
+.barbershop-vitrine-card .barbershop-carousel__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* O cabeçalho de marca, dentro do bloco único: sem o banner gradiente (ele
+ * existia pra dar uma "capa" decorativa atrás do logo nas telas SEM foto
+ * acima — `new.html.erb`/`show.html.erb`; aqui a foto real já cumpre esse
+ * papel, um gradiente por cima dela só competiria visualmente) e sem
+ * margem/raio/sombra PRÓPRIOS do `shell` (que nas outras telas colam o
+ * conjunto no topo absoluto da página — aqui o elemento de cima já é a
+ * foto, não a borda da tela). */
+.barbershop-vitrine-card .booking-card-header-shell {
+  margin: 0;
+}
+
+.barbershop-vitrine-card .booking-card-header-banner {
+  display: none;
+}
+
+.barbershop-vitrine-card .booking-card-header {
+  margin: 0;
+  /* Raio só nos cantos de baixo — os de cima já são os da foto (ver
+   * `__viewport` acima); juntos fecham o contorno do bloco único. */
+  border-radius: 0 0 var(--dt-radius-lg) var(--dt-radius-lg);
+  /* Sombra sai de aqui — é a do `.barbershop-vitrine-card` que vale pro
+   * bloco inteiro agora (ver o comentário na regra do wrapper). */
+  box-shadow: none;
+}
+
+/* O avatar: do tamanho/proporção do protótipo aprovado (`.optA-avatar`,
+ * bem menor que o logo-banner das outras duas telas — aquele precisa
+ * preencher uma faixa de capa decorativa que não existe mais aqui), com
+ * borda branca pra separar da foto por baixo dele, e furando a borda
+ * inferior da foto com margem negativa igual à metade da própria altura —
+ * o mesmo cálculo do protótipo (72px/−36px no mockup; aqui 5.5rem/−2.75rem,
+ * mesma proporção, ajustada ao tamanho real do cartão). */
+.barbershop-vitrine-card .booking-card-header__logo,
+.barbershop-vitrine-card .booking-card-header__logo-image {
+  width: 5.5rem;
+  max-width: 5.5rem;
+  /* -4.5rem, não -2.75rem: o cartão tem `padding-top: 1.75rem` (ver
+   * `.booking-card-header` mais acima), então essa margem precisa
+   * descontar o padding ANTES de subtrair a metade da altura do avatar
+   * (2.75rem) pra ele ficar centrado bem em cima do próprio encontro da
+   * foto com o cartão — 1.75rem + 2.75rem = 4.5rem. */
+  margin: -4.5rem 0 0.5rem;
+  border: 3px solid var(--dt-ice-0);
+  box-shadow: var(--dt-shadow-soft);
+  position: relative;
+  z-index: 1;
+}
+
 /* === Painéis que alternam dentro da etapa fundida (data/horário vs.
  * confirmação) =================================================================
  * `[hidden]` já é nativo do navegador — aqui só garantimos o espaçamento

@@ -33,6 +33,28 @@
            discussão de anterior/próximo que este componente já decidiu não
            ter. %>
   <% if @barbershop_photos.any? %>
+    <%# Opção A aprovada por Nicholas no protótipo de descoberta (avatar
+        sobreposto, padrão Airbnb/Instagram/Google Business — ver
+        `vitrine-options.html` no contexto desta tarefa): a foto e o cartão
+        de perfil da barbearia (nome/telefone/endereço/ações,
+        `shared/_booking_card_header`) formam UM bloco visual só, com UMA
+        sombra só — não duas caixas flutuantes com vão entre elas, que era a
+        queixa original ("ficou estranho e meio desconexo").
+
+        `.barbershop-vitrine-card` é só um wrapper visual: toda a
+        sobreposição (raio só nos cantos certos, sombra única, avatar
+        furando a borda de baixo da foto, bolinhas em cima da foto) é CSS
+        escopado embaixo dele em `booking_wizard.css`. O partial
+        `shared/_booking_card_header` É RENDERIZADO SEM ALTERAÇÃO NENHUMA
+        aqui dentro — zero local novo, zero classe nova passada pra ele.
+        Isso é deliberado: o mesmo partial também renderiza, sem este
+        wrapper em volta, em `new.html.erb` e `show.html.erb`, onde nunca há
+        foto acima dele pra sobrepor. Se a sobreposição fosse uma classe do
+        PRÓPRIO partial, qualquer regressão de CSS ali vazaria pras outras
+        duas telas; escopando só pelo ancestral `.barbershop-vitrine-card`
+        (que só existe aqui, na home, e só quando há foto), as outras duas
+        telas continuam exatamente como são hoje. %>
+    <div class="barbershop-vitrine-card">
     <section class="barbershop-carousel" aria-labelledby="barbershop-carousel-title" data-controller="barbershop-carousel">
       <h2 id="barbershop-carousel-title" class="sr-only">Galeria de <%= Current.barbershop.name %></h2>
 
@@ -58,16 +80,35 @@
             </figure>
           <% end %>
         </div>
+        <%# As bolinhas vivem DENTRO do viewport (e não como irmãs dele, como
+            antes) de propósito: `position: absolute` sempre ancora no
+            ancestral posicionado mais próximo na ÁRVORE do DOM, não em quem
+            está visualmente ao lado. Com elas fora do viewport, a âncora
+            mais próxima acabava sendo o `.barbershop-vitrine-card` inteiro
+            (foto + cabeçalho), e "bottom: Xpx" posicionava as bolinhas perto
+            do fim do CARTÃO, não da FOTO — bem longe de onde o protótipo
+            aprovado (`.optA-dots`) as mostra. Aninhar aqui dentro resolve
+            isso sem precisar de JavaScript nenhum: o viewport já é a caixa
+            exata da foto. %>
+        <% if @barbershop_photos.many? %>
+          <div class="barbershop-carousel__dots" aria-hidden="true">
+            <% @barbershop_photos.each_with_index do |_photo, index| %>
+              <span class="barbershop-carousel__dot<%= " is-active" if index.zero? %>" data-barbershop-carousel-target="dot"></span>
+            <% end %>
+          </div>
+        <% end %>
       </div>
       <div class="barbershop-carousel__status" aria-live="polite" aria-atomic="true" data-barbershop-carousel-target="status"></div>
-      <% if @barbershop_photos.many? %>
-        <div class="barbershop-carousel__dots" aria-hidden="true">
-          <% @barbershop_photos.each_with_index do |_photo, index| %>
-            <span class="barbershop-carousel__dot<%= " is-active" if index.zero? %>" data-barbershop-carousel-target="dot"></span>
-          <% end %>
-        </div>
-      <% end %>
     </section>
+    <%# O cabeçalho vive AQUI DENTRO do wrapper, logo após a `</section>` do
+        carrossel — ele é o segundo (e último) filho de
+        `.barbershop-vitrine-card`, exatamente como `.optA-body` vem depois
+        de `.optA-photo-wrap` no protótipo aprovado. Continua sendo o MESMO
+        `render` que `new.html.erb`/`show.html.erb` chamam, sem argumento
+        novo nenhum — ver o comentário acima sobre por que a sobreposição é
+        só CSS escopado pelo ancestral, não uma flag do partial. %>
+    <%= render "shared/booking_card_header" %>
+    </div>
   <% else %>
     <%# A ilustração troca o ícone de texto solto (✦) pela peça de estado
         vazio da fundação visual nova — a mensagem continua a mesma, só a
@@ -94,7 +135,15 @@
       "Últimos agendamentos" (só o UM registro de @ultimo_agendamento, ver a
       lacuna 4) e a lista de serviços. %>
   <div class="booking-flow booking-flow--entry" data-step="service">
-    <%= render "shared/booking_card_header" %>
+    <%# Com foto, o cabeçalho já foi renderizado lá dentro de
+        `.barbershop-vitrine-card`, sobreposto à foto (Opção A) — ver o
+        bloco acima. Sem foto nenhuma, não existe borda de foto pra o avatar
+        furar, então ele volta pro formato normal, sem sobreposição, bem
+        aqui no topo do fluxo — o mesmo formato que `new.html.erb` e
+        `show.html.erb` sempre mostraram. %>
+    <% unless @barbershop_photos.any? %>
+      <%= render "shared/booking_card_header" %>
+    <% end %>
 
     <% unless @online_booking_open %>
       <div class="booking-notice booking-notice--alert" role="status">
