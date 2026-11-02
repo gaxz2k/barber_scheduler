@@ -1,7 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["viewport", "track", "slide", "status", "imageFallback"]
+  // "dot" é opcional: a view só renderiza os indicadores quando há mais de
+  // uma foto (ver appointments/index.html.erb). `this.dotTargets` devolve
+  // lista vazia nesse caso — Stimulus não reclama de um target ausente —,
+  // então nenhum branch abaixo precisa checar "a view tem bolinhas?" na mão.
+  static targets = ["viewport", "track", "slide", "status", "imageFallback", "dot"]
   // Três segundos. A galeria é uma faixa de ambiente, e sete segundos era
   // tempo suficiente para o cliente achar que a página travou.
   static values = { interval: { type: Number, default: 3000 } }
@@ -42,6 +46,15 @@ export default class extends Controller {
     this.positionSlides()
     this.slideTargets.forEach((slide, slideIndex) => {
       slide.setAttribute("aria-hidden", slideIndex === this.index ? "false" : "true")
+    })
+    // As bolinhas são só indicador visual de posição (decorativas, sem
+    // `aria-hidden="false"` em nenhuma — quem usa leitor de tela já tem a
+    // posição pelo texto de `status`). Por isso marcam `is-active` por
+    // classe, e não ganham foco nem clique: adicionar bolinhas clicáveis
+    // reabriria a navegação manual (anterior/próximo) que o redesenho da
+    // home decidiu não ter — ver o comentário em appointments/index.html.erb.
+    this.dotTargets.forEach((dot, dotIndex) => {
+      dot.classList.toggle("is-active", dotIndex === this.index)
     })
     this.statusTarget.textContent = `Foto ${this.index + 1} de ${total}`
   }

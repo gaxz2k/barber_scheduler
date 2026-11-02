@@ -14,7 +14,24 @@
       que exige uma forma de parar movimento automático mais longo. Quem tem
       `prefers-reduced-motion` ligado no sistema não vê a rotação nenhuma — o
       controller confere isso antes de iniciar. E passar o mouse ou o foco
-      sobre a faixa continua parando, que é o comportamento que já existia. %>
+      sobre a faixa continua parando, que é o comportamento que já existia.
+
+      Redesenho (protótipo aprovado `cliente-home.html`, ver o contexto da
+      tarefa): a moldura ganhou cantos mais arredondados e sombra de cartão,
+      e a faixa agora tem dois indicadores PURAMENTE visuais, sem adicionar
+      nenhum controle novo de navegação —
+        1. o selo "N / total" (calculado aqui no servidor, não por JS: assim
+           ele já aparece certo na primeira renderização, antes do
+           `barbershop_carousel_controller` conectar);
+        2. as bolinhas de posição, uma por foto, que só existem com mais de
+           uma foto (`@barbershop_photos.many?` — uma bolinha sozinha não
+           indica posição nenhuma) e são `<span>`, não `<button>`: não há
+           `href`/clique nelas, o controller só liga `is-active` na que
+           corresponde ao slide atual (ver `#show` em
+           `barbershop_carousel_controller.js`). Continuam sem servir de
+           atalho "ir para a foto X" de propósito — isso reabriria a mesma
+           discussão de anterior/próximo que este componente já decidiu não
+           ter. %>
   <% if @barbershop_photos.any? %>
     <section class="barbershop-carousel" aria-labelledby="barbershop-carousel-title" data-controller="barbershop-carousel">
       <h2 id="barbershop-carousel-title" class="sr-only">Galeria de <%= Current.barbershop.name %></h2>
@@ -25,6 +42,10 @@
             <figure class="barbershop-carousel__slide" data-barbershop-carousel-target="slide" data-index="<%= index %>" aria-hidden="<%= index.zero? ? "false" : "true" %>">
               <div class="barbershop-carousel__image-wrap">
                 <%= image_tag photo.image, alt: photo.caption.presence || "Foto da #{Current.barbershop.name}", loading: index.zero? ? "eager" : "lazy", data: { barbershop_carousel_target: "image", action: "error->barbershop-carousel#imageError" } %>
+                <%# Decorativo — a posição real já está no texto de `status`
+                    abaixo (lido por leitor de tela); este selo é só o
+                    reforço visual que o protótipo usa ("1 / 6" no canto). %>
+                <span class="barbershop-carousel__badge" aria-hidden="true"><%= index + 1 %> / <%= @barbershop_photos.size %></span>
                 <div class="barbershop-carousel__image-fallback" data-barbershop-carousel-target="imageFallback" hidden>
                   <span aria-hidden="true">▧</span>
                   <strong>Foto indisponível</strong>
@@ -39,6 +60,13 @@
         </div>
       </div>
       <div class="barbershop-carousel__status" aria-live="polite" aria-atomic="true" data-barbershop-carousel-target="status"></div>
+      <% if @barbershop_photos.many? %>
+        <div class="barbershop-carousel__dots" aria-hidden="true">
+          <% @barbershop_photos.each_with_index do |_photo, index| %>
+            <span class="barbershop-carousel__dot<%= " is-active" if index.zero? %>" data-barbershop-carousel-target="dot"></span>
+          <% end %>
+        </div>
+      <% end %>
     </section>
   <% else %>
     <%# A ilustração troca o ícone de texto solto (✦) pela peça de estado

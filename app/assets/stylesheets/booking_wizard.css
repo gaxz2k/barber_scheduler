@@ -407,9 +407,14 @@ body:has(.booking-page) {
 .barbershop-carousel__viewport {
   overflow: hidden;
   border: 1px solid var(--dt-line);
+  /* Raio e sombra de cartão (protótipo `cliente-home.html`): a galeria
+   * deixa de ser uma faixa plana colada no fundo da página e passa a se
+   * destacar como peça própria — mesmo tratamento de elevação que
+   * `.service-list`/`.confirmation-card` já usam no resto do fluxo. */
   border-radius: var(--dt-radius-lg);
   background: var(--dt-petrol-900);
   aspect-ratio: 16 / 7;
+  box-shadow: var(--dt-shadow-card);
   touch-action: pan-y;
 }
 
@@ -481,6 +486,56 @@ body:has(.booking-page) {
   color: var(--dt-ink-soft);
   font-size: 0.75rem;
   text-align: right;
+}
+
+/* Selo "N / total" (protótipo `cliente-home.html`, `.slide-tag`): decorativo
+ * — ver o comentário na view sobre por que ele é calculado no servidor (não
+ * depende do JS do carrossel para aparecer certo) e por que não é um botão. */
+.barbershop-carousel__badge {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  border-radius: var(--dt-radius-pill);
+  background: rgba(10, 15, 20, 0.45);
+  color: var(--dt-ice-0);
+  font-size: 0.68rem;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.65rem;
+}
+
+/* Bolinhas de posição (protótipo `cliente-home.html`, `.gallery-dots`) —
+ * puramente visuais, sem clique (ver o comentário na view e em
+ * `barbershop_carousel_controller.js#show`). A bolinha ativa alonga em
+ * pílula em vez de só trocar de cor — o mesmo tratamento do protótipo,
+ * que torna a posição legível mesmo para quem tem dificuldade de
+ * perceber a diferença entre duas cores próximas. */
+.barbershop-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 0.6rem;
+}
+
+.barbershop-carousel__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dt-line, rgba(10, 15, 20, 0.08));
+  transition: background-color var(--dt-transition-base), width var(--dt-transition-base);
+}
+
+.barbershop-carousel__dot.is-active {
+  width: 20px;
+  border-radius: var(--dt-radius-pill);
+  background: var(--dt-petrol-700);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barbershop-carousel__dot {
+    transition: none;
+  }
 }
 
 /* Estado vazio da galeria: compacto, de propósito — é um aviso de "ainda
