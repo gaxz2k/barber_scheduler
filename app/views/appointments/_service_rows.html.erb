@@ -1,7 +1,11 @@
 <%# Lista densa de serviços — o "componente item de serviço" da referência
-    SimplesAgenda (ver o contexto da tarefa de redesenho): nome à esquerda,
-    preço + duração à direita, seletor "com quem" abaixo do nome e botão
-    "Agendar" abaixo da duração.
+    SimplesAgenda, redesenhada no padrão do protótipo aprovado
+    `cliente-agendar.html` (ver o contexto da tarefa de redesenho do fluxo de
+    agendamento): uma linha por serviço (nome + duração + preço), com o
+    seletor "com quem" RECOLHIDO por padrão — só aparece, animado, quando
+    aquele serviço é escolhido. Confirmar o profissional (aceitando o padrão
+    pré-preenchido, ou trocando no seletor) avança sozinho para a etapa
+    seguinte, sem precisar clicar em "Agendar".
 
     Reaproveitada em três lugares:
     (1) a home (`appointments/index`), para a lista completa de serviços;
@@ -15,56 +19,109 @@
         `scope` prefixando os ids de `<select>`/`<a>` as duas cópias
         colidiriam em DOM (dois elementos com o mesmo id).
 
-    O botão "Agendar" é um link que navega para a tela de data/horário,
-    carregando o serviço (e o profissional, se escolhido no seletor "com") na
-    URL. %>
+    Tudo o que segue funciona sem JavaScript: a lista aparece com a seção do
+    profissional já expandida (sem animação, sem recolher), com o seletor
+    nativo e o botão "Agendar" visíveis em toda linha. O recolhido, a
+    animação, o seletor customizado (foto/inicial + primeiro nome + seta) e
+    o avanço automático só existem quando `service_list_controller.js`
+    conecta e marca `.service-list--js` no elemento — ver o comentário lá
+    (e a skill `barber-scheduler-js-toolchain`: nada no fluxo público pode
+    DEPENDER de JS, só ser melhorado por ele). O botão "Agendar" continua no
+    DOM mesmo com JS: ele deixa de precisar de um clique, mas não é removido
+    — é o próprio link que `service_agendar_controller.js` usa para navegar
+    sozinho (ver `#go`), e é o que mantém teclado/leitor de tela com uma
+    ação explícita de reserva. %>
 <% heading ||= "Escolha um serviço" %>
 <% bar_modifier ||= nil %>
 <% scope ||= "all" %>
 <% if services.any? %>
-  <section class="service-list">
+  <section class="service-list" data-controller="service-list">
     <h2 class="service-list__head <%= bar_modifier %>"><%= heading %></h2>
 
-    <% services.each do |service| %>
-      <div class="service-row" data-controller="service-agendar" data-service-agendar-row>
-        <div class="service-row__main">
-          <span class="service-row__name"><%= service.name %></span>
+    <%# O padrão é por UNIDADE (ver `BarbershopUnit#default_professional`),
+        então é o mesmo profissional pré-preenchido em toda linha desta
+        lista — a escolha do protótipo também era "um padrão para a tela",
+        não um padrão por serviço. `to_a` carrega a relação uma vez só: sem
+        isso, `default_professional_among` (que chama `include?`) e o laço
+        de opções abaixo disparariam uma consulta cada, uma por linha de
+        serviço. %>
+    <% profissionais_disponiveis = professionals.to_a %>
+    <% profissional_padrao = barbershop_unit&.default_professional_among(profissionais_disponiveis) || profissionais_disponiveis.first %>
 
-          <% if professionals.any? %>
-            <div class="service-row__with">
-              <span class="service-row__with-label">com</span>
+    <% services.each do |service| %>
+      <div class="service-row" data-controller="service-agendar" data-service-agendar-row
+           data-service-list-target="row"
+           data-action="professional-select:open->service-agendar#pausePending professional-select:close->service-agendar#resumePending">
+        <%# Linha compacta: rádio decorativo + nome + duração à esquerda,
+            preço à direita — a única informação visível antes de escolher
+            o serviço. O clique é tratado pelo `service-list` (controller do
+            `<section>` inteiro, que sabe qual é a linha selecionada agora),
+            não pelo `service-agendar` desta linha — ver o comentário de
+            `service_list_controller.js` sobre por que escolher QUAL serviço
+            está aberto e confirmar o profissional são responsabilidades
+            separadas. %>
+        <div class="service-row__top" data-action="click->service-list#selectRow">
+          <span class="service-row__radio" aria-hidden="true"></span>
+          <span class="service-row__name"><%= service.name %></span>
+          <span class="service-row__duration"><%= icon_tag(:clock, size: 14) %><%= duracao_formatada(service.duration_minutes) %></span>
+          <% if service.price_label %>
+            <span class="service-row__price"><%= service.price_label %></span>
+          <% end %>
+        </div>
+
+        <% if profissionais_disponiveis.any? %>
+          <%# Recolhida por padrão (só com JS — ver o comentário no topo do
+              arquivo). O CSS reage à classe `.is-selected` que
+              `service_list_controller.js` põe em `.service-row`, não
+              precisa de um target próprio aqui. %>
+          <div class="service-row__pro-section">
+            <%# Tocar aqui (fora do seletor) aceita quem já está escolhido —
+                o padrão pré-preenchido, ou quem o cliente já tiver trocado
+                no seletor — e dispara o avanço automático. É a ação
+                explícita que falta quando ninguém mexe no seletor: sem ela,
+                aceitar o padrão exigiria abrir o seletor só para fechar de
+                novo escolhendo a mesma pessoa. %>
+            <div class="service-row__pro-row" data-action="click->service-agendar#confirmDefault">
+              <span class="service-row__pro-label">
+                Escolha o profissional
+                <span class="service-row__pro-hint">toque aqui para confirmar</span>
+              </span>
+
+              <%# Combobox customizado sobre o <select> nativo — ver
+                  `professional_select_controller.js`. Sem JS, o <select>
+                  segue sozinho e visível, funcionando do jeito nativo do
+                  navegador (a mesma degradação graciosa de sempre). %>
               <span class="service-row__select-wrap" data-controller="professional-select">
                 <select id="com-<%= scope %>-<%= service.id %>" class="service-row__select"
                         aria-label="Com quem para <%= service.name %>"
                         data-action="change->service-agendar#selectProfessional">
                   <option value="">Nada selecionado</option>
-                  <% professionals.each do |profissional| %>
-                    <option value="<%= profissional.id %>"><%= profissional.name %></option>
+                  <% profissionais_disponiveis.each do |profissional| %>
+                    <option value="<%= profissional.id %>"
+                            data-photo-url="<%= rails_blob_url(profissional.photo_blob) if profissional.photo? %>"
+                            data-initial="<%= profissional.name.first %>"
+                            <%= "selected" if profissional == profissional_padrao %>><%= profissional.name %></option>
                   <% end %>
                 </select>
               </span>
             </div>
-          <% end %>
-        </div>
+          </div>
+        <% end %>
 
-        <div class="service-row__side">
-          <span class="service-row__price-block">
-            <% if service.price_cents.to_i.positive? %>
-              <span class="service-row__price"><%= number_to_currency(service.price_cents / 100.0) %></span>
-            <% end %>
-            <span class="service-row__duration"><%= duracao_formatada(service.duration_minutes) %></span>
-          </span>
-
-          <%# O `href` é reescrito pelo Stimulus quando o "com" muda — ver
-              `service_agendar_controller.js`. `data-turbo="false"` porque a
-              troca precisa recarregar/ser interceptada pelo wizard; é a URL
-              que carrega a escolha de profissional. %>
-          <%= link_to "Agendar",
-                      new_appointment_path(service: service.id, unidade_slug: params[:unidade_slug]),
-                      class: "service-row__go",
-                      id: "agendar-#{scope}-#{service.id}",
-                      data: { turbo: false, step_link: true, service_agendar_target: "link" } %>
-        </div>
+        <%# O `href` já sai com o profissional padrão (quando existe um): é
+            o "pré-preenchido" chegando pronto na primeira renderização, sem
+            precisar de um `change` de JS para existir — o mesmo link serve
+            de fallback clicável sem JS e de alvo de navegação automática
+            com JS. O contrato de parâmetros (service/professional/
+            unidade_slug) não muda — ver
+            `service_agendar_controller.js#selectProfessional`, que
+            reescreve só o `professional` quando o cliente troca no
+            seletor. %>
+        <%= link_to "Agendar",
+                    new_appointment_path(service: service.id, professional: profissional_padrao&.id, unidade_slug: params[:unidade_slug]),
+                    class: "service-row__go",
+                    id: "agendar-#{scope}-#{service.id}",
+                    data: { turbo: false, step_link: true, service_agendar_target: "link" } %>
       </div>
     <% end %>
   </section>

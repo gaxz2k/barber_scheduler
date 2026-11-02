@@ -817,13 +817,23 @@ body:has(.booking-page) {
 }
 
 
-/* === Lista de serviços — "componente item de serviço" da referência =======
- * SimplesAgenda (ver o contexto da tarefa de redesenho): nome à esquerda
- * (até 3 linhas), preço + duração à direita, "com" + select abaixo do nome,
- * botão "Agendar" abaixo da duração. Usada três vezes na mesma página
- * possível (lista completa + "Últimos agendamentos" com o UM registro de
- * `@ultimo_agendamento`), daí o `scope` nos ids do partial — ver
- * `appointments/_service_rows`. */
+/* === Lista de serviços — "componente item de serviço" ======================
+ * Redesenho do fluxo de agendamento (ver o protótipo aprovado
+ * `cliente-agendar.html` e a tarefa que portou esta UX para o app real):
+ * uma linha compacta por serviço — nome, duração e preço, tudo na MESMA
+ * linha — com o seletor "com quem" RECOLHIDO por padrão. Escolher o
+ * serviço expande (com JS; ver `.service-list--js` abaixo) a seção
+ * "Escolha o profissional", já com o padrão da unidade pré-preenchido.
+ *
+ * Usada três vezes na mesma página possível (lista completa + "Últimos
+ * agendamentos" com o UM registro de `@ultimo_agendamento`), daí o `scope`
+ * nos ids do partial — ver `appointments/_service_rows`.
+ *
+ * Tudo funciona sem JavaScript: sem `.service-list--js` (a classe que só
+ * `service_list_controller.js#connect` adiciona), a seção do profissional
+ * fica sempre visível e o botão "Agendar" sempre clicável — a mesma
+ * degradação graciosa do resto do fluxo público (ver a skill
+ * `barber-scheduler-js-toolchain`). */
 .booking-entry .service-list,
 .booking-page .service-list {
   display: grid;
@@ -875,47 +885,180 @@ body:has(.booking-page) {
 }
 
 .service-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  gap: 1rem;
-  padding: 1.35rem 1.1rem;
+  /* `application.css` declara `.service-row { display: grid; grid-template-columns:
+   * 1fr auto; }` para o componente antigo (mesmo motivo do `overflow` do
+   * `.service-list` comentado acima). Sem redeclarar `display`/
+   * `grid-template-columns` aqui, a cascata usa os dela e o `.service-row__top`
+   * vira um ITEM dessa grade de 2 colunas — não o bloco de largura cheia que
+   * este redesenho precisa. `block` é suficiente: o layout de verdade (rádio +
+   * nome + duração + preço) é todo feito dentro de `.service-row__top`. */
+  display: block;
+  padding: 1rem 1.1rem;
   border-top: 1px solid var(--ref-line, #e6e8ec);
+  transition: background-color var(--dt-transition-base);
 }
 
 .service-row:last-child {
   border-radius: 0 0 var(--dt-radius-sm) var(--dt-radius-sm);
 }
 
-.service-row__main {
+/* Destaque do serviço aberto — só existe com JS (sem JS não há "aberto",
+ * a seção do profissional já está sempre visível em toda linha). Um tom de
+ * fundo, não uma borda: esta lista é flat (divisores finos entre linhas),
+ * não cartões individuais como o protótipo isolado — emprestar uma borda
+ * por linha ficaria estranho ao lado das linhas vizinhas sem ela. */
+.service-list--js .service-row.is-selected {
+  background: var(--ref-consult-bg);
+}
+
+/* Linha compacta: rádio decorativo (só com JS — ver `.service-row__radio`
+ * abaixo) + nome + duração à esquerda, preço à direita. É a ÚNICA
+ * informação visível antes de o cliente escolher aquele serviço — o
+ * contraste com a lista densa de antes (nome + select + preço + duração +
+ * botão, tudo de uma vez) é o ponto central deste redesenho. */
+.service-row__top {
   display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
   gap: 0.6rem;
-  min-width: 0;
+  cursor: pointer;
+}
+
+/* O rádio só faz sentido quando existe algo para "selecionar" — sem JS
+ * todo serviço já mostra a seção do profissional aberta, então marcar um
+ * círculo vazio ao lado de cada nome seria um elemento decorativo sem
+ * função, só ruído visual a mais numa lista que já está tentando ser mais
+ * enxuta. */
+.service-row__radio {
+  display: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: 0 0 auto;
+  border: 2px solid var(--dt-line, #dde0e6);
+  border-radius: 50%;
+  position: relative;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.service-list--js .service-row__radio {
+  display: inline-block;
+}
+
+.service-list--js .service-row.is-selected .service-row__radio {
+  border-color: var(--ref-section-blue);
+  background: var(--ref-section-blue);
+}
+
+.service-list--js .service-row.is-selected .service-row__radio::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--dt-ice-0);
 }
 
 .service-row__name {
+  min-width: 0;
   color: var(--ref-name-ink);
+  font-size: 1.02rem;
+  font-weight: var(--dt-weight-bold);
+  line-height: 1.3;
+  /* Uma linha só, com reticências — diferente da versão anterior (até 3
+   * linhas): a linha compacta precisa caber nome + duração + preço lado a
+   * lado, e um nome de serviço gigante quebrando em 3 linhas estouraria
+   * essa linha única que é o ponto inteiro deste redesenho. O nome
+   * completo continua acessível: é o `title` do próprio elemento de texto
+   * (navegador mostra em tooltip) e, principalmente, o `<h1>`/resumo da
+   * etapa seguinte depois de escolhido. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.service-row__duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+  color: var(--ref-meta-ink);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.service-row__duration svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 auto;
+}
+
+.service-row__price {
+  flex: 0 0 auto;
+  color: var(--ref-price-ink);
   font-size: 1.05rem;
   font-weight: var(--dt-weight-bold);
-  line-height: 1.35;
-  /* Pode quebrar até 3 linhas, como no print — sem truncar com reticências:
-   * o nome completo do serviço é informação que o cliente precisa ler. */
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  white-space: nowrap;
 }
 
-.service-row__with {
+/* === Seção "Escolha o profissional" (recolhida por padrão, só com JS) ======
+ * Sem `.service-list--js`, fica sempre visível (`max-height`/`opacity` não
+ * entram em jogo) — a mesma degradação graciosa do resto do componente.
+ * Com JS, recolhida (altura 0) até a linha ganhar `.is-selected`, quando
+ * expande com uma transição suave — o mesmo padrão de `max-height` +
+ * `opacity` do protótipo aprovado (`.service-pro-section` em
+ * `cliente-agendar.html`), adaptado aos tokens deste projeto. */
+.service-row__pro-section {
+  margin-top: 0.85rem;
+}
+
+.service-list--js .service-row__pro-section {
+  max-height: 0;
+  margin-top: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease, margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.service-list--js .service-row.is-selected .service-row__pro-section {
+  max-height: 7rem;
+  margin-top: 0.85rem;
+  opacity: 1;
+  overflow: visible;
+}
+
+.service-row__pro-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--ref-line);
+  cursor: pointer;
 }
 
-.service-row__with-label {
+.service-row__pro-label {
+  color: var(--ref-section-blue);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* "toque aqui para confirmar" só faz sentido como instrução de UM toque
+ * quando existe o quê confirmar com um toque — sem JS não há avanço
+ * automático nenhum, só o botão "Agendar" de sempre, e a instrução
+ * confundiria mais do que ajudaria. */
+.service-row__pro-hint {
+  display: none;
+  margin-top: 0.1rem;
   color: var(--ref-meta-ink);
-  font-size: 0.95rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.service-list--js .service-row__pro-hint {
+  display: block;
 }
 
 .service-row__select-wrap {
@@ -955,13 +1098,15 @@ body:has(.booking-page) {
   border-radius: var(--dt-radius-sm);
 }
 
-/* === Dropdown customizado "com quem" ========================================
+/* === Seletor customizado "com quem" ========================================
  * Progressive enhancement sobre o <select> nativo acima (ver
  * `professional_select_controller.js`): sem JS, o select continua sozinho e
  * visível, funcionando do jeito nativo do navegador. Com JS, o controller
- * acrescenta um botão-gatilho (que herda a aparência do select) e esconde o
- * select original por trás dele — ele continua no DOM e disparando o evento
- * `change` que o link "Agendar" escuta, só não aparece. */
+ * monta um gatilho pequeno e "quadrado" — foto/inicial + primeiro nome +
+ * seta, `border-radius: var(--dt-radius-md)` (8px, não pílula) — igual ao
+ * `.pro-picker-trigger` do protótipo aprovado, e esconde o select original
+ * por trás dele (ele continua no DOM e disparando o `change` que
+ * `service_agendar_controller.js` escuta, só não aparece). */
 .service-row__select-wrap--js .service-row__select {
   position: absolute;
   inset: 0;
@@ -971,33 +1116,113 @@ body:has(.booking-page) {
 
 .service-row__select-trigger {
   appearance: none;
-  border: 1px solid var(--dt-line, #dde0e6);
-  border-radius: var(--dt-radius-sm);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%238a8ea0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.5 2 6 6.2 10.5 2'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-color: var(--dt-ice-0);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1.5px solid var(--dt-line, #dde0e6);
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-ice-0);
   color: var(--ref-select-ink);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: var(--dt-weight-bold);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  text-align: left;
-  padding: 0.6rem 2.1rem 0.6rem 0.8rem;
-  max-width: 11rem;
-  min-width: 9rem;
+  letter-spacing: 0.01em;
+  padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+  max-width: 9rem;
   cursor: pointer;
-  transition: border-color var(--dt-transition-fast), box-shadow var(--dt-transition-fast);
+  transition: border-color var(--dt-transition-fast), background-color var(--dt-transition-fast);
 }
 
 .service-row__select-trigger:hover {
   border-color: var(--ref-select-ink);
 }
 
+.service-row__select-trigger[aria-expanded="true"] {
+  border-color: var(--ref-section-blue);
+  background: var(--dt-ice-0);
+}
+
 .service-row__select-trigger:focus-visible {
   outline: none;
   border-color: var(--ref-select-ink);
   box-shadow: var(--dt-focus-ring);
+}
+
+.service-row__select-trigger-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.service-row__select-trigger-chevron {
+  width: 0.8rem;
+  height: 0.8rem;
+  flex: 0 0 auto;
+  color: var(--ref-meta-ink);
+  transition: transform 0.18s ease;
+}
+
+.service-row__select-trigger[aria-expanded="true"] .service-row__select-trigger-chevron {
+  transform: rotate(180deg);
+}
+
+/* Avatar do gatilho/opções: foto do profissional (`data-photo-url`) quando
+ * cadastrada, inicial do nome (`data-initial`) quando não — os mesmos
+ * atributos que já vinham nas `<option>` do select nativo, só agora
+ * efetivamente lidos (ver o comentário em `professional_select_controller.js`
+ * sobre por que o avatar é construído a partir deles, e não de uma segunda
+ * fonte de dados). */
+.service-row__select-avatar,
+.service-row__select-avatar-img,
+.service-row__select-avatar-initial {
+  width: 1.65rem;
+  height: 1.65rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.service-row__select-avatar-img {
+  object-fit: cover;
+  background: var(--dt-petrol-900);
+}
+
+.service-row__select-avatar-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dt-petrol-900);
+  color: var(--dt-ice-0);
+  font-size: 0.6rem;
+  font-weight: var(--dt-weight-bold);
+  text-transform: uppercase;
+}
+
+/* "Pop" de troca de profissional: a mesma animação do protótipo aprovado
+ * (`avatarPop` em `cliente-agendar.html`) — confirma visualmente que ALGO
+ * mudou quando o cliente escolhe outra pessoa no painel, sem precisar ler
+ * o nome de novo. Só dispara no avatar do GATILHO (não nas opções do
+ * painel, que já fecha ao escolher) e só quando a troca é explícita — ver
+ * `professional_select_controller.js#choose`. */
+@keyframes avatarPop {
+  0% {
+    transform: scale(0.4) rotate(-12deg);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.12) rotate(2deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+.service-row__select-avatar-img.is-popping,
+.service-row__select-avatar-initial.is-popping {
+  animation: avatarPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Painel colado abaixo do gatilho, mesma largura, sombreado, sobrepondo os
@@ -1007,7 +1232,7 @@ body:has(.booking-page) {
   z-index: 10;
   top: calc(100% + 0.3rem);
   left: 0;
-  width: max(100%, 11rem);
+  width: max(100%, 12rem);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1022,14 +1247,22 @@ body:has(.booking-page) {
 .service-row__select-option {
   display: flex;
   align-items: center;
-  min-height: 3.5rem;
-  padding: 0 1rem;
+  gap: 0.6rem;
+  min-height: 3.1rem;
+  padding: 0 0.9rem;
   color: var(--ref-select-option-ink, #5a5e70);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: var(--dt-weight-medium);
   letter-spacing: 0.01em;
-  text-transform: uppercase;
   cursor: pointer;
+}
+
+.service-row__select-option-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .service-row__select-option:not(:last-child) {
@@ -1049,6 +1282,11 @@ body:has(.booking-page) {
   color: var(--dt-ice-0);
 }
 
+.service-row__select-option--active .service-row__select-avatar-initial {
+  background: var(--dt-ice-0);
+  color: var(--ref-section-blue);
+}
+
 .service-row__select-option--active:hover {
   background: var(--ref-section-blue);
 }
@@ -1059,34 +1297,13 @@ body:has(.booking-page) {
   font-weight: var(--dt-weight-bold);
 }
 
-.service-row__side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.6rem;
-}
-
-.service-row__price-block {
-  display: grid;
-  justify-items: end;
-  gap: 0.15rem;
-}
-
-.service-row__price {
-  color: var(--ref-price-ink);
-  font-size: 1.15rem;
-  font-weight: var(--dt-weight-bold);
-  white-space: nowrap;
-}
-
-.service-row__duration {
-  color: var(--ref-meta-ink);
-  font-size: 0.95rem;
-  white-space: nowrap;
-}
-
-/* Botão "Agendar": laranja sólido, texto branco maiúsculo semi-negrito,
- * ~130×52px — as dimensões do print de referência. */
+/* Botão "Agendar": continua no DOM (ver o comentário no topo do arquivo e
+ * em `service_agendar_controller.js#go`) — o avanço automático substitui a
+ * NECESSIDADE de clicar nele, não o elemento em si. Visível e clicável
+ * normalmente sem JS; escondido do jeito `.sr-only` (fora da tela, não
+ * `display: none`) quando `.service-list--js` está presente, para quem usa
+ * teclado/leitor de tela sem depender da navegação automática ainda ter
+ * uma ação explícita disponível. */
 .service-row__go {
   display: inline-flex;
   min-width: 7.5rem;
@@ -1094,6 +1311,7 @@ body:has(.booking-page) {
   align-items: center;
   justify-content: center;
   white-space: nowrap;
+  margin-top: 0.85rem;
   background: var(--ref-primary-orange);
   color: var(--dt-ice-0);
   border: 1px solid var(--ref-primary-orange);
@@ -1112,6 +1330,65 @@ body:has(.booking-page) {
   background: var(--ref-primary-orange-hover);
   border-color: var(--ref-primary-orange-hover);
 }
+
+.service-list--js .service-row__go {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* === Toast "seguindo para a próxima etapa" ==================================
+ * Substitui o botão "Agendar" como ação principal (ver acima): sumir sem
+ * avisar seria confuso, então mostramos com clareza que o avanço é
+ * automático — e cancelável, caso o cliente ainda esteja escolhendo
+ * profissional (abrir o seletor pausa, ver
+ * `service_agendar_controller.js#pausePending`). Criado dinamicamente por
+ * linha (`service_agendar_controller.js#ensureToast`) e anexado a
+ * `document.body` — `position: fixed`, então a posição na árvore do DOM
+ * não importa, e um portal evita qualquer `overflow`/`transform` de
+ * ancestral cortando ou deslocando o toast. */
+.service-row__advance-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.4rem;
+  z-index: 50;
+  width: min(92vw, 23rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--dt-petrol-900);
+  color: var(--dt-ice-0);
+  font-size: 0.88rem;
+  font-weight: var(--dt-weight-bold);
+  padding: 0.75rem 1.1rem;
+  border-radius: var(--dt-radius-md);
+  overflow: hidden;
+  box-shadow: var(--dt-shadow-soft);
+  opacity: 0;
+  transform: translateX(-50%) translateY(0.85rem);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.service-row__advance-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.service-row__advance-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 0;
+  background: rgba(255, 255, 255, 0.65);
+}
+
 
 /* === Grade de horários ======================================================
  * O horário escolhido fica petróleo (é seleção/estado, não a decisão final
@@ -1634,42 +1911,25 @@ body:has(.booking-page) {
   pointer-events: auto;
 }
 
-/* Ergonomia mobile do item de serviço: o grid de 2 colunas (nome+select à
- * esquerda, preço+botão à direita) funciona numa tela larga, mas numa tela
- * de celular real (~375-430px) o select ("NADA SELECIONADO", até 2 linhas)
- * e o botão "AGENDAR" ficam espremidos lado a lado na mesma linha, sem
- * respiro — ruim pro toque e visualmente apertado (relatado pelo usuário
- * num print real do Orca). Abaixo de 480px a linha vira uma coluna só:
- * nome, select "com quem" em largura cheia (alvo de toque grande, sem
- * quebrar em 2 linhas), depois preço/duração ao lado do botão "Agendar" —
- * cada elemento com largura de sobra em vez de dividir ~340px em dois. */
+/* Ergonomia mobile do item de serviço: a linha compacta (rádio+nome+duração
+ * à esquerda, preço à direita) já é só uma linha, então não precisa
+ * empilhar em coluna como a versão anterior precisava — o que muda no
+ * celular é só folga: menos espaço entre elementos e o painel do seletor
+ * ocupando a largura inteira do cartão (em vez de ficar estreito do lado
+ * direito), para o alvo de toque de cada profissional ficar confortável. */
 @media (max-width: 480px) {
-  .service-row {
-    grid-template-columns: 1fr;
-    row-gap: 0.9rem;
+  .service-row__top {
+    gap: 0.4rem;
   }
 
-  .service-row__select-wrap,
-  .service-row__select-trigger,
-  .service-row__select {
-    width: 100%;
-    max-width: none;
+  .service-row__name {
+    font-size: 0.95rem;
   }
 
   .service-row__select-panel {
-    width: 100%;
-  }
-
-  .service-row__side {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-  }
-
-  .service-row__price-block {
-    justify-items: start;
-    text-align: left;
+    left: auto;
+    right: 0;
+    width: max(14rem, 70vw);
   }
 }
 
