@@ -750,7 +750,12 @@ body:has(.booking-page) {
   max-width: 11rem;
   aspect-ratio: 1 / 1;
   place-items: center;
-  border-radius: 50%;
+  /* Quadrado com canto levemente arredondado, não círculo — mesma decisão
+     já tomada pro seletor "com quem" da etapa de serviço (ver
+     `.service-row__select-trigger` em booking_wizard.css): uma logo
+     quadrada lê como marca/identidade, uma logo redonda lê como foto de
+     perfil de pessoa — e a barbearia é a marca aqui, não uma pessoa. */
+  border-radius: var(--dt-radius-lg);
   margin-bottom: 0.4rem;
 }
 
