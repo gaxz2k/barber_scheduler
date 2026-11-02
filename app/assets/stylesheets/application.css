@@ -5,30 +5,64 @@
  * nomes agora dizem a verdade, porque `--gold` sendo dourado é metade do
  * trabalho de manter a paleta honesta.
  *
- * O dourado não é enfeite: ele marca o que é agendar, o que está escolhido
- * e o que é o número do passo. Se um dia o dourado aparecer em lugar que não
- * é decisão, ele perdeu o sentido e virou enfeite.
+ * Fase de unificação de marca: o dono especificou 6 hex (navy #0A0F14,
+ * petróleo escuro #0F3D3E, teal médio #2E6F73, sage #7FB3B8, creme #EADCC8,
+ * laranja queimado #C6601F) e confirmou querer UMA paleta em todo o app —
+ * não só no componente novo do agendamento. Nesta fase o valor de cada
+ * variável abaixo muda para a cor nova; os NOMES ficam exatamente como
+ * estavam, porque são usados em centenas de seletores deste arquivo e de
+ * `design_components.css`/`booking_wizard.css`/`admin_panel.css`, e
+ * renomear quebraria todos eles sem necessidade.
  *
- * O creme é o fundo da página e o branco é a superfície do card. A diferença
- * é o que faz o card existir sem borda grossa, que é a linguagem visual da
- * referência. */
+ * Isso cria uma mentira de nome idêntica à que o comentário acima já
+ * reconhece sobre `--gold`: a variável `--gold` HOJE não é mais dourada —
+ * é o mesmo teal de marca que `design_tokens.css` chama de
+ * `--dt-petrol-700` (#2E6F73). O nome é histórico (Studio Navalha) e foi
+ * mantido de propósito para não quebrar nenhuma referência existente; quem
+ * for procurar "qual é a cor de decisão do produto" deve ler o valor, não
+ * confiar no nome. O mesmo vale para `--cream`: deixou de ser o bege vivo
+ * #EADCC8 (reservado agora só para faixas de destaque tipo hero/banner, não
+ * para fundo de página) e passa a ser um quase-branco com a MESMA tinta
+ * navy do texto principal — o fundo de página going-forward é neutro, não
+ * um creme vivo.
+ *
+ * Por que hex literal aqui em vez de `var(--dt-*)`: este arquivo e
+ * `design_tokens.css` são carregados juntos em TODA view (ver
+ * `application.html.erb`), então dava para apontar `--gold` para
+ * `var(--dt-petrol-700)` e ter uma fonte de verdade só. Não foi essa a
+ * escolha porque `--gold`/`--gold-deep` aqui têm um papel de contraste
+ * MAIS específico que `--dt-petrol-700`/`--dt-petrol-900`: em pelo menos
+ * quatro seletores deste arquivo (`.service-list__head`,
+ * `.service-row__go:hover`, `.booking-flow__head .button--secondary:hover`)
+ * o teal 700 fica como FUNDO com texto escuro por cima — e o teal 700 mede
+ * só 3.3:1 nesse papel (medido), abaixo do mínimo de 4.5:1. Esses seletores
+ * usam `--gold-light` (um passo mais claro da mesma rampa) em vez de
+ * `--gold` por esse motivo exato — ver o comentário em cada um. Manter os
+ * valores como hex literal aqui, em vez de aliasar para `--dt-*`, deixa
+ * essa divergência de papel visível e documentada em um lugar só, sem
+ * acoplar os dois arquivos por uma variável que significaria coisas
+ * diferentes em cada um. */
 :root {
-  --ink: #12100e;
-  --ink-soft: #6b635a;
-  --cream: #f7f3ec;
-  --paper: #fffdf9;
-  --paper-deep: #f0e9dd;
-  --oat: #ded2bf;
-  --gold: #b08640;
-  --gold-deep: #8a6624;
+  --ink: #0A0F14; /* navy quase preto, hex exato pedido — era #12100e (quase preto neutro) */
+  --ink-soft: #46535C; /* mesma rampa navy, um passo mais claro — 7.92:1 sobre branco/creme novo */
+  --cream: #F8F3E8; /* quase-branco com tinta navy (fundo de página); o bege vivo #EADCC8
+                        fica reservado a faixas de destaque, não ao fundo padrão — ver cabeçalho */
+  --paper: #FFFFFF; /* branco puro — mesma superfície de card que `--dt-ice-0` */
+  --paper-deep: #F0F7F7; /* quase-branco com tinta teal, para hover/realce sutil sobre o card */
+  --oat: #DDD4C2; /* token legado sem uso ativo hoje; atualizado para a mesma família de --line */
+  --gold: #2E6F73; /* teal médio, a cor de DECISÃO do produto — ver o cabeçalho sobre o nome */
+  --gold-deep: #0F3D3E; /* petróleo escuro — variante funda do teal, para hover/estado mais forte */
+  --gold-light: #7FB3B8; /* sage/teal claro — só para os poucos lugares em que o teal 700 falha
+                             contraste (fundo com texto escuro por cima, ou texto sobre fundo bem
+                             escuro); ver o cabeçalho do arquivo para a medição exata */
   --green: #2f6b4f;
   --green-soft: #eaf3ee;
   --danger: #8c2f22;
   --danger-soft: #fbeeea;
-  --line: #ded2bf;
-  --line-soft: #ece3d6;
-  --shadow-soft: 0 18px 44px rgba(18, 16, 14, 0.12);
-  --shadow-card: 0 2px 10px rgba(18, 16, 14, 0.07);
+  --line: #DDD4C2; /* navy-tint claro (ink-200), mesma luminância aproximada do bege antigo */
+  --line-soft: #E6DCC8; /* navy-tint mais claro ainda (ink-150) */
+  --shadow-soft: 0 18px 44px rgba(10, 15, 20, 0.12); /* RGB de --ink, não um preto solto */
+  --shadow-card: 0 2px 10px rgba(10, 15, 20, 0.07);
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 4px;
@@ -95,7 +129,11 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid rgba(8, 102, 255, 0.45);
+  /* RGB de --gold-light/#7FB3B8 (127, 179, 184): o anel de foco usava um
+   * azul de plataforma solto (#0866ff, a mesma cor que o comentário no
+   * topo do arquivo já criticava no --gold de antes) — agora é a mesma
+   * família teal que marca hover/foco em toda borda do produto. */
+  outline: 3px solid rgba(127, 179, 184, 0.55);
   outline-offset: 3px;
 }
 
@@ -149,19 +187,21 @@ strong,
   color: var(--ink);
 }
 
-/* O monograma. Preto com as iniciais em dourado: é a única peça da marca que
- * aparece em toda tela, e é ela que precisa carregar a ideia de barbearia
- * clássica. Um círculo com as duas iniciais em sans-serif seria a mesma
- * marca de plataforma genérica de antes. */
+/* O monograma. Petróleo escuro com as iniciais em teal claro: é a única peça
+ * da marca que aparece em toda tela, e é ela que precisa carregar a
+ * identidade. O teal médio (--gold) NÃO entra aqui como texto/borda sobre
+ * este fundo bem escuro — mede só 3.3:1 nesse par (medido), por isso o
+ * monograma usa `--gold-light` (sage #7FB3B8, 8.29:1 sobre --ink), o mesmo
+ * recurso que `.service-list__head` usa para o problema inverso. */
 .brand-mark {
   display: inline-grid;
   width: 2.75rem;
   height: 2.75rem;
   place-items: center;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--gold-light);
   border-radius: 50%;
   background: var(--ink);
-  color: var(--gold);
+  color: var(--gold-light);
   font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 700;
@@ -264,15 +304,17 @@ strong,
 
 .booking-flow__head .button--secondary {
   background: transparent;
-  border-color: rgba(255, 253, 249, 0.5);
+  border-color: rgba(255, 255, 255, 0.5); /* --paper agora é branco puro, não ivory (#fffdf9) */
   color: var(--paper);
   padding: 0.4rem 0.8rem;
   font-size: 0.7rem;
 }
 
 .booking-flow__head .button--secondary:hover {
-  background: var(--gold);
-  border-color: var(--gold);
+  /* Mesmo motivo de `.service-list__head`: fundo precisa ser o passo claro
+   * (--gold-light) para o texto escuro (--ink) continuar legível. */
+  background: var(--gold-light);
+  border-color: var(--gold-light);
   color: var(--ink);
 }
 
@@ -332,8 +374,12 @@ strong,
   background: var(--paper);
 }
 
+/* O cabeçalho da lista de serviços. Dark bg (--ink) com texto branco embutido
+ * na faixa — a barra com o rótulo "COM" usa fundo claro (--gold-light), não
+ * o teal 700 (--gold): texto escuro sobre o teal 700 mede 3.3:1 (medido),
+ * abaixo do mínimo; sobre o sage claro mede 8.29:1. */
 .service-list__head {
-  background: var(--gold);
+  background: var(--gold-light);
   color: var(--ink);
   padding: 0.6rem 1rem;
   font-size: 0.75rem;
@@ -402,7 +448,7 @@ strong,
   appearance: none;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236b635a' d='M0 0h10L5 6z'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2346535c' d='M0 0h10L5 6z'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
   color: var(--ink);
   font-size: 0.78rem;
   padding: 0.4rem 1.7rem 0.4rem 0.6rem;
@@ -432,8 +478,10 @@ strong,
 
 .service-row__go:hover,
 .service-row__go:focus-visible {
-  background: var(--gold);
-  border-color: var(--gold);
+  /* Mesmo motivo do `.service-list__head` acima: texto escuro por cima
+   * precisa do passo claro da rampa (--gold-light), não do teal 700. */
+  background: var(--gold-light);
+  border-color: var(--gold-light);
   color: var(--ink);
 }
 
@@ -604,7 +652,7 @@ strong,
   align-items: center;
   gap: 0.55rem;
   margin-bottom: 3rem;
-  color: #8a8d92;
+  color: #6B7780; /* ink-500 da rampa navy — passa AA (4.59:1), não cinza solto */
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -624,7 +672,7 @@ strong,
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--paper);
-  color: #8a8d92;
+  color: #6B7780;
   font-size: 0.7rem;
 }
 
@@ -1034,7 +1082,7 @@ strong,
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: #e7f0ff;
+  background: #E2EFEF; /* tinta clara da rampa teal (--dt-petrol-100), não azul solto */
   color: var(--gold);
   font-size: 1.1rem;
   font-weight: 800;
@@ -1051,7 +1099,7 @@ strong,
 }
 
 .professional-avatar--r {
-  background: #f0f2f3;
+  background: #CBE1E2; /* um passo mais saturado da mesma rampa teal, para diferenciar da variante padrão */
   color: var(--ink-soft);
 }
 
@@ -1094,14 +1142,14 @@ textarea {
 }
 
 input::placeholder {
-  color: #8a8d92;
+  color: #98A0A6; /* ink-400 da rampa navy, mesmo passo de --dt-ink-faint */
 }
 
 input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.13);
+  box-shadow: 0 0 0 3px rgba(61, 128, 132, 0.18); /* RGB de --dt-petrol-500, não azul solto */
   outline: none;
 }
 
@@ -1262,7 +1310,7 @@ textarea:focus {
   justify-items: center;
   gap: 0.35rem;
   padding: 1.5rem;
-  background: #f0f2f5;
+  background: #F0F7F7; /* quase-branco com tinta teal, não cinza solto */
   color: var(--ink-soft);
   text-align: center;
 }
@@ -1319,7 +1367,7 @@ textarea:focus {
   height: 3rem;
   place-items: center;
   border-radius: 50%;
-  background: #e7f0ff;
+  background: #E2EFEF; /* mesma tinta clara dos outros avatares/ícones da marca */
   color: var(--gold);
   font-size: 1.1rem;
 }
@@ -1339,7 +1387,7 @@ textarea:focus {
   justify-content: space-between;
   gap: 1rem;
   min-height: 4.5rem;
-  border-bottom: 1px solid #2b2d30;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08); /* branco translúcido sobre o petróleo escuro, não cinza solto */
   padding: 0 1.4rem;
   background: var(--ink);
   color: #fff;
@@ -1355,7 +1403,7 @@ textarea:focus {
 
 .admin-nav__brand small {
   display: block;
-  color: #b4b7bd;
+  color: rgba(255, 255, 255, 0.65); /* branco translúcido, não cinza solto — funciona sobre qualquer tom escuro */
   font-size: 0.58rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1383,7 +1431,7 @@ textarea:focus {
 .admin-nav__link {
   border-radius: var(--radius-sm);
   padding: 0.55rem 0.7rem;
-  color: #d0d3d8;
+  color: rgba(255, 255, 255, 0.78);
   font-size: 0.73rem;
   font-weight: 700;
   white-space: nowrap;
@@ -1391,12 +1439,12 @@ textarea:focus {
 
 .admin-nav__link:hover,
 .admin-nav__link[aria-current="page"] {
-  background: #282a2e;
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
 }
 
 .admin-nav__signout {
-  border: 1px solid #676a70;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--radius-sm);
   padding: 0.5rem 0.7rem;
   background: transparent;
@@ -1474,7 +1522,7 @@ textarea:focus {
 }
 
 .admin-nav .admin-button--quiet {
-  border-color: #676a70;
+  border-color: rgba(255, 255, 255, 0.35);
   background: transparent;
   color: #fff;
 }
@@ -1531,7 +1579,7 @@ textarea:focus {
 }
 
 .admin-table tbody tr:hover {
-  background: #f8faff;
+  background: #F0F7F7; /* quase-branco com tinta teal, não azul solto */
 }
 
 .admin-table__actions,
@@ -1788,7 +1836,7 @@ textarea:focus {
   right: 0.65rem;
   border-radius: var(--radius-pill);
   padding: 0.3rem 0.55rem;
-  background: rgba(24, 25, 26, 0.82);
+  background: rgba(10, 15, 20, 0.82); /* RGB de --ink, não um preto solto */
   color: #fff;
   font-size: 0.68rem;
   font-weight: 800;
