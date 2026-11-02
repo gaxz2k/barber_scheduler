@@ -105,7 +105,18 @@ body:has(.booking-entry),
 body:has(.booking-page) {
   --ref-gradient-start: #0A0F14;
   --ref-gradient-end: #2E6F73;
-  background: #F0F7F7;
+  /* Item 1 do audit de fidelidade (porta do protótipo aprovado): isto estava
+   * em `#F0F7F7` — o MESMO hex de `--dt-ice-50`/`--brand-50`, a tinta TEAL
+   * clara da rampa de marca. Família de cor errada para fundo de página: o
+   * protótipo aprovado (`cliente-agendar.html`, via `css/components.css`
+   * linha 8-13) declara `body { background: var(--ink-50); }`, e
+   * `--ink-50` daquele design system é `#F8F3E8` — um quase-branco com
+   * tinta NAVY/creme, não teal. O equivalente já unificado deste app para
+   * esse exato hex é `--cream` (ver `application.css`: "#F8F3E8 —
+   * quase-branco com tinta navy; fundo de página"), não um novo hex solto
+   * nem um token da rampa de marca teal (que é o papel de `--dt-ice-50`,
+   * usado corretamente nos cartões de serviço SELECIONADOS mais abaixo). */
+  background: var(--cream);
 }
 
 .booking-entry,
@@ -1043,79 +1054,208 @@ body:has(.booking-page) {
  * `barber-scheduler-js-toolchain`). */
 .booking-entry .service-list,
 .booking-page .service-list {
-  display: grid;
-  gap: 0;
+  /* Item 2 do audit de fidelidade (porta do protótipo aprovado): a lista
+   * deixa de ser UM bloco com borda/raio/fundo/sombra únicos — o "flat
+   * list" que esta regra produzia (ver o comentário antigo que isto
+   * substitui, abaixo na história do blame) — e passa a ser só um
+   * contêiner de espaçamento. Isto é LITERALMENTE `.service-list {
+   * display:flex; flex-direction:column; gap: var(--space-3); }` de
+   * `cliente-agendar.html`: `--space-3` daquele design system é 12px,
+   * mesmo valor usado aqui como `0.75rem` (ver o comentário da regra de
+   * `.service-row` abaixo sobre por que esta e outras medidas do protótipo
+   * aparecem como rem literal, e não `var(--dt-space-*)` — a escala de
+   * espaçamento deste app não tem um passo de 12px exato nesse nome).
+   * Cada `.service-row` agora é seu PRÓPRIO cartão (borda, raio, fundo —
+   * ver a regra abaixo), então o invólucro comum não precisa mais de
+   * borda/sombra/fundo: isso é o que a versão em lista única tinha para
+   * desenhar "um bloco", e com cartões de verdade isso duplicaria/
+   * competiria com a sombra de cada um. */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
   margin: 0 0 1.75rem;
-  border: 0;
-  border-radius: var(--dt-radius-sm);
-  /* `application.css` declara `.service-list { overflow: hidden; }` para o
-   * componente antigo (ver o comentário dessa regra lá). Sem esta
-   * sobrescrita explícita, a cascata usa a dela — não porque ela "ganhe"
-   * por ordem de arquivo (este arquivo carrega depois), mas porque a regra
-   * daqui tinha parado de declarar `overflow`, e uma propriedade não
-   * redeclarada continua valendo da regra anterior com a mesma
-   * especificidade. O corte de cantos agora vem só do raio nos elementos
-   * de ponta (`.service-list__head`/`.service-row:last-child`), então
-   * `visible` aqui é seguro — ver o comentário logo abaixo. */
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
   overflow: visible;
-  background: var(--dt-ice-0);
-  box-shadow: var(--dt-shadow-card);
 }
 
-/* Barra de seção sólida: verde para a lista completa ("Escolha um
- * serviço"), azul para "Últimos Agendamentos" (`.service-list__head--last`)
- * — as duas cores do print, na ordem certa (a spec inverte a cor de quem
- * poderia parecer "padrão": o histórico recebe o azul de destaque, a lista
- * completa fica no verde neutro).
+/* Título da seção: o protótipo aprovado NÃO tem uma barra de cor
+ * preenchida aqui — é só um `<h2>` de texto simples (`.wizard-step-head h2`
+ * de `cliente-agendar.html`, que herda a tipografia padrão de heading do
+ * próprio design system: `font-weight:650; letter-spacing:-0.01em; color:
+ * var(--ink-900)`). A faixa sólida que existia (verde para a lista
+ * completa, azul para "Últimos Agendamentos", via `.service-list__head--last`
+ * mais abaixo) era sobra de uma fase anterior ao protótipo aprovado — item 3
+ * do audit de fidelidade desta tarefa: "leftover from the PRE-redesign
+ * era". `--ink-900` do protótipo (#0A0F14) é EXATAMENTE `--dt-ink` já
+ * existente neste app, mesmo hex. `font-weight: 650` do protótipo não tem
+ * correspondente aqui: este app carrega a fonte de exibição sem o peso
+ * intermediário 650 (só 500/700, ver `--dt-weight-*` em
+ * `design_tokens.css`) — usamos o peso existente mais próximo
+ * (`--dt-weight-bold`, 700) em vez de carregar um peso de fonte novo só
+ * para este heading.
  *
- * O arredondamento dos cantos do card não vem mais de `overflow: hidden`
- * no `.service-list`: esse corte também cortava o painel do dropdown de
- * profissional (`.service-row__select-panel`, `position: absolute`), que
- * só aparece inteiro quando pode extravasar o container. Em vez disso, o
- * raio vai direto nos dois cantos de cima da barra e, mais abaixo, nos dois
- * cantos de baixo do último `.service-row` — mesma aparência, sem recortar
- * nada que precise flutuar por cima. */
+ * A distinção visual verde/azul entre as duas seções (lista completa vs.
+ * "Últimos Agendamentos") também sai: o protótipo não tem o conceito de
+ * "últimos agendamentos" para servir de referência de como diferenciar as
+ * duas sem uma faixa de cor, então as duas passam a usar o MESMO heading
+ * simples — a diferenciação que resta é só o texto (o `heading` recebido
+ * pelo partial muda, o serviço mostrado muda), que já é suficiente. */
 .service-list__head {
-  margin: 0;
-  border-radius: var(--dt-radius-sm) var(--dt-radius-sm) 0 0;
-  background: var(--ref-section-green);
-  color: var(--dt-ice-0);
-  padding: 1.1rem 1.25rem;
+  margin: 0 0 1rem;
+  background: none;
+  color: var(--dt-ink);
+  padding: 0;
   font-family: var(--dt-font-display);
-  font-size: 1.2rem;
+  font-size: 1.125rem;
   font-weight: var(--dt-weight-bold);
+  letter-spacing: -0.01em;
   text-align: left;
 }
 
 .service-list__head--last {
-  background: var(--ref-section-blue);
+  background: none;
+}
+
+/* === Alternador rápido de unidade (item 5 do audit de fidelidade) ==========
+ * Visual idêntico ao `.unit-toggle`/`#unitToggle` do protótipo aprovado
+ * (`cliente-agendar.html`): pílula com fundo neutro e opção ativa
+ * "flutuando" em branco com sombra rasa. Única mudança estrutural: o
+ * protótipo usa `<button onclick="selectUnit(...)">` porque simulava um
+ * SPA só em JS puro (sem backend, sem URL própria por unidade); aqui cada
+ * opção é uma `<a>` de verdade (ver `shared/_unit_toggle.html.erb`), porque
+ * a troca de unidade é uma URL real diferente (`/barbearia/unidades/<slug>`)
+ * — Turbo Drive padrão (SEM `data-turbo="false"`, diferente dos links
+ * "Agendar"/"Voltar" deste fluxo, que desligam Turbo de propósito porque
+ * fazem parte da troca de ETAPA via fetch manual do
+ * `booking_wizard_controller.js`) faz a troca de unidade parecer uma
+ * transição suave dentro da página, em vez de um reload cheio — a mesma
+ * sensação do toggle simulado do protótipo, só que com navegação real.
+ *
+ * Mapeamento de cor para os tokens já unificados deste app:
+ *   --ink-100 do protótipo (#F1E9D9, fundo da pílula) → --dt-neutral-100,
+ *     mesmo hex.
+ *   --ink-600 do protótipo (#46535C, texto inativo) → --ref-meta-ink, mesmo
+ *     hex (já usado em todo este arquivo para texto secundário).
+ *   --brand-700 do protótipo (#2E6F73, texto ativo) → --dt-petrol-700,
+ *     mesmo hex.
+ *   --surface/--shadow-xs do protótipo (fundo branco + sombra rasa da
+ *     opção ativa) → --dt-ice-0 (branco, mesmo hex) + a MESMA sombra rasa
+ *     em rgba literal: este app não tem um token `--dt-shadow-xs` — o mais
+ *     próximo, `--dt-shadow-ring`, é um anel de 1px (forma diferente, não
+ *     um blur), então o valor é literal aqui para preservar o efeito exato
+ *     do protótipo em vez de forçar numa sombra de formato diferente.
+ *   --ink-500 do protótipo (#6B7780, rótulo "UNIDADE") não tem token
+ *     dedicado neste app (a escala vai de --ref-meta-ink/ink-600 direto a
+ *     ink-400) — já existe hex literal #6B7780 em `application.css`
+ *     (`.booking-progress`) para o mesmo caso, então o valor literal aqui
+ *     segue o MESMO precedente do próprio projeto, não um hex inventado. */
+.unit-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+}
+
+.unit-picker-label {
+  color: #6B7780;
+  font-size: 0.6875rem;
+  font-weight: var(--dt-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.unit-toggle {
+  display: inline-flex;
+  background: var(--dt-neutral-100);
+  border-radius: var(--dt-radius-pill);
+  padding: 2px;
+  gap: 2px;
+}
+
+.unit-toggle__pill {
+  border: none;
+  background: transparent;
+  color: var(--ref-meta-ink);
+  font-size: 0.6875rem;
+  font-weight: var(--dt-weight-bold);
+  padding: 6px 11px;
+  border-radius: var(--dt-radius-pill);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.unit-toggle__pill:hover,
+.unit-toggle__pill:focus-visible {
+  color: var(--dt-petrol-700);
+  text-decoration: none;
+}
+
+.unit-toggle__pill.is-active {
+  background: var(--dt-ice-0);
+  color: var(--dt-petrol-700);
+  box-shadow: 0 1px 2px rgba(10, 15, 20, 0.08);
 }
 
 .service-row {
-  /* `application.css` declara `.service-row { display: grid; grid-template-columns:
-   * 1fr auto; }` para o componente antigo (mesmo motivo do `overflow` do
-   * `.service-list` comentado acima). Sem redeclarar `display`/
-   * `grid-template-columns` aqui, a cascata usa os dela e o `.service-row__top`
-   * vira um ITEM dessa grade de 2 colunas — não o bloco de largura cheia que
-   * este redesenho precisa. `block` é suficiente: o layout de verdade (rádio +
-   * nome + duração + preço) é todo feito dentro de `.service-row__top`. */
+  /* Item 2 do audit de fidelidade: cada linha vira um CARTÃO individual —
+   * `.service-card { border:1.5px solid var(--ink-150); border-radius:
+   * var(--radius-lg); background: var(--surface); padding: var(--space-4)
+   * var(--space-5); }` de `cliente-agendar.html` — não mais um divisor
+   * fino (`border-top`) dentro de um bloco único (o "flat list" que a
+   * versão anterior desta regra produzia — ver achado do dono: "virou uma
+   * lista achatada"). `--ink-150` do protótipo (#E6DCC8) é EXATAMENTE
+   * `--line-soft` já existente neste app (ver o comentário dela em
+   * `application.css`: "navy-tint mais claro ainda (ink-150)") — mesmo
+   * hex, token já unificado, sem inventar cor nova. `--space-4
+   * var(--space-5)` do protótipo (16px 20px) vira `1rem 1.25rem` literal:
+   * a escala `--dt-space-*` deste app pula de 16px (`--dt-space-4`) direto
+   * para 24px (`--dt-space-5`), sem um passo de 20px — por isso o valor
+   * aparece em rem literal aqui, e não forçado num token que mediria
+   * diferente do protótipo. `display: block` continua (ver o comentário de
+   * `.service-row__top` abaixo sobre por que a grade real mora só ali
+   * dentro, não neste elemento). */
   display: block;
-  padding: 1rem 1.1rem;
-  border-top: 1px solid var(--ref-line, #DDD4C2);
-  transition: background-color var(--dt-transition-base);
+  border: 1.5px solid var(--line-soft);
+  border-radius: var(--dt-radius-lg);
+  background: var(--dt-ice-0);
+  padding: 1rem 1.25rem;
+  transition: border-color 0.12s, box-shadow 0.12s, background-color 0.12s;
 }
 
-.service-row:last-child {
-  border-radius: 0 0 var(--dt-radius-sm) var(--dt-radius-sm);
+/* Hover: só a borda muda de cor (`.service-card:hover { border-color:
+ * var(--brand-400); }` no protótipo — `--brand-400` é EXATAMENTE
+ * `--dt-petrol-300` já existente aqui, #7FB3B8 nos dois lados, mesmo hex).
+ * Precisa desta especificidade (`.booking-entry .service-row:hover`) para
+ * vencer a regra de `application.css` (`.service-row:hover { background:
+ * var(--paper-deep); }`, do componente antigo) — aquela preenchia a linha
+ * inteira de fundo no hover, o que não existe no cartão do protótipo (só a
+ * borda reage; o fundo é redeclarado aqui como o mesmo branco do cartão em
+ * repouso, para neutralizar o preenchimento antigo em vez de herdá-lo). */
+.booking-entry .service-row:hover,
+.booking-page .service-row:hover {
+  background: var(--dt-ice-0);
+  border-color: var(--dt-petrol-300);
 }
 
 /* Destaque do serviço aberto — só existe com JS (sem JS não há "aberto",
- * a seção do profissional já está sempre visível em toda linha). Um tom de
- * fundo, não uma borda: esta lista é flat (divisores finos entre linhas),
- * não cartões individuais como o protótipo isolado — emprestar uma borda
- * por linha ficaria estranho ao lado das linhas vizinhas sem ela. */
+ * a seção do profissional já está sempre visível em toda linha).
+ *
+ * Item 2 do audit de fidelidade: o destaque do cartão selecionado agora é
+ * borda + anel interno + fundo — `.service-card.is-selected { border-color:
+ * var(--brand-700); box-shadow: 0 0 0 1px var(--brand-700) inset;
+ * background: var(--brand-50); }` de `cliente-agendar.html` — não só uma
+ * tinta de fundo (`--ref-consult-bg`, sobra de quando a linha era flat e só
+ * podia mudar de cor, nunca de borda, sem "destacar" do vizinho). `--brand-700`
+ * e `--brand-50` do protótipo são EXATAMENTE `--dt-petrol-700` (#2E6F73) e
+ * `--dt-ice-50` (#F0F7F7) já existentes neste app — mesmos hex, tokens já
+ * unificados, sem inventar cor nova. */
 .service-list--js .service-row.is-selected {
-  background: var(--ref-consult-bg);
+  border-color: var(--dt-petrol-700);
+  box-shadow: 0 0 0 1px var(--dt-petrol-700) inset;
+  background: var(--dt-ice-50);
 }
 
 /* Linha compacta: rádio decorativo (só com JS — ver `.service-row__radio`
@@ -1124,11 +1264,31 @@ body:has(.booking-page) {
  * contraste com a lista densa de antes (nome + select + preço + duração +
  * botão, tudo de uma vez) é o ponto central deste redesenho. */
 .service-row__top {
+  /* Item 4 do audit de fidelidade: o protótipo usa uma grade de 2 colunas
+   * (`.service-top { grid-template-columns: 1fr auto; }` de
+   * `cliente-agendar.html`) — tudo que não é preço fica junto na coluna da
+   * esquerda (rádio + nome + duração empilhados dentro de `.service-main`/
+   * `.service-main-info`), e o preço ocupa a coluna da direita SOZINHO,
+   * centralizado verticalmente, grande e em negrito — bem diferente da
+   * versão anterior (4 colunas, nome+duração+preço todos na MESMA linha,
+   * "espremidos"). Aqui são 3 colunas (rádio | info | preço) em vez de 2
+   * (rádio+info juntos | preço) só porque o rádio deste componente já é um
+   * item de grade PRÓPRIO (`.service-row__radio`), em vez de filho flex de
+   * um wrapper como `.service-main` no protótipo — o resultado visual é
+   * idêntico (rádio colado à esquerda do nome, preço isolado à direita,
+   * tudo alinhado ao centro vertical), a única diferença é a técnica de
+   * aninhamento do DOM, invisível no resultado renderizado. */
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 0.6rem;
   cursor: pointer;
+}
+
+/* Agrupa nome + duração na coluna da esquerda, um embaixo do outro — o
+ * equivalente deste app para `.service-main-info` do protótipo. */
+.service-row__main-info {
+  min-width: 0;
 }
 
 /* O rádio só faz sentido quando existe algo para "selecionar" — sem JS
@@ -1182,13 +1342,23 @@ body:has(.booking-page) {
   text-overflow: ellipsis;
 }
 
+/* Item 4 do audit de fidelidade: a duração agora é uma linha PRÓPRIA,
+ * pequena e discreta, embaixo do nome — `.service-duration { font-size:
+ * var(--fs-xs); color: var(--ink-500); margin-top:2px; }` de
+ * `cliente-agendar.html`, não mais inline ao lado do nome na mesma linha
+ * espremida de antes (`display:inline-flex` virou `flex`, de bloco cheio,
+ * porque agora é irmã do nome dentro de `.service-row__main-info`, não
+ * vizinha dele na mesma linha de grade). `--fs-xs` do protótipo é 0.75rem
+ * (12px) — valor literal aqui pela mesma razão do resto do arquivo: não há
+ * token `--dt-text-xs`/`--dt-fs-xs` dedicado nesta escala tipográfica. */
 .service-row__duration {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.3rem;
   flex: 0 0 auto;
+  margin-top: 0.15rem;
   color: var(--ref-meta-ink);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
@@ -1198,12 +1368,23 @@ body:has(.booking-page) {
   flex: 0 0 auto;
 }
 
+/* Item 4 do audit de fidelidade: preço grande, em negrito, isolado na
+ * coluna da direita — `.service-price { font-weight:700; color:
+ * var(--brand-800); font-size: var(--fs-md); white-space:nowrap;
+ * text-align:right; }` de `cliente-agendar.html`. `--brand-800` do
+ * protótipo (#1B5456) é EXATAMENTE `--ref-select-ink` já existente neste
+ * arquivo (ver a declaração dela acima: "teal escuro... #1B5456") — mesmo
+ * hex, não o navy neutro de `--ref-price-ink` que a versão em linha única
+ * (sem hierarquia de tamanho) usava aqui. `--fs-md` do protótipo é 1rem
+ * (16px) — literal, pela mesma razão das outras medidas tipográficas deste
+ * arquivo. */
 .service-row__price {
   flex: 0 0 auto;
-  color: var(--ref-price-ink);
-  font-size: 1.05rem;
+  color: var(--ref-select-ink);
+  font-size: 1rem;
   font-weight: var(--dt-weight-bold);
   white-space: nowrap;
+  text-align: right;
 }
 
 /* === Seção "Escolha o profissional" (recolhida por padrão, só com JS) ======

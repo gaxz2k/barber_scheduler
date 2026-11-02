@@ -60,10 +60,18 @@
             `service_list_controller.js` sobre por que escolher QUAL serviço
             está aberto e confirmar o profissional são responsabilidades
             separadas. %>
+        <%# Item 4 do audit de fidelidade (porta do protótipo aprovado): nome
+            + duração ficam EMPILHADOS numa coluna à esquerda
+            (`.service-row__main-info`, equivalente a `.service-main-info`
+            de `cliente-agendar.html`), e o preço vira a coluna da direita,
+            sozinho — não mais as quatro informações espremidas numa linha
+            só, que era o achado "preço e duração espremidos" da auditoria. %>
         <div class="service-row__top" data-action="click->service-list#selectRow">
           <span class="service-row__radio" aria-hidden="true"></span>
-          <span class="service-row__name"><%= service.name %></span>
-          <span class="service-row__duration"><%= icon_tag(:clock, size: 14) %><%= duracao_formatada(service.duration_minutes) %></span>
+          <div class="service-row__main-info">
+            <span class="service-row__name"><%= service.name %></span>
+            <span class="service-row__duration"><%= icon_tag(:clock, size: 14) %><%= duracao_formatada(service.duration_minutes) %></span>
+          </div>
           <% if service.price_label %>
             <span class="service-row__price"><%= service.price_label %></span>
           <% end %>
