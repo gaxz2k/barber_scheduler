@@ -1325,6 +1325,18 @@ body:has(.booking-page) {
 }
 
 .service-row__name {
+  /* `<span>` é inline por padrão — sem `display:block` aqui, o elemento
+     cresce pro tamanho do PRÓPRIO texto (ignorando a coluna do grid que o
+     contém), e `white-space:nowrap`/`text-overflow:ellipsis` não têm o que
+     cortar: não existe uma largura mais estreita que o conteúdo pra eles
+     truncarem contra. Foi exatamente isso que aconteceu com nomes reais
+     mais longos (ex. "Barba + Barboterapia (vapor ozônio e navalha)"): o
+     nome vazava pra fora da coluna e ia por cima do preço, sem nunca
+     mostrar "…". `display:block` + `max-width:100%` faz o span respeitar
+     a largura de `.service-row__main-info` (que já tem `min-width:0`, a
+     outra metade necessária pro truncamento funcionar num filho de grid). */
+  display: block;
+  max-width: 100%;
   min-width: 0;
   color: var(--ref-name-ink);
   font-size: 1.02rem;
