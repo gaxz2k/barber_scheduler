@@ -1,90 +1,154 @@
-/* Fundação de uma identidade visual nova — fase 2: referência real.
+/* Fundação da identidade visual única do produto — fase 3: unificação de marca.
  *
- * A primeira tentativa ("litoral urbano", petróleo + coral) foi avaliada
- * pelo usuário como genérica, "parece feito por IA" — paleta e tipografia
- * sem lastro em nenhum produto real. Esta fase substitui a direção por uma
- * cópia deliberada e documentada do design system do Cal.com
- * (cal.com), um produto de agendamento de verdade: restrição monocromática
- * (preto/branco/cinza), onde cor é tratada como substância rara, reservada
- * só para links e estados semânticos (sucesso/erro/aviso).
+ * Histórico (para quem for arqueologia no blame): a fase 1 era petróleo+coral
+ * "litoral urbano" (achada genérica, "parece feito por IA"). A fase 2 copiou
+ * o design system do Cal.com de propósito (preto/branco/cinza, cor só em
+ * link e status) como prévia isolada de `/style-guide` — o comentário antigo
+ * deste arquivo dizia que NENHUMA view real consumia estes tokens ainda.
+ * Essa afirmação ficou desatualizada sem ninguém atualizar o comentário: o
+ * layout público (`application.html.erb`) sempre carregou
+ * `stylesheet_link_tag "design_tokens", "application", "design_components",
+ * "admin_panel", "booking_wizard"` para TODA view real (login, home, admin,
+ * fluxo de agendamento) — só o visual é que ainda não usava os tokens em
+ * nenhum lugar fora do style-guide. Resultado prático: o admin e o
+ * componente novo do fluxo (`booking_wizard.css`) já liam destes `--dt-*`,
+ * enquanto `application.css` (preto+dourado) seguia valendo para o resto —
+ * dois sistemas de cor reais e conflitantes ao mesmo tempo, exatamente o
+ * achado "duas linguagens visuais conflitantes" do audit original.
  *
- * Esta é só uma PRÉVIA isolada, carregada apenas pela página /style-guide
- * (ver `app/views/layouts/style_guide.html.erb`). Nenhuma view real
- * (appointments/*, admin/*, devise/*, application.html.erb, admin.html.erb)
- * consome este arquivo ainda — ele convive com `application.css` sem o
- * tocar. Os NOMES das variáveis `--dt-*` são os mesmos da fase 1 de
- * propósito: quando uma fase futura aprovar esta prévia e aplicar aos
- * templates reais, nenhum componente quebra por nome de variável ausente —
- * só os VALORES mudaram aqui.
+ * Fase 3 (esta): o dono do produto especificou 6 hex de marca — não são
+ *"inspirados em nada", são a paleta aprovada depois de iterar com ele sobre
+ * o protótipo estático. Esta fase substitui o VALOR de cada `--dt-*` pelo
+ * equivalente da nova paleta, mantendo os NOMES das variáveis (mesmo os que
+ * carregam um apelido de fase anterior, como `--dt-petrol-*`/`--dt-coral-*`)
+ * — qualquer regra em `design_components.css`/`admin_panel.css`/
+ * `booking_wizard.css` que já referenciava um destes tokens passa a renderizar
+ * a cor nova sem precisar tocar em nenhum seletor. É o mesmo princípio que já
+ * guiava a fase 2 ("os NOMES são os mesmos de propósito"), levado adiante.
  *
- * Mapeamento fase 1 → fase 2 (petróleo/coral → escala de cinza Cal.com):
- *   --dt-petrol-900 → Midnight #111111 (texto/nav de altíssimo contraste)
- *   --dt-petrol-700 → Charcoal #242424 (texto primário, botão primário)
- *   --dt-petrol-500 → Focus Ring azul 50% (só usado em :focus-visible —
- *                      no Cal.com o "petróleo médio" de hover/accent não
- *                      existe como cor própria; sobrou só o azul de foco)
- *   --dt-petrol-300 → cinza claro de traço fino (ilustrações, linhas sutis)
- *   --dt-petrol-100 / --dt-mist-100/200 → Light Gray (~#f5f5f5), variações
- *                      de um mesmo cinza claro para diferenciação de seção
- *   --dt-ice-0 → Pure White #ffffff · --dt-ice-50 → branco quase puro
- *   --dt-ink → Charcoal (texto primário) · --dt-ink-soft → Mid Gray
- *      (texto secundário) · --dt-ink-faint → cinza mais claro (placeholder)
- *   --dt-coral-500 → Link Blue #0099ff, a ÚNICA cor de ação do sistema —
- *      mesma função que o coral tinha ("a cor que empurra o olho"), mas
- *      agora reservada estritamente a links e ao estado "isto é clicável
- *      e é a decisão certa", nunca a um botão cheio.
- *   --dt-coral-700/400/100 → variações do mesmo azul (hover mais escuro,
- *      tinta clara para fundo de destaque pontual)
- *   --dt-success/warning/danger-* → cores semânticas continuam existindo:
- *      um app de agendamento real precisa confirmar, cancelar e validar, e
- *      o próprio Cal.com reserva cor exatamente para isso. A diferença é
- *      que aqui elas são deliberadamente dessaturadas (nunca vibrantes),
- *      para não competirem visualmente com o azul de link/foco.
- *   --dt-line / --dt-shadow-card → implementam o "ring border" do Cal.com:
- *      rgba(34,42,53,0.08~0.10) fazendo o papel de borda sem `border` CSS.
+ * Mapeamento fase 2 (cinza Cal.com) → fase 3 (petróleo/teal/creme/laranja):
+ *   --dt-petrol-900 → #0F3D3E (verde-petróleo escuro) — a mesma função de
+ *      antes (nav admin, badge "isto é área do dono", superfícies escuras),
+ *      só que agora a cor É literalmente a marca, não um cinza genérico.
+ *   --dt-petrol-700 → #2E6F73 (teal médio) — cor PRIMÁRIA de ação em todo o
+ *      produto: botão primário, link, estado ativo/selecionado, progresso.
+ *      Era "Charcoal" (cinza quase preto); a diferença de clã (cinza neutro
+ *      → teal de marca) é o ponto central desta fase.
+ *   --dt-petrol-500 → #3D8084 (um passo mais claro que o 700 na mesma rampa
+ *      teal) — ocupa o papel de "interação" (hover de borda, indicador
+ *      "hoje", anel de foco), que na fase 2 era um azul de foco emprestado
+ *      do Tailwind (#3b82f6) sem relação com a marca.
+ *   --dt-petrol-300 → #7FB3B8 (teal claro/sage) — traço fino e, critico,
+ *      a ÚNICA cor que sobe o suficiente de luminância para servir de bg
+ *      com texto/borda ESCURA por cima (ver os usos de `--gold-light` em
+ *      `application.css` para o mesmo motivo do lado do CSS antigo) — ou de
+ *      texto/borda sobre fundo bem escuro (`.brand-mark`). O teal 700 sozinho
+ *      falha os dois papéis (3.3:1 nos dois sentidos — medido), por isso o
+ *      sistema precisa de um passo claro dedicado, e não só do primário.
+ *   --dt-petrol-100 → #E2EFEF (tinta clara da rampa teal) — era "Light Gray"
+ *      puro; a diferenciação sutil de seção agora carrega a cor da marca em
+ *      vez de cinza neutro, mesmo em doses pequenas.
+ *   --dt-ice-50 / --dt-mist-100 / --dt-mist-200 → tons quase-brancos com a
+ *      MESMA tinta teal (#F0F7F7 / #E2EFEF / #CBE1E2) em vez do cinza puro
+ *      do Cal.com (#fafafa / #f5f5f5 / #ececec) — o app não deveria ter
+ *      nenhum cinza neutro "sem dono" sobrando de uma fase anterior.
+ *   --dt-ink → #0A0F14 (navy quase preto, texto principal) — troca o
+ *      Charcoal genérico (#242424) pelo navy exato que o dono pediu.
+ *   --dt-ink-soft → #46535C — a MESMA família navy, um passo mais claro.
+ *      Os valores de fase 2 (#898989/#b3b3b3) FALHAVAM contraste AA de texto
+ *      (3.5:1 e 2.1:1 sobre branco — medido; é por isso que
+ *      `booking_wizard.css` precisava de uma sobrescrita local só para o
+ *      fluxo público, ver o comentário que existia lá). O novo #46535C mede
+ *      7.92:1 sobre branco — passa AA com folga, e a sobrescrita local do
+ *      fluxo público deixou de ser necessária (removida nesta fase).
+ *   --dt-ink-faint → #98A0A6 — mesma família, mais claro ainda, só para
+ *      placeholder/disabled (onde AA de texto não se aplica). Mede 2.65:1
+ *      sobre branco — mais escuro que o antigo #b3b3b3 (2.1:1), uma melhora,
+ *      não uma regressão, mesmo não sendo o alvo de 4.5:1 de texto normal.
+ *   --dt-coral-* → deixam de ser "Link Blue" emprestado do Cal.com e passam
+ *      a ser a rampa de ACENTO laranja-queimado da marca (#C6601F), com uma
+ *      ressalva medida: o hex exato #C6601F sobre branco mede 4.12:1,
+ *      abaixo do mínimo de 4.5:1 para texto normal (link, kicker, "ver
+ *      todos" etc. são todos texto). Por isso o token `--dt-coral-500`
+ *      (o papel de "cor de texto/ação base") recebe o passo #AD531B — um
+ *      tom do MESMO acento, 5.21:1 sobre branco — e `--dt-coral-700`
+ *      (hover/estado ativo, precisa ser mais escuro que o base) recebe
+ *      #9B4A18, 6.20:1. O hex exato #C6601F continua vivo no produto como
+ *      `--accent-500` seria num app maior; aqui ele não tem um papel de
+ *      texto corrido que passe AA, então os dois tokens de texto usam os
+ *      vizinhos da mesma família que passam. `--dt-coral-400` (texto claro
+ *      sobre fundo escuro, ex. nav admin ativo) recebe #F7E4D2 — 9.66:1
+ *      sobre o petróleo escuro do nav — e `--dt-coral-100` (fundo claro de
+ *      destaque pontual) recebe #FDF2E9, os dois tons mais claros do mesmo
+ *      acento.
+ *   --dt-neutral-* → eram cinza puro do Cal.com (#4a4a4a/#898989/#f0f0f0);
+ *      passam a usar a MESMA família navy de `--dt-ink-soft`/`--dt-ink-faint`
+ *      (#46535C/#98A0A6/#F1E9D9) — o estado "neutro"/"sem dado" dos cartões
+ *      de métrica continua cinza-neutro NO SENTIDO semântico (não é verde,
+ *      não é âmbar, não é vermelho), mas sem reintroduzir um cinza
+ *      dissociado da marca.
+ *   --dt-success/warning/danger/info-* → INTOCADAS. Um app de agendamento
+ *      real precisa confirmar/cancelar/validar, e a regra do produto (a
+ *      mesma que já valia nas duas fases anteriores) é que cor de status
+ *      nunca é cor de marca — ela precisa continuar reconhecível
+ *      independente de qual paleta de marca está por baixo.
+ *   --dt-line / --dt-shadow-* → o "ring border" (sombra de 1px no lugar de
+ *      `border`) usava um cinza-ardósia arbitrário, `rgba(34, 42, 53, *)`,
+ *      e as sombras difusas usavam `rgba(19, 19, 22, *)` — nenhum dos dois
+ *      vinha de um token da marca. Os dois passam a usar o RGB de
+ *      `--dt-ink`/#0A0F14 (`rgb(10, 15, 20)`), a MESMA cor que já é o texto
+ *      principal do produto — um "preto" só, não dois.
+ *   --dt-shadow-focus → o anel de foco por teclado usava azul Tailwind
+ *      (`rgba(59, 130, 246, *)`), sem relação com a marca. Passa a usar o
+ *      RGB de `--dt-petrol-500`/#3D8084 (`rgb(61, 128, 132)`) — o mesmo
+ *      "verde-petróleo de interação" que já é a cor de hover/foco em toda
+ *      borda; o anel de foco e a borda de foco finalmente usam a mesma cor.
+ *      `--dt-focus-ring-danger` continua derivado de `--dt-danger-500`
+ *      (`rgb(161, 69, 69)`) — correto não tocar, é status, não marca.
  *
- * Tipografia: Inter (texto) + Roboto Mono (código), carregadas via Google
- * Fonts só no layout `style_guide.html.erb` (ver tag <link> lá). O Cal Sans
- * original — a fonte de display proprietária do Cal.com — não está
- * disponível via CDN gratuito confiável; por isso os headings grandes usam
- * a própria Inter em weight 600–700 com letter-spacing levemente negativo,
- * que aproxima a sensação compacta/densa do Cal Sans sem depender de uma
- * fonte que pode desaparecer do ar. */
+ * Tipografia, espaçamento, raio e sombra (forma) continuam como estavam —
+ * esta fase é só cor. */
 :root {
-  /* --- Cor: base (escala de cinza) --------------------------------------
-   * Nomeada com os mesmos sufixos "petrol-*" da fase 1 por compatibilidade
-   * de variável, mas o conteúdo agora é puramente neutro — não há mais
-   * petróleo nenhum na cor, só a escala Midnight → Charcoal → cinza claro
-   * do Cal.com. */
-  --dt-petrol-900: #111111; /* Midnight — nav admin, texto de máximo contraste */
-  --dt-petrol-700: #242424; /* Charcoal — texto primário, botão primário */
-  --dt-petrol-500: #3b82f6; /* Focus Ring — usado só em :focus-visible */
-  --dt-petrol-300: #c7c7c7; /* traço fino cinza claro (ilustrações, linhas) */
-  --dt-petrol-100: #f5f5f5; /* Light Gray — diferenciação sutil de seção */
+  /* --- Cor: marca (petróleo/teal) -----------------------------------------
+   * Nomeada com os sufixos "petrol-*" herdados das fases anteriores por
+   * compatibilidade de variável — ver o mapeamento completo no cabeçalho. */
+  --dt-petrol-900: #0F3D3E; /* verde-petróleo escuro — nav admin, badges, superfícies escuras */
+  --dt-petrol-700: #2E6F73; /* teal médio — cor PRIMÁRIA de marca: botão, link, ativo, progresso */
+  --dt-petrol-500: #3D8084; /* um passo mais claro — hover de borda, indicador "hoje", anel de foco */
+  --dt-petrol-300: #7FB3B8; /* teal claro/sage — traço fino E o único passo claro o bastante para
+                                servir de fundo com texto escuro OU texto sobre fundo bem escuro
+                                (o teal 700 sozinho falha os dois: 3.3:1 nos dois sentidos) */
+  --dt-petrol-100: #E2EFEF; /* tinta clara da rampa — diferenciação sutil de seção */
 
-  --dt-ice-50: #fafafa;
-  --dt-ice-0: #ffffff;
-  --dt-mist-100: #f5f5f5;
-  --dt-mist-200: #ececec;
+  --dt-ice-50: #F0F7F7; /* quase-branco com tinta teal — substitui o cinza puro do Cal.com */
+  --dt-ice-0: #FFFFFF; /* branco puro — superfície de card, inalterado desde a fase 1 */
+  --dt-mist-100: #E2EFEF; /* mesma tinta clara de --dt-petrol-100, usada onde o papel é "fundo de seção" */
+  --dt-mist-200: #CBE1E2; /* um passo mais saturado, para diferenciar duas seções lado a lado */
 
-  --dt-ink: #242424; /* Charcoal */
-  --dt-ink-soft: #898989; /* Mid Gray */
-  --dt-ink-faint: #b3b3b3;
+  --dt-ink: #0A0F14; /* navy quase preto — texto principal, pedido exato do dono */
+  --dt-ink-soft: #46535C; /* 7.92:1 sobre branco — texto secundário que de fato passa AA
+                              (o antigo #898989 media só 3.5:1; ver o cabeçalho do arquivo) */
+  --dt-ink-faint: #98A0A6; /* só para placeholder/disabled — AA de texto não se aplica aqui,
+                               mas ainda assim mede mais escuro (2.65:1) que o antigo #b3b3b3 (2.1:1) */
 
-  /* --- Cor: ação (Link Blue) ---------------------------------------------
-   * Nomeada "coral-*" por compatibilidade com a fase 1, mas é o único azul
-   * do sistema Cal.com: reservado a links em texto e ao estado "isto é a
-   * ação certa". Não usar em botão cheio — botão primário é Charcoal. */
-  --dt-coral-700: #0077cc; /* hover do link */
-  --dt-coral-500: #0099ff; /* Link Blue — cor de link/ação */
-  --dt-coral-400: #4db8ff; /* tinta clara (ex.: sublinhado, destaque leve) */
-  --dt-coral-100: #e6f4ff; /* fundo claro pontual, ex. ícone de destaque */
+  /* --- Cor: acento (laranja queimado) --------------------------------------
+   * Nomeada "coral-*" por compatibilidade com as duas fases anteriores — é
+   * a única família de cor fora do petróleo/teal e dos status, reservada a
+   * link em texto corrido e a destaque pontual (nunca botão cheio — ver o
+   * comentário de `.button--primary` em `design_components.css`). Os dois
+   * tokens de TEXTO (500/700) usam um tom vizinho do hex exato #C6601F
+   * porque o hex exato mede 4.12:1 sobre branco, abaixo do mínimo de texto
+   * normal (4.5:1) — ver o cabeçalho do arquivo para a tabela completa. */
+  --dt-coral-700: #9B4A18; /* hover/estado ativo do acento — 6.20:1 sobre branco */
+  --dt-coral-500: #AD531B; /* acento base (link, kicker, seta de decisão) — 5.21:1 sobre branco */
+  --dt-coral-400: #F7E4D2; /* tinta clara — texto do acento sobre fundo bem escuro (nav admin ativo) */
+  --dt-coral-100: #FDF2E9; /* tinta mais clara ainda — fundo pontual de destaque (ex. ícone) */
 
-  /* --- Cor: status --------------------------------------------------------
-   * O Cal.com reserva cor só a dois lugares: link e estado semântico. Um
-   * app de agendamento de verdade precisa confirmar/cancelar/validar, então
-   * estas três famílias continuam existindo — mas dessaturadas de
-   * propósito, para não parecerem "marca" e sim só sinalização discreta. */
+  /* --- Cor: status ----------------------------------------------------------
+   * INTOCADAS nesta fase (e nas anteriores): confirmar/cancelar/validar
+   * precisa de cor reconhecível, independente da paleta de marca por baixo —
+   * a mesma regra que já valia quando a marca era preto/dourado e depois
+   * cinza Cal.com continua valendo agora que é petróleo/teal/laranja. */
   --dt-success-700: #2f6b4a;
   --dt-success-500: #4d8a68;
   --dt-success-100: #eaf3ee;
@@ -97,38 +161,41 @@
   --dt-danger-500: #a14545;
   --dt-danger-100: #f5e8e8;
 
-  --dt-neutral-700: #4a4a4a;
-  --dt-neutral-500: #898989;
-  --dt-neutral-100: #f0f0f0;
+  /* "Neutro"/"sem dado" nos cartões de métrica do dashboard — não é um
+   * quarto status, é a ausência de veredito. Usa a MESMA família navy de
+   * `--dt-ink-soft`/`--dt-ink-faint` em vez do cinza Cal.com dissociado da
+   * marca (#4a4a4a/#898989/#f0f0f0) que estava aqui antes. */
+  --dt-neutral-700: #46535C;
+  --dt-neutral-500: #98A0A6;
+  --dt-neutral-100: #F1E9D9;
 
-  /* --- "Ring border" e sombras --------------------------------------------
-   * O Cal.com não usa `border` CSS tradicional em superfícies elevadas: o
-   * papel de borda é feito por uma sombra de 1px de espalhamento zero
-   * (`0px 0px 0px 1px rgba(34,42,53,0.08)`), o chamado "ring border". As
-   * três variáveis abaixo compõem a pilha de 2-3 camadas que o Cal.com usa
-   * em cards: anel + contato nítido pequeno + difusa suave. */
-  --dt-line: rgba(34, 42, 53, 0.08);
-  --dt-line-soft: rgba(34, 42, 53, 0.05);
-  --dt-shadow-ring: 0px 0px 0px 1px rgba(34, 42, 53, 0.08);
-  --dt-shadow-card: rgba(19, 19, 22, 0.7) 0px 1px 5px -4px, rgba(34, 42, 53, 0.08) 0px 0px 0px 1px,
-    rgba(34, 42, 53, 0.05) 0px 4px 8px 0px;
-  --dt-shadow-soft: rgba(19, 19, 22, 0.5) 0px 2px 8px -4px, rgba(34, 42, 53, 0.1) 0px 0px 0px 1px,
-    rgba(34, 42, 53, 0.08) 0px 12px 24px 0px;
-  --dt-shadow-focus: 0 0 0 2px var(--dt-ice-0), 0 0 0 4px rgba(59, 130, 246, 0.5);
+  /* --- "Ring border" e sombras ----------------------------------------------
+   * O papel de borda em superfície elevada continua sendo uma sombra de 1px
+   * de espalhamento zero, não `border` CSS — só o RGB por baixo mudou de um
+   * cinza-ardósia arbitrário (34, 42, 53) para o RGB do próprio `--dt-ink`
+   * (10, 15, 20): um "preto" só no produto, não dois tons de preto sem
+   * relação um com o outro. */
+  --dt-line: rgba(10, 15, 20, 0.08);
+  --dt-line-soft: rgba(10, 15, 20, 0.05);
+  --dt-shadow-ring: 0px 0px 0px 1px rgba(10, 15, 20, 0.08);
+  --dt-shadow-card: rgba(10, 15, 20, 0.7) 0px 1px 5px -4px, rgba(10, 15, 20, 0.08) 0px 0px 0px 1px,
+    rgba(10, 15, 20, 0.05) 0px 4px 8px 0px;
+  --dt-shadow-soft: rgba(10, 15, 20, 0.5) 0px 2px 8px -4px, rgba(10, 15, 20, 0.1) 0px 0px 0px 1px,
+    rgba(10, 15, 20, 0.08) 0px 12px 24px 0px;
+  /* O anel de foco por teclado usava azul Tailwind solto (59, 130, 246) sem
+   * relação com a marca. Agora é o RGB de `--dt-petrol-500`/#3D8084 (61, 128,
+   * 132) — a mesma cor que já marca hover/foco em toda borda do produto. */
+  --dt-shadow-focus: 0 0 0 2px var(--dt-ice-0), 0 0 0 4px rgba(61, 128, 132, 0.5);
 
-  /* --- Raio de borda -------------------------------------------------------
-   * Escala do Cal.com: 2–4px em elementos inline pequenos, 6–8px em
-   * botões/inputs, 12px em cards médios, até o pill (9999px) em
-   * badges/tags. Mantemos 4 tokens (compatibilidade de nome); containers
-   * grandes (16px) reusam `--dt-radius-lg` por não haver um 5º token na
-   * fase 1. */
+  /* --- Raio de borda --------------------------------------------------------
+   * Inalterado nesta fase — é forma, não cor. */
   --dt-radius-sm: 4px;
   --dt-radius-md: 8px;
   --dt-radius-lg: 12px;
   --dt-radius-pill: 9999px;
 
-  /* --- Espaçamento em escala (base 8px, aproximando a escala do Cal.com:
-   * 4/8/12/16/20/24/28/80/96px) -------------------------------------------- */
+  /* --- Espaçamento em escala (base 8px) -------------------------------------
+   * Inalterado nesta fase. */
   --dt-space-1: 0.25rem; /* 4px */
   --dt-space-2: 0.5rem; /* 8px */
   --dt-space-3: 0.75rem; /* 12px */
@@ -138,10 +205,7 @@
   --dt-space-7: 3rem; /* 48px */
   --dt-space-8: 4rem; /* 64px */
 
-  /* --- Tipografia ---------------------------------------------------------
-   * Inter para tudo (corpo e display) + Roboto Mono para dado tabular —
-   * carregadas via Google Fonts no layout da página de estilo-guia. Ver
-   * comentário no topo do arquivo sobre a substituição do Cal Sans. */
+  /* --- Tipografia -------------------------------------------------------- */
   --dt-font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     sans-serif;
   --dt-font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -159,26 +223,21 @@
   --dt-weight-medium: 500;
   --dt-weight-bold: 700;
 
-  /* Headings grandes (32px+) ficam entre 600-700 com tracking levemente
-   * negativo; textos ≤20px usam peso normal/médio com tracking neutro ou
-   * levemente positivo — por isso dois tokens de letter-spacing distintos. */
   --dt-tracking-display: -0.02em;
   --dt-tracking-body: 0;
 
   --dt-leading-tight: 1.12;
   --dt-leading-normal: 1.5;
 
-  /* --- Foco e acessibilidade ----------------------------------------------
-   * O Cal.com usa um azul de foco neutro em relação à cor de ação (link),
-   * de propósito: foco por teclado precisa ser reconhecível mesmo em um
-   * componente que não é um link, então não reaproveita o Link Blue. */
+  /* --- Foco e acessibilidade -------------------------------------------------
+   * O anel de foco precisa ser reconhecível mesmo num componente que não é
+   * link — ver `--dt-shadow-focus` acima para a cor exata (petróleo de
+   * interação, não mais azul Tailwind). */
   --dt-focus-ring: var(--dt-shadow-focus);
   --dt-focus-ring-danger: 0 0 0 2px var(--dt-ice-0), 0 0 0 4px rgba(161, 69, 69, 0.45);
 
-  /* --- Transições --------------------------------------------------------
-   * O botão primário do Cal.com não muda de cor no hover, só de opacidade
-   * (ver `.button--primary:hover` em design_components.css) — por isso
-   * `opacity` entra na lista de propriedades transicionadas por padrão. */
+  /* --- Transições ---------------------------------------------------------
+   * Inalterado nesta fase. */
   --dt-transition-fast: 120ms ease;
   --dt-transition-base: 180ms ease;
 }
