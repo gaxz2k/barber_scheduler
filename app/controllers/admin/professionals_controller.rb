@@ -66,7 +66,7 @@ class Admin::ProfessionalsController < Admin::BaseController
   private
 
   def professional_params
-    params.expect(professional: [ :name, :photo_upload, :remove_photo ])
+    params.expect(professional: [ :name, :specialty, :photo_upload, :remove_photo ])
   end
 
   def set_professional

@@ -19,6 +19,13 @@
   </div>
 
   <div class="field">
+    <%= form.label :specialty, "Especialidade", class: "field__label" %>
+    <%= form.text_field :specialty, placeholder: "Ex.: Degradê e cortes modernos",
+          class: "input#{' input--error' if professional.errors[:specialty].any?}" %>
+    <span class="field__hint">Aparece como subtítulo no cartão do profissional. Opcional.</span>
+  </div>
+
+  <div class="field">
     <%= form.label :photo_upload, professional.photo? ? "Trocar foto" : "Foto", class: "field__label" %>
     <%= form.file_field :photo_upload, accept: "image/png,image/jpeg,image/webp",
           class: "input#{' input--error' if professional.errors[:photo_upload].any?}" %>

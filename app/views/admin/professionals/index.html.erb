@@ -17,69 +17,75 @@
     <%= link_to "Novo profissional", new_admin_professional_path, class: "button button--primary" %>
   </div>
 <% else %>
-  <div class="table-wrap">
-    <table class="table">
-      <thead>
-        <tr>
-          <th><span class="visually-hidden">Foto</span></th>
-          <th>Profissional</th>
-          <th><span class="visually-hidden">Ações</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @professionals.each do |professional| %>
-          <tr>
-            <td>
-              <% if professional.photo? %>
-                <%= image_tag professional.photo_blob, alt: professional.name,
-                      class: "admin-table__avatar", loading: "lazy" %>
-              <% else %>
-                <span class="admin-table__avatar admin-table__avatar--placeholder" aria-hidden="true"><%= professional.name.first %></span>
-              <% end %>
-            </td>
-            <td>
-              <strong><%= professional.name %></strong>
-              <%# O selo só aparece quando ESTE profissional é de fato o
-                  padrão gravado na unidade dele — não quando a unidade não
-                  tem padrão nenhum (nesse caso ninguém tem o selo, e a tela
-                  de agendamento cai no primeiro da lista, que é um
-                  comportamento implícito e não uma escolha do dono para
-                  mostrar como se fosse). %>
-              <% if professional.barbershop_unit&.default_professional_id == professional.id %>
-                <span class="admin-badge" title="Padrão da unidade <%= professional.barbershop_unit.name %>">
-                  <%= icon_tag(:check, size: 12) %> Padrão
+  <%# O aviso só faz sentido quando existe mais de uma unidade: com uma só,
+      "padrão da unidade" é sempre o mesmo profissional-base que a agenda já
+      usaria sem nenhuma configuração — avisar aqui seria descrever uma
+      escolha que não existe. %>
+  <% if Current.barbershop.unidades.count > 1 %>
+    <div class="admin-pro-hint">
+      <%= icon_tag(:check, size: 16) %>
+      <div><strong>Profissional padrão no agendamento online.</strong> Quem estiver marcado como "Padrão" aparece pré-selecionado quando o cliente escolhe um serviço, para cada unidade — o cliente pode trocar a qualquer momento. Use "Definir como padrão" no cartão do profissional.</div>
+    </div>
+  <% end %>
+
+  <div class="admin-pro-grid">
+    <% @professionals.each do |professional| %>
+      <div class="card admin-pro-card">
+        <div class="admin-pro-card__photo">
+          <% if professional.photo? %>
+            <%= image_tag professional.photo_blob, alt: professional.name, loading: "lazy" %>
+          <% else %>
+            <span class="admin-table__avatar admin-table__avatar--placeholder" aria-hidden="true"><%= professional.name.first %></span>
+          <% end %>
+        </div>
+        <div class="admin-pro-card__body">
+          <h3><%= professional.name %></h3>
+          <% if professional.specialty_label %>
+            <div class="admin-pro-card__specialty"><%= professional.specialty_label %></div>
+          <% end %>
+          <% if professional.barbershop_unit.present? %>
+            <span class="admin-pro-card__unit">
+              <%= icon_tag(:pin, size: 11) %> <%= professional.barbershop_unit.name %>
+            </span>
+          <% end %>
+
+          <div class="admin-pro-card__actions">
+            <%= link_to edit_admin_professional_path(professional), class: "button button--secondary button--sm", aria: { label: "Editar #{professional.name}" } do %>
+              <%= icon_tag(:edit, size: 16) %> Editar
+            <% end %>
+            <%= link_to admin_professional_path(professional), class: "button button--secondary button--sm", aria: { label: "Ver #{professional.name}" } do %>
+              Detalhes
+            <% end %>
+            <%= button_to admin_professional_path(professional), method: :delete,
+                  class: "button button--danger button--sm",
+                  form: { data: { turbo_confirm: "Excluir este profissional?" } },
+                  aria: { label: "Excluir #{professional.name}" } do %>
+              <%= icon_tag(:trash, size: 16) %>
+            <% end %>
+          </div>
+
+          <%# O selo e o botão só existem quando o profissional tem unidade —
+              ver o comentário de `Admin::ProfessionalsController#set_default`
+              sobre por que "padrão" não faz sentido sem uma unidade dona. %>
+          <% if professional.barbershop_unit.present? %>
+            <div class="admin-pro-card__default-row">
+              <% if professional.barbershop_unit.default_professional_id == professional.id %>
+                <span class="admin-pro-card__default-badge" title="Padrão da unidade <%= professional.barbershop_unit.name %>">
+                  <%= icon_tag(:check, size: 13) %> Profissional padrão
                 </span>
+              <% else %>
+                <span class="tiny" style="color: var(--dt-ink-soft); font-size: var(--dt-text-xs);">Não é o padrão</span>
+                <%= button_to set_default_admin_professional_path(professional), method: :patch,
+                      class: "admin-set-default-btn",
+                      form: { data: { turbo_confirm: "Definir #{professional.name} como padrão da unidade #{professional.barbershop_unit.name}?" } },
+                      aria: { label: "Definir #{professional.name} como padrão" } do %>
+                  Definir como padrão
+                <% end %>
               <% end %>
-            </td>
-            <td>
-              <div class="table__actions">
-                <% if professional.barbershop_unit.present? && professional.barbershop_unit.default_professional_id != professional.id %>
-                  <%# PATCH, e não link: a ação grava estado (muda a unidade),
-                      e um `link_to` comum seria um GET — um crawler ou um
-                      prefetch do navegador poderia disparar a troca sem
-                      ninguém ter clicado em nada. `button_to` é o mesmo
-                      padrão já usado em "Excluir" logo abaixo. %>
-                  <%= button_to set_default_admin_professional_path(professional), method: :patch,
-                        class: "button button--secondary button--sm",
-                        form: { data: { turbo_confirm: "Definir #{professional.name} como padrão da unidade #{professional.barbershop_unit.name}?" } },
-                        aria: { label: "Definir #{professional.name} como padrão" } do %>
-                    <%= icon_tag(:check, size: 16) %> <span class="visually-hidden">Definir como padrão</span> Definir como padrão
-                  <% end %>
-                <% end %>
-                <%= link_to edit_admin_professional_path(professional), class: "button button--secondary button--sm", aria: { label: "Editar #{professional.name}" } do %>
-                  <%= icon_tag(:edit, size: 16) %> <span class="visually-hidden">Editar</span>
-                <% end %>
-                <%= button_to admin_professional_path(professional), method: :delete,
-                      class: "button button--danger button--sm",
-                      form: { data: { turbo_confirm: "Excluir este profissional?" } },
-                      aria: { label: "Excluir #{professional.name}" } do %>
-                  <%= icon_tag(:trash, size: 16) %> <span class="visually-hidden">Excluir</span>
-                <% end %>
-              </div>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </div>
 <% end %>
