@@ -222,7 +222,10 @@
           "Escolha onde quer ser atendido" (ver `@booking_units.any?` logo
           acima) — a mesma pergunta, só que revisitada. %>
       <div class="booking-flow__back-row">
-        <%= link_to "← Voltar", root_path, class: "booking-flow__back" %>
+        <%= link_to root_path, class: "booking-flow__back" do %>
+          <%= icon_tag(:"arrow-left", size: 16) %>
+          <span>Voltar</span>
+        <% end %>
       </div>
 
       <%# "Últimos agendamentos" é SÓ o último registro de @ultimo_agendamento

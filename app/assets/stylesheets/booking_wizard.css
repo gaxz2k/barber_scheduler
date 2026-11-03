@@ -697,24 +697,64 @@ body:has(.booking-page) {
   margin-inline: auto;
   background: transparent;
   animation: booking-flow-enter 420ms ease-out;
+  /* A regra-base `.booking-flow` (application.css, era pré-redesenho) tem
+   * `border: 1px solid var(--line); box-shadow: var(--shadow-soft); padding:
+   * 1.75rem 1.5rem 2rem;` — essa borda+sombra ao redor de TODA a tela
+   * (cabeçalho + lista de serviços juntos) é o que Nicholas circulou e
+   * pediu pra tirar ("retire essas linhas"). Como as duas regras têm a
+   * mesma especificidade (uma classe só) e esta carrega DEPOIS de
+   * application.css, só o que é redeclarado aqui vence — por isso as três
+   * propriedades entram explicitamente, mesmo a herdada não precisando
+   * mudar de valor. Espaçamento maior ("aumente o espaço para ficar
+   * maior"): o padding lateral era pensado pra abrir espaço pra essa borda
+   * que não existe mais; sem ela, o conteúdo pode respirar mais perto das
+   * bordas da tela em vez de ficar reservando um espaço que servia só a um
+   * contorno que sumiu. */
+  border: none;
+  box-shadow: none;
+  padding: 2rem 1.25rem 2.5rem;
 }
 
 .booking-flow__back-row {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
+/* Redesenho pedido por Nicholas ("dê um layout pro voltar e não ficar
+ * simples") — de texto solto com um caractere "←" pra uma pastilha de
+ * verdade: ícone de seta (SVG, não mais o caractere) numa bolha circular
+ * clara + texto, a mesma lógica visual que "Consultar Agendamento" já usa
+ * (`.booking-card-header__consult`) — ação secundária com presença, não
+ * um link perdido no canto. */
 .booking-flow__back {
   display: inline-flex;
-  min-height: 2.5rem;
   align-items: center;
-  color: var(--ref-meta-ink);
-  font-size: 0.88rem;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem 0.5rem 0.5rem;
+  border-radius: var(--dt-radius-pill);
+  background: var(--dt-petrol-100);
+  color: var(--dt-petrol-700);
+  font-size: 0.85rem;
   font-weight: var(--dt-weight-bold);
+  text-decoration: none;
+  transition: background-color 0.12s;
 }
 
 .booking-flow__back:hover,
 .booking-flow__back:focus-visible {
-  color: var(--dt-ink);
+  background: var(--dt-petrol-300);
+  text-decoration: none;
+}
+
+.booking-flow__back svg {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0.3rem;
+  border-radius: 50%;
+  background: var(--dt-petrol-700);
+  color: var(--dt-ice-0);
 }
 
 /* Variante do cabeçalho usada DENTRO da etapa de confirmação ("Confirmação" +
@@ -1352,6 +1392,23 @@ body:has(.booking-page) {
   background: var(--dt-petrol-700);
   color: var(--dt-ice-0);
   box-shadow: 0 2px 6px rgba(15, 61, 62, 0.25);
+}
+
+/* `.service-list` (application.css) é de ANTES do redesenho de cards (item
+ * 2 do audit de fidelidade, ver `.service-row` logo abaixo): borda +
+ * fundo em volta da lista INTEIRA, pensados pra quando cada linha era só
+ * um divisor fino dentro de um bloco único. Com cada `.service-row` já
+ * sendo seu próprio cartão com borda/sombra, essa borda externa virou uma
+ * segunda moldura por fora da primeira — exatamente o que Nicholas
+ * circulou e pediu pra tirar ("retire essas linhas"). `overflow: hidden`
+ * também saiu: não tem mais nada clipando aqui, mas por precaução — é o
+ * mesmo tipo de bug que já mordeu o dropdown do seletor de profissional
+ * antes (ver o comentário em `.service-card.is-selected .service-pro-section`
+ * sobre aquele caso). */
+.service-list {
+  border: none;
+  background: none;
+  overflow: visible;
 }
 
 .service-row {

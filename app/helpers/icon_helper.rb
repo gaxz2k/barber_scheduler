@@ -60,7 +60,12 @@ module IconHelper
     # Botão "Consultar Agendamento" (redesenho pedido por Nicholas: "layout
     # mais novo e mais trabalhado") — lupa simples, mesmo traço fino (sem
     # preenchimento) dos outros ícones deste set.
-    search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M19.5 19.5 15 15"/>'
+    search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M19.5 19.5 15 15"/>',
+    # Botão "← Voltar" (redesenho pedido por Nicholas: "dê um layout pro
+    # voltar e não ficar simples") — seta horizontal, mesmo traço das
+    # outras, pra substituir o caractere de texto "←" por um ícone de
+    # verdade dentro de uma pastilha.
+    "arrow-left": '<path d="M19 12H5M11 5.5 4.5 12l6.5 6.5"/>'
   }.freeze
 
   # Devolve o `<svg>` inline do ícone `name`. `size` é o lado em pixels (o
