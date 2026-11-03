@@ -128,10 +128,14 @@
     <% end %>
 
     <% if @booking_step == :service %>
-      <%# Item 5 do audit de fidelidade: alternador rápido "Centro | Jardim"
-          — só faz sentido aqui, na etapa de escolha de serviço, que é a
-          mesma etapa do protótipo aprovado que tem o `#unitToggle`. %>
-      <%= render "shared/unit_toggle" %>
+      <%# Pedido de Nicholas: "coloca um botão voltar no lugar do 'unidades'
+          para selecionar a unidade na página de serviços" — troca o
+          alternador inline (pílulas "Centro | Jardim") por um link de
+          volta simples pra tela de escolha de unidade (mesmo tratamento
+          de `index.html.erb`, ver o comentário lá pro porquê completo). %>
+      <div class="booking-flow__back-row">
+        <%= link_to "← Voltar", root_path, class: "booking-flow__back" %>
+      </div>
 
       <%# ETAPA 1: lista densa de serviços, igual à da home — ver
           `appointments/_service_rows`. É a mesma etapa 1 da referência

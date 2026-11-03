@@ -212,10 +212,18 @@
         <% end %>
       </ul>
     <% else %>
-      <%# Item 5 do audit de fidelidade: alternador rápido "Centro | Jardim"
-          — mesma posição relativa (acima da lista de serviços) do
-          `#unitToggle` no protótipo aprovado. %>
-      <%= render "shared/unit_toggle" %>
+      <%# Pedido de Nicholas: "coloca um botão voltar no lugar do 'unidades'
+          para selecionar a unidade na página de serviços" — troca o
+          alternador inline (pílulas "Centro | Jardim") por um link de
+          volta simples pra tela de escolha de unidade, reaproveitando o
+          mesmo estilo/classe do botão "Voltar" já usado no resto do fluxo
+          (`.booking-flow__back`, ver `new.html.erb`). `root_path` leva de
+          volta à home sem `unidade_slug` na URL, que é exatamente a tela
+          "Escolha onde quer ser atendido" (ver `@booking_units.any?` logo
+          acima) — a mesma pergunta, só que revisitada. %>
+      <div class="booking-flow__back-row">
+        <%= link_to "← Voltar", root_path, class: "booking-flow__back" %>
+      </div>
 
       <%# "Últimos agendamentos" é SÓ o último registro de @ultimo_agendamento
           (pending/confirmed) — não um histórico com paginação, que o backend
