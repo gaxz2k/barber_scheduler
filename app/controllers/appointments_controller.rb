@@ -2,6 +2,30 @@ class AppointmentsController < ApplicationController
   MAX_BOOKING_HORIZON = 1.year
   BOOKING_MIN_DAYS = 1
 
+  # Teto de tentativas da busca por telefone (`#lookup`), por barbearia e por
+  # IP, dentro da janela abaixo.
+  #
+  # Existe para encarecer um ataque de enumeração — tentar telefone atrás de
+  # telefone até acertar um cadastro real — sem exigir do cliente de
+  # verdade nenhum segredo extra (token, senha): ver o comentário de
+  # `#lookup` sobre por que a busca é deliberadamente só por telefone, a
+  # pedido do dono ("isso é pra ser rápido e fácil pro cliente"). Um gate de
+  # 3 tentativas não impede um atacante paciente e disperso por muitos IPs,
+  # mas não é esse o inimigo que esta trava combate — é o script ingênuo que
+  # tenta telefones em sequência de um único lugar, e 3 tentativas bastam
+  # para isso virar impraticável: cada bloqueio custa `LOOKUP_RATE_LIMIT_WINDOW`
+  # inteiros sem NENHUMA tentativa a mais, e não há atalho para descobrir se
+  # o próximo número vai funcionar sem esperar.
+  #
+  # Rails.cache (Redis em dev/produção, ver `config/environments/*.rb`), e
+  # não um gem como `rack-attack`: é decisão explícita do dono para a
+  # feature de busca por telefone, e segue valendo aqui — o app já paga por
+  # Redis para `AvailableSlots::Cache` e para o `cache_store` padrão, um
+  # contador com `expires_in` não pede nada novo da infraestrutura.
+  LOOKUP_MAX_ATTEMPTS = 3
+  LOOKUP_RATE_LIMIT_WINDOW = 15.minutes
+  LOOKUP_RATE_LIMIT_MESSAGE = "Muitas tentativas. Tente novamente em alguns minutos.".freeze
+
   # Uma agenda: o profissional e os horários livres dele naquela data.
   #
   # É uma Struct, e não um Hash, porque a view acessa `agenda.professional` e
@@ -210,10 +234,22 @@ class AppointmentsController < ApplicationController
       return
     end
 
+    # Limite de tentativas ANTES da consulta ao banco, de propósito: o custo
+    # (uma leitura no Redis) é o mesmo nos dois lados, mas checar primeiro
+    # evita rodar a query de telefone — que já é, ela mesma, a ação que se
+    # quer encarecer — uma vez a mais do que o necessário quando a resposta
+    # já vai ser "não, chega por agora".
+    if lookup_rate_limited?
+      @lookup_error = LOOKUP_RATE_LIMIT_MESSAGE
+      render :lookup_new, status: :too_many_requests
+      return
+    end
+
     client = find_client_by_phone(@client_phone)
 
     if client.nil?
-      @lookup_error = "Não encontramos nenhum cadastro com esse telefone."
+      attempts = register_lookup_attempt!
+      @lookup_error = "Não encontramos nenhum cadastro com esse telefone.#{lookup_attempt_warning(attempts)}"
       render :lookup_new, status: :unprocessable_content
       return
     end
@@ -366,7 +402,8 @@ class AppointmentsController < ApplicationController
       @appointment = past_appointment
       render :show
     else
-      @lookup_error = "Não encontramos nenhum agendamento para esse telefone."
+      attempts = register_lookup_attempt!
+      @lookup_error = "Não encontramos nenhum agendamento para esse telefone.#{lookup_attempt_warning(attempts)}"
       render :lookup_new, status: :unprocessable_content
     end
   end
@@ -400,6 +437,82 @@ class AppointmentsController < ApplicationController
 
   def lookup_params
     params.permit(:phone)
+  end
+
+  # Chave da trava: por barbearia E por IP, nunca só por IP.
+  #
+  # Isolar por tenant evita que o tráfego de uma barbearia aqueça a trava de
+  # outra que, por acaso, compartilhe o mesmo IP de saída (uma rede
+  # corporativa, uma VPN, um proxy de operadora de celular) — sem isto um
+  # cliente de uma barbearia bloquearia, sem querer, os de outra barbearia
+  # inteiramente diferente. `Current.barbershop` já está resolvido quando
+  # `#lookup` roda (`around_action :use_current_barbershop`, no
+  # `ApplicationController`), então não há caminho em que isto execute sem
+  # tenant. `request.remote_ip` (e não `request.ip`) porque é o que o resto
+  # do Rails considera "o IP de verdade" por trás de proxy reverso, honrando
+  # `X-Forwarded-For` quando `config.action_dispatch.trusted_proxies` está
+  # configurado — o mesmo que qualquer middleware de throttling usaria.
+  def lookup_rate_limit_key
+    "appointment_lookup:#{Current.barbershop.id}:#{request.remote_ip}"
+  end
+
+  # true quando esta barbearia+IP já gastou as `LOOKUP_MAX_ATTEMPTS`
+  # tentativas dentro da janela.
+  #
+  # Só LÊ o contador — nunca escreve. Quem escreve é `register_lookup_attempt!`,
+  # chamado só nos desfechos que CONTAM (ver o comentário lá). Separar leitura
+  # de escrita em dois métodos é o que deixa `#lookup` checar o limite ANTES
+  # de gastar uma tentativa decidindo se a busca deste request vai contar.
+  def lookup_rate_limited?
+    Rails.cache.read(lookup_rate_limit_key).to_i >= LOOKUP_MAX_ATTEMPTS
+  end
+
+  # Registra uma tentativa que FALHOU — telefone sem nenhum cadastro, ou
+  # cadastro sem nenhum agendamento (futuro ou passado) para mostrar — e
+  # devolve o total de tentativas já gastas na janela atual.
+  #
+  # Só as falhas contam, de propósito, e é a decisão de produto deste
+  # arquivo: quem tenta enumerar telefones aleatórios erra quase sempre, e
+  # contar só as falhas já encarece exatamente esse comportamento, que é o
+  # que esta trava existe para combater. Contar TAMBÉM os acertos (telefone
+  # encontrado, agendamento mostrado) puniria o cliente de verdade que
+  # reabre esta tela mais de 3 vezes para conferir o MESMO agendamento real
+  # — reler o horário antes de saír de casa, mostrar para o cônjuge no
+  # celular dele, confirmar de novo no dia seguinte — nenhuma dessas
+  # releituras é um "erro", e um cliente legítimo não erra o próprio
+  # telefone três vezes seguidas. Resumindo: o orçamento de 3 tentativas é
+  # gasto por quem não tem cadastro aqui, não por quem tem.
+  #
+  # `read` + `write` em vez de `Rails.cache.increment`: o `increment` nativo
+  # do `RedisCacheStore` não aplica `expires_in` de forma consistente num
+  # contador que ele mesmo criou (depende da versão do backend), e esta
+  # trava já abre mão de um algoritmo de janela deslizante por simplicidade
+  # — um contador que lê, soma 1 e regrava o TTL inteiro a cada tentativa
+  # está dentro do que foi pedido, e evita depender de um detalhe de
+  # implementação do adapter. A corrida entre duas requisições simultâneas
+  # do MESMO cliente roubando um incremento uma da outra é um risco real só
+  # em tese: são no máximo 3 cliques humanos, não uma rajada de tráfego.
+  def register_lookup_attempt!
+    key = lookup_rate_limit_key
+    attempts = Rails.cache.read(key).to_i + 1
+    Rails.cache.write(key, attempts, expires_in: LOOKUP_RATE_LIMIT_WINDOW)
+    attempts
+  end
+
+  # O aviso que acompanha uma busca que falhou, crescendo de tom conforme o
+  # cliente se aproxima do bloqueio — é o "com avisos" que o dono pediu: a
+  # 1ª falha não precisa de aviso nenhum (é só um telefone digitado errado,
+  # o caso comum), mas a ÚLTIMA tentativa antes do bloqueio precisa avisar
+  # ANTES de bloquear, não só depois — um cliente de verdade com pressa, que
+  # ainda vai tentar de novo, merece saber que está perto do limite em vez
+  # de ser pego de surpresa pela mensagem genérica de bloqueio.
+  def lookup_attempt_warning(attempts)
+    case LOOKUP_MAX_ATTEMPTS - attempts
+    when 1
+      " Você tem mais 1 tentativa antes de bloquearmos novas buscas por alguns minutos."
+    when ..0
+      " Essa foi sua última tentativa por agora: novas buscas ficam bloqueadas por alguns minutos."
+    end
   end
 
   # A unidade vem da URL e é sempre do tenant em `Current` — o slug é
