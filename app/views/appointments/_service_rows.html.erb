@@ -3,9 +3,14 @@
     `cliente-agendar.html` (ver o contexto da tarefa de redesenho do fluxo de
     agendamento): uma linha por serviço (nome + duração + preço), com o
     seletor "com quem" RECOLHIDO por padrão — só aparece, animado, quando
-    aquele serviço é escolhido. Confirmar o profissional (aceitando o padrão
-    pré-preenchido, ou trocando no seletor) avança sozinho para a etapa
-    seguinte, sem precisar clicar em "Agendar".
+    aquele serviço é escolhido.
+
+    Pedido de Nicholas (depois da versão com avanço automático): "em vez de
+    selecionar o barbeiro e ir pro próximo, coloca um botão Agendar" —
+    escolher o profissional não navega mais sozinho. O botão "Agendar" que
+    já existia no DOM como fallback sem-JS (ver abaixo) agora é a única
+    forma de avançar, visível dentro da seção do profissional, com ou sem
+    JS.
 
     Reaproveitada em três lugares:
     (1) a home (`appointments/index`), para a lista completa de serviços;
@@ -22,15 +27,14 @@
     Tudo o que segue funciona sem JavaScript: a lista aparece com a seção do
     profissional já expandida (sem animação, sem recolher), com o seletor
     nativo e o botão "Agendar" visíveis em toda linha. O recolhido, a
-    animação, o seletor customizado (foto/inicial + primeiro nome + seta) e
-    o avanço automático só existem quando `service_list_controller.js`
-    conecta e marca `.service-list--js` no elemento — ver o comentário lá
-    (e a skill `barber-scheduler-js-toolchain`: nada no fluxo público pode
-    DEPENDER de JS, só ser melhorado por ele). O botão "Agendar" continua no
-    DOM mesmo com JS: ele deixa de precisar de um clique, mas não é removido
-    — é o próprio link que `service_agendar_controller.js` usa para navegar
-    sozinho (ver `#go`), e é o que mantém teclado/leitor de tela com uma
-    ação explícita de reserva. %>
+    animação e o seletor customizado (foto/inicial + primeiro nome + seta)
+    só existem quando `service_list_controller.js` conecta e marca
+    `.service-list--js` no elemento — ver o comentário lá (e a skill
+    `barber-scheduler-js-toolchain`: nada no fluxo público pode DEPENDER de
+    JS, só ser melhorado por ele). O botão "Agendar" é o MESMO elemento nos
+    dois casos — `service_agendar_controller.js#selectProfessional` só
+    reescreve o `href` dele quando o cliente troca de profissional no
+    seletor. %>
 <% heading ||= "Escolha um serviço" %>
 <% bar_modifier ||= nil %>
 <% scope ||= "all" %>
@@ -50,8 +54,7 @@
 
     <% services.each do |service| %>
       <div class="service-row" data-controller="service-agendar" data-service-agendar-row
-           data-service-list-target="row"
-           data-action="professional-select:open->service-agendar#pausePending professional-select:close->service-agendar#resumePending">
+           data-service-list-target="row">
         <%# Linha compacta: rádio decorativo + nome + duração à esquerda,
             preço à direita — a única informação visível antes de escolher
             o serviço. O clique é tratado pelo `service-list` (controller do
@@ -83,17 +86,14 @@
               `service_list_controller.js` põe em `.service-row`, não
               precisa de um target próprio aqui. %>
           <div class="service-row__pro-section">
-            <%# Tocar aqui (fora do seletor) aceita quem já está escolhido —
-                o padrão pré-preenchido, ou quem o cliente já tiver trocado
-                no seletor — e dispara o avanço automático. É a ação
-                explícita que falta quando ninguém mexe no seletor: sem ela,
-                aceitar o padrão exigiria abrir o seletor só para fechar de
-                novo escolhendo a mesma pessoa. %>
-            <div class="service-row__pro-row" data-action="click->service-agendar#confirmDefault">
-              <span class="service-row__pro-label">
-                Escolha o profissional
-                <span class="service-row__pro-hint">toque aqui para confirmar</span>
-              </span>
+            <%# Pedido de Nicholas: "em vez de selecionar o barbeiro e ir
+                pro próximo, coloca um botão Agendar" — este bloco não
+                avança mais sozinho quando confirma o profissional (ver
+                `service_agendar_controller.js`, que perdeu o
+                `scheduleAutoAdvance`/toast inteiro). A linha deixou de ser
+                clicável — só o próprio seletor abre/fecha. %>
+            <div class="service-row__pro-row">
+              <span class="service-row__pro-label">Escolha o profissional</span>
 
               <%# Combobox customizado sobre o <select> nativo — ver
                   `professional_select_controller.js`. Sem JS, o <select>
@@ -119,12 +119,14 @@
         <%# O `href` já sai com o profissional padrão (quando existe um): é
             o "pré-preenchido" chegando pronto na primeira renderização, sem
             precisar de um `change` de JS para existir — o mesmo link serve
-            de fallback clicável sem JS e de alvo de navegação automática
-            com JS. O contrato de parâmetros (service/professional/
-            unidade_slug) não muda — ver
-            `service_agendar_controller.js#selectProfessional`, que
-            reescreve só o `professional` quando o cliente troca no
-            seletor. %>
+            de fallback clicável sem JS e de botão de verdade com JS (sem
+            mais navegação automática por trás, ver o comentário no topo do
+            arquivo). Fica FORA de `.service-row__pro-section` de propósito
+            — esta linha roda mesmo sem profissional nenhum configurado
+            (`profissionais_disponiveis` vazio), caso em que não há seção
+            de profissional nenhuma pra morar dentro; o CSS mostra/esconde
+            este botão no mesmo gatilho (`.service-row.is-selected`), só
+            que como elemento irmão, não filho. %>
         <%= link_to "Agendar",
                     new_appointment_path(service: service.id, professional: profissional_padrao&.id, unidade_slug: params[:unidade_slug]),
                     class: "service-row__go",

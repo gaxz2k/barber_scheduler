@@ -1644,7 +1644,6 @@ body:has(.booking-page) {
   gap: 0.75rem;
   padding-top: 0.8rem;
   border-top: 1px dashed var(--ref-line);
-  cursor: pointer;
 }
 
 .service-row__pro-label {
@@ -1653,24 +1652,6 @@ body:has(.booking-page) {
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-}
-
-/* "toque aqui para confirmar" só faz sentido como instrução de UM toque
- * quando existe o quê confirmar com um toque — sem JS não há avanço
- * automático nenhum, só o botão "Agendar" de sempre, e a instrução
- * confundiria mais do que ajudaria. */
-.service-row__pro-hint {
-  display: none;
-  margin-top: 0.1rem;
-  color: var(--ref-meta-ink);
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-.service-list--js .service-row__pro-hint {
-  display: block;
 }
 
 .service-row__select-wrap {
@@ -1909,96 +1890,58 @@ body:has(.booking-page) {
   font-weight: var(--dt-weight-bold);
 }
 
-/* Botão "Agendar": continua no DOM (ver o comentário no topo do arquivo e
- * em `service_agendar_controller.js#go`) — o avanço automático substitui a
- * NECESSIDADE de clicar nele, não o elemento em si. Visível e clicável
- * normalmente sem JS; escondido do jeito `.sr-only` (fora da tela, não
- * `display: none`) quando `.service-list--js` está presente, para quem usa
- * teclado/leitor de tela sem depender da navegação automática ainda ter
- * uma ação explícita disponível. */
+/* Botão "Agendar": pedido de Nicholas ("em vez de selecionar o barbeiro e
+ * ir pro próximo, coloca um botão Agendar") — era escondido (`.sr-only`,
+ * fora da tela) quando JS estava ativo, porque o avanço automático
+ * substituía a necessidade dele. Esse avanço automático não existe mais
+ * (ver `service_agendar_controller.js`): o botão volta a ficar visível,
+ * dentro da seção do profissional — largura cheia, pra ter presença real
+ * como a ação final do cartão, não um link pequeno solto num canto.
+ *
+ * Fica FORA de `.service-row__pro-section` no HTML (roda mesmo sem
+ * profissional configurado, ver o comentário no partial), então ganha a
+ * PRÓPRIA animação de recolher/expandir aqui — mesmo gatilho
+ * (`.service-row.is-selected`), mesma curva, só que como elemento irmão
+ * em vez de filho de `.service-row__pro-section`. */
 .service-row__go {
-  display: inline-flex;
-  min-width: 7.5rem;
-  min-height: 3.25rem;
+  display: flex;
+  width: 100%;
+  min-height: 3rem;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  margin-top: 0.85rem;
+  margin-top: 0.9rem;
   background: var(--dt-petrol-700);
   color: var(--dt-ice-0);
-  border: 1px solid var(--dt-petrol-700);
-  border-radius: var(--dt-radius-sm);
-  padding: 0.5rem 1.1rem;
-  font-size: 0.88rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  border: none;
+  border-radius: var(--dt-radius-md);
+  padding: 0.65rem 1.1rem;
+  font-size: 0.92rem;
+  font-weight: var(--dt-weight-bold);
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background-color var(--dt-transition-fast), border-color var(--dt-transition-fast);
+  transition: background-color var(--dt-transition-fast);
 }
 
 .service-row__go:hover,
 .service-row__go:focus-visible {
   background: var(--dt-petrol-900);
-  border-color: var(--dt-petrol-900);
 }
 
 .service-list--js .service-row__go {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-/* === Toast "seguindo para a próxima etapa" ==================================
- * Substitui o botão "Agendar" como ação principal (ver acima): sumir sem
- * avisar seria confuso, então mostramos com clareza que o avanço é
- * automático — e cancelável, caso o cliente ainda esteja escolhendo
- * profissional (abrir o seletor pausa, ver
- * `service_agendar_controller.js#pausePending`). Criado dinamicamente por
- * linha (`service_agendar_controller.js#ensureToast`) e anexado a
- * `document.body` — `position: fixed`, então a posição na árvore do DOM
- * não importa, e um portal evita qualquer `overflow`/`transform` de
- * ancestral cortando ou deslocando o toast. */
-.service-row__advance-toast {
-  position: fixed;
-  left: 50%;
-  bottom: 1.4rem;
-  z-index: 50;
-  width: min(92vw, 23rem);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background: var(--dt-petrol-900);
-  color: var(--dt-ice-0);
-  font-size: 0.88rem;
-  font-weight: var(--dt-weight-bold);
-  padding: 0.75rem 1.1rem;
-  border-radius: var(--dt-radius-md);
-  overflow: hidden;
-  box-shadow: var(--dt-shadow-soft);
+  max-height: 0;
+  margin-top: 0;
   opacity: 0;
-  transform: translateX(-50%) translateY(0.85rem);
+  overflow: hidden;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease, margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.service-row__advance-toast.is-visible {
+.service-list--js .service-row.is-selected .service-row__go {
+  max-height: 4rem;
+  margin-top: 0.9rem;
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-.service-row__advance-bar {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 3px;
-  width: 0;
-  background: rgba(255, 255, 255, 0.65);
+  pointer-events: auto;
 }
 
 
