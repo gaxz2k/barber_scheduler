@@ -77,6 +77,11 @@ RSpec/ExampleLength:
     # horário, cliente — e confere o que foi gravado. Quebrar em duas
     # expectativas mediria o RSpec, não o agendamento.
     - "spec/requests/merged_booking_spec.rb"
+    # O exemplo de "vários agendamentos futuros" monta dois agendamentos
+    # completos (profissional, serviço, horário) antes de fazer a busca —
+    # quebrar o setup em exemplos separados mediria a montagem do cenário, não
+    # o comportamento da lista.
+    - "spec/requests/appointment_lookup_spec.rb"
     - "spec/services/**/*"
 
 Rails/SkipsModelValidations:
@@ -85,6 +90,11 @@ Rails/SkipsModelValidations:
     - "spec/models/appointment_unit_spec.rb"
     - "spec/models/barbershop_unit_spec.rb"
     - "spec/requests/appointments_spec.rb"
+    # O mesmo motivo de `appointments_spec.rb`: simular um agendamento já
+    # `completed`/`canceled`, ou mover um agendamento válido para uma data no
+    # passado, exige pular a validação `on: :create` que recusaria a própria
+    # gravação de um cenário de teste.
+    - "spec/requests/appointment_lookup_spec.rb"
 
 RSpec/MultipleExpectations:
   Exclude:
@@ -105,6 +115,10 @@ RSpec/MultipleExpectations:
     # `title` — e a segunda expectativa confere que a marca antiga sumiu. São
     # um exemplo, não três. A regra continua valendo no resto da suíte.
     - "spec/requests/brand_identity_spec.rb"
+    # Cada exemplo de busca por telefone prova um resultado (status HTTP) e o
+    # conteúdo que esse resultado expõe — "achou" sem conferir OS DADOS
+    # certos passaria com a tela errada renderizada por acidente.
+    - "spec/requests/appointment_lookup_spec.rb"
     - "spec/services/**/*"
 
 # Os specs de unidade montam cenário com várias entidades — barbearia, duas
@@ -149,6 +163,12 @@ RSpec/InstanceVariable:
     # ser a mesma entre exemplos do mesmo arquivo, senão cada exemplo gravaria
     # uma unidade nova e o próprio cenário mudaria entre eles.
     - "spec/rails_helper.rb"
+    # `@book_sequence` garante um slot de criação diferente a cada chamada de
+    # `book!` dentro do MESMO exemplo (ver o comentário no helper) — é
+    # exatamente o papel de uma variável de instância de exemplo, e um `let`
+    # não serve porque o valor precisa avançar a cada chamada, não ficar fixo
+    # por memoização.
+    - "spec/requests/appointment_lookup_spec.rb"
 
 # O spec de unidade descreve comportamento do par Barbershop/BarbershopUnit e
 # não de uma classe só, então `describe` recebe a descrição em vez da classe.
