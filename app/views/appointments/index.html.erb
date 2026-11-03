@@ -168,9 +168,19 @@
       </section>
 
       <ul class="service-choice-list" aria-label="Unidades disponíveis">
+        <%# Turbo Drive padrão aqui (SEM `data: { turbo: false }`), igual ao
+            `shared/_unit_toggle`: este link vai para `unidade_path`, uma URL
+            de UNIDADE (não uma etapa do assistente de agendamento — esta
+            lista nem está dentro de um `data-controller="booking-wizard"`,
+            só tem a classe `.booking-flow` por herança visual). O
+            `turbo: false` que existia aqui antes da ativação do Turbo era só
+            cautela sem efeito prático (nada rodava mesmo); agora que o Turbo
+            está ligado de verdade, mantê-lo forçaria um reload cheio onde o
+            próprio `_unit_toggle` já prova que a troca lisa funciona bem para
+            exatamente este mesmo destino. %>
         <% @booking_units.each do |unit| %>
           <li>
-            <%= link_to unidade_path(unit), class: "service-choice-card", data: { turbo: false } do %>
+            <%= link_to unidade_path(unit), class: "service-choice-card" do %>
               <span class="service-choice-card__number"><%= icon_tag(:pin, size: 20) %></span>
               <span class="service-choice-card__body">
                 <strong><%= unit.name %></strong>
