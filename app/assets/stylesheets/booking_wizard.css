@@ -1929,6 +1929,14 @@ body:has(.booking-page) {
 }
 
 .service-list--js .service-row__go {
+  /* `min-height: 3rem` (regra-base, pensada pra área de toque confortável
+   * quando o botão está visível) vence `max-height: 0` em caso de
+   * conflito — é assim que a especificação CSS resolve isso, min-height
+   * sempre tem prioridade. Sem zerar `min-height` aqui também, o card
+   * FECHADO ficava com ~48px de espaço vazio reservado embaixo do preço
+   * (o botão ocupando espaço mas invisível) — exatamente o que Nicholas
+   * apontou: "ficou grande pra baixo". */
+  min-height: 0;
   max-height: 0;
   margin-top: 0;
   opacity: 0;
@@ -1938,6 +1946,7 @@ body:has(.booking-page) {
 }
 
 .service-list--js .service-row.is-selected .service-row__go {
+  min-height: 3rem;
   max-height: 4rem;
   margin-top: 0.9rem;
   opacity: 1;
