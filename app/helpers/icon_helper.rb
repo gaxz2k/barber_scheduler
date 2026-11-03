@@ -56,7 +56,11 @@ module IconHelper
     # público (ver booking_wizard.css / #58-#60 e esta tarefa).
     "chevron-down": '<path d="M5 8.5 12 15.5 19 8.5"/>',
     # Botão flutuante "voltar ao topo" do fluxo público.
-    "arrow-up": '<path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/>'
+    "arrow-up": '<path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/>',
+    # Botão "Consultar Agendamento" (redesenho pedido por Nicholas: "layout
+    # mais novo e mais trabalhado") — lupa simples, mesmo traço fino (sem
+    # preenchimento) dos outros ícones deste set.
+    search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M19.5 19.5 15 15"/>'
   }.freeze
 
   # Devolve o `<svg>` inline do ícone `name`. `size` é o lado em pixels (o

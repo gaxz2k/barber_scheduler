@@ -71,10 +71,22 @@
         flutuando entre o card branco e o próximo bloco da página, ficou com
         cara de elemento quebrado/solto — Nicholas: "a div do consultar
         agendamento e o branco está meio ruim". Agora mora dentro do próprio
-        card, como última linha, com o sistema de botão padrão do projeto
-        (`.button--secondary`, mesma família usada no resto do fluxo) —
-        continua claramente uma ação separada de WhatsApp/ligar, mas sem o
-        efeito visual de peça solta. %>
-    <%= link_to "Consultar Agendamento", appointment_lookup_path, class: "button button--secondary booking-card-header__consult" %>
+        card, como última linha.
+
+        Segunda rodada (Nicholas: "poderia ter um layout mais novo e mais
+        trabalhado"): de botão de texto simples pra um cartão com ícone
+        (lupa, numa pastilha circular com a cor de marca) + duas linhas de
+        texto (título + legenda) — mesma ideia visual de "ação com
+        destaque" que o resto do app já usa pra ações importantes (ver o
+        cartão de unidade em `new.html.erb`, `.service-choice-card`, mesmo
+        padrão ícone+texto+seta). %>
+    <%= link_to appointment_lookup_path, class: "booking-card-header__consult" do %>
+      <span class="booking-card-header__consult-icon" aria-hidden="true"><%= icon_tag(:search, size: 18) %></span>
+      <span class="booking-card-header__consult-body">
+        <strong>Consultar Agendamento</strong>
+        <span>Veja data, horário e profissional</span>
+      </span>
+      <span class="booking-card-header__consult-arrow" aria-hidden="true">&rarr;</span>
+    <% end %>
   </header>
 </div>

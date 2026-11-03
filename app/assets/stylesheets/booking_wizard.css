@@ -624,6 +624,53 @@ body:has(.booking-page) {
   margin-top: 0.75rem;
 }
 
+/* Variante leve, pra avisos de rotina (não "algo está diferente do
+ * normal" como a pausa — aquela pede a caixa tracejada/vermelha acima).
+ * Layout horizontal ícone+texto, fundo petrol bem claro: chama atenção o
+ * suficiente pra não passar batido, sem competir visualmente com o círculo
+ * de sucesso logo acima dela na tela de confirmação. */
+.booking-notice--info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  /* A regra-base `.booking-notice` (application.css) é de uma era anterior
+   * ao redesenho — borda tracejada dourada, fundo "paper", texto centrado —
+   * e um `strong` maiúsculo/espaçado pensado pra um rótulo tipo
+   * "IMPORTANTE". Essa variante não quer nada disso: sobrescrevendo
+   * explicitamente em vez de deixar a cascata decidir. */
+  border: none;
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-petrol-100); /* #E2EFEF — tinta clara da rampa teal, já usada em todo o app */
+  padding: 0.9rem 1rem;
+  margin: 1.25rem 0;
+  text-align: left;
+  font-size: initial;
+  line-height: initial;
+  color: initial;
+}
+
+.booking-notice--info strong {
+  display: inline;
+  color: var(--dt-petrol-700);
+  font-size: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  margin-bottom: 0;
+}
+
+.booking-notice--info svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--dt-petrol-700);
+}
+
+.booking-notice--info p {
+  margin: 0;
+  color: var(--dt-ink);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 /* === Cartão único ===========================================================
  * Sem a faixa petróleo de assinatura (a referência não tem cabeçalho de
  * seção escuro no topo do card) — o próprio banner + cabeçalho de marca já
@@ -858,14 +905,111 @@ body:has(.booking-page) {
 /* Até pouco atrás era um elemento decorativo/estático posicionado FORA do
  * card, com margem negativa "furando" a borda inferior (ver o comentário no
  * partial pra mais contexto). Virou link de verdade e passou a morar dentro
- * do próprio `.booking-card-header`, como a última linha — sem mais
- * sobreposição/flutuação, só um botão secundário normal do sistema
- * (`.button--secondary` cuida de fundo/sombra/cor; aqui só o que é
- * específico deste botão: largura cheia e respiro extra em cima pra separar
- * visualmente da fileira de ícones de WhatsApp/ligar). */
+ * do próprio `.booking-card-header`, como a última linha.
+ *
+ * Segunda rodada: de botão de texto simples pra um cartão clicável completo
+ * — ícone numa pastilha circular + título/legenda em duas linhas + seta —
+ * usando as MESMAS cores da pastilha "is-active" do seletor de profissional
+ * (`--dt-petrol-700` de fundo) pra esse ícone ler como "ação de busca",
+ * coerente com o resto do sistema de ícones-em-pastilha do app. */
 .booking-card-header__consult {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--dt-radius-md);
+  background: var(--dt-petrol-100);
+  text-decoration: none;
+  text-align: left;
+  transition: background-color 0.12s, transform 0.12s;
+}
+
+.booking-card-header__consult:hover,
+.booking-card-header__consult:focus-visible {
+  background: var(--dt-petrol-300);
+  text-decoration: none;
+}
+
+.booking-card-header__consult-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--dt-petrol-700);
+  color: var(--dt-ice-0);
+}
+
+.booking-card-header__consult-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.booking-card-header__consult-body strong {
+  color: var(--dt-ink);
+  font-size: 0.95rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-card-header__consult-body span {
+  color: var(--ref-meta-ink);
+  font-size: 0.78rem;
+}
+
+.booking-card-header__consult-arrow {
+  flex-shrink: 0;
+  color: var(--dt-petrol-700);
+  font-size: 1.1rem;
+}
+
+/* Cabeçalho compacto das telas depois da home (Nicholas: "depois de
+ * selecionar a unidade, não precisa mais ter o nome da barbearia e o
+ * whatsapp e a vitrine, ela deve ser só na primeira página") — ver
+ * `shared/_booking_compact_header` pro porquê completo. Texto puro, sem
+ * card/foto/sombra: só o suficiente pra confirmar contexto (qual
+ * barbearia, qual unidade) sem repetir a apresentação completa. */
+.booking-compact-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.25rem;
+  padding: 0 0.25rem;
+}
+
+.booking-compact-header__mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--dt-radius-sm, 4px);
+  background: var(--dt-petrol-700);
+  color: var(--dt-ice-0);
+  font-size: 0.65rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-compact-header__shop {
+  color: var(--dt-ink);
+  font-size: 1rem;
+  font-weight: var(--dt-weight-bold);
+}
+
+.booking-compact-header__unit {
+  color: var(--ref-meta-ink);
+  font-size: 0.85rem;
+}
+
+.booking-compact-header__unit::before {
+  content: "·";
+  margin-right: 0.5rem;
+  color: var(--ref-meta-ink);
 }
 
 /* === Vitrine da home: carrossel + cartão de perfil como UM bloco só =========
@@ -1167,37 +1311,47 @@ body:has(.booking-page) {
   letter-spacing: 0.05em;
 }
 
+/* Redesenho pedido por Nicholas ("o seletor de unidades está bem ruim de
+ * estilo de CSS, queria com mais ênfase e beleza nas cores") — o visual
+ * anterior era um clone fiel do protótipo `#unitToggle`, mas o próprio
+ * protótipo nunca passou por uma rodada de refinamento visual aqui (ao
+ * contrário do seletor de profissional, que teve várias iterações
+ * aprovadas) — ficou subaproveitado: pílula cinza clara, texto 11px, sem
+ * cor de marca nenhuma até o estado ativo. Trocando por um fundo com a cor
+ * de marca em vez de cinza neutro, texto maior, e o estado ativo como um
+ * chip CHEIO (fundo petróleo + texto branco) em vez de só "flutuar" em
+ * branco — mais contraste, mais weight visual, sem fugir da paleta. */
 .unit-toggle {
   display: inline-flex;
-  background: var(--dt-neutral-100);
+  background: var(--dt-petrol-100); /* #E2EFEF — tinta clara da rampa teal, não mais cinza neutro */
   border-radius: var(--dt-radius-pill);
-  padding: 2px;
-  gap: 2px;
+  padding: 4px;
+  gap: 3px;
 }
 
 .unit-toggle__pill {
   border: none;
   background: transparent;
-  color: var(--ref-meta-ink);
-  font-size: 0.6875rem;
+  color: var(--dt-petrol-700);
+  font-size: 0.8125rem;
   font-weight: var(--dt-weight-bold);
-  padding: 6px 11px;
+  padding: 8px 16px;
   border-radius: var(--dt-radius-pill);
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.12s, color 0.12s;
+  transition: background-color 0.12s, color 0.12s, box-shadow 0.12s;
 }
 
 .unit-toggle__pill:hover,
 .unit-toggle__pill:focus-visible {
-  color: var(--dt-petrol-700);
+  background: rgba(255, 255, 255, 0.5);
   text-decoration: none;
 }
 
 .unit-toggle__pill.is-active {
-  background: var(--dt-ice-0);
-  color: var(--dt-petrol-700);
-  box-shadow: 0 1px 2px rgba(10, 15, 20, 0.08);
+  background: var(--dt-petrol-700);
+  color: var(--dt-ice-0);
+  box-shadow: 0 2px 6px rgba(15, 61, 62, 0.25);
 }
 
 .service-row {

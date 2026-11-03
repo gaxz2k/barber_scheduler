@@ -1,0 +1,24 @@
+<%# Cabeçalho leve para as telas DEPOIS da home (etapa de serviço, data/hora,
+    confirmação, recibo): Nicholas pediu pra tirar o nome da barbearia, o
+    WhatsApp/ligar e a vitrine de fotos dessas telas — "depois de selecionar
+    a unidade, não precisa mais ter o nome da barbearia e o whatsapp e a
+    vitrine, ela deve ser só na primeira página". O cartão cheio
+    (`shared/_booking_card_header`) é fundamentalmente uma tela de
+    APRESENTAÇÃO da barbearia (foto, contato, "quem somos") — faz sentido
+    na home, onde o cliente ainda está decidindo SE quer agendar ali; uma
+    vez que ele já escolheu unidade e está no meio do fluxo, repetir essa
+    apresentação em toda tela só ocupa espaço sem ajudar a terminar o
+    agendamento mais rápido.
+
+    Mantém só o essencial pra não perder contexto: nome da barbearia (texto
+    puro, sem logo/foto) e, quando a unidade já foi escolhida, o nome dela —
+    o suficiente pra confirmar "estou no lugar certo", sem repetir toda a
+    vitrine. Continua em partial por ser usado em 2 telas (`new.html.erb` e
+    `show.html.erb`) que precisam do mesmo cabeçalho mínimo. %>
+<div class="booking-compact-header">
+  <span class="booking-compact-header__mark" aria-hidden="true"><%= Current.barbershop.monograma %></span>
+  <span class="booking-compact-header__shop"><%= Current.barbershop.name %></span>
+  <% if barbershop_unit.present? %>
+    <span class="booking-compact-header__unit"><%= barbershop_unit.name %></span>
+  <% end %>
+</div>

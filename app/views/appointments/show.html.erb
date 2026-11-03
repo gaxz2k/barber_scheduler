@@ -1,12 +1,14 @@
 <% content_for :title, "Seu agendamento | #{Current.barbershop.name}" %>
 
 <main class="site-shell booking-page" id="top">
-  <%# A tela de sucesso reaproveita o mesmo cabeçalho do fluxo — logo,
-      nome, telefone/endereço e os botões de WhatsApp/ligar — igual à
-      referência (a confirmação reabre o mesmo cabeçalho do agendamento, só
-      com a mensagem de status no lugar da lista de serviços). %>
+  <%# Depois de escolher a unidade o cliente não precisa mais ver a
+      apresentação completa da barbearia (nome grande, foto, WhatsApp/ligar)
+      — isso é coisa de quem ainda está decidindo ONDE agendar, não de quem
+      já terminou. Nicholas: "depois de selecionar a unidade, não precisa
+      mais ter o nome da barbearia e o whatsapp e a vitrine, ela deve ser só
+      na primeira página" (a primeira página = a home, `index.html.erb`). %>
   <div class="booking-flow">
-    <%= render "shared/booking_card_header" %>
+    <%= render "shared/booking_compact_header" %>
 
     <section class="confirmation-card">
       <%# Redesenho (protótipo aprovado `cliente-confirmacao.html`, ver o
@@ -28,6 +30,22 @@
           lista de vários agendamentos futuros — ver o comentário no
           partial. %>
       <%= render "appointments/appointment_details", appointment: @appointment %>
+
+      <%# Aviso de chegar com antecedência (Nicholas: "igual o simples
+          agenda") — reaproveita o mesmo componente visual do aviso de
+          pausa (`.booking-notice`, ver `new.html.erb`) em vez de criar uma
+          caixa nova: as duas são "informação que o cliente precisa ver
+          antes de sair de casa", mesma importância visual. Variante
+          `--info` (não `--alert`, que é reservada pro aviso de pausa —
+          aquele é "algo está diferente do normal", este é rotina). Minutos
+          fixos em 10 por ora: não há campo de antecedência configurável
+          por barbearia no backend hoje (mesma lacuna do aviso de pausa —
+          preferível um valor fixo razoável a inventar um campo sem dado
+          real por trás). %>
+      <div class="booking-notice booking-notice--info" role="note">
+        <%= icon_tag(:clock, size: 18) %>
+        <p>Chegue com <strong>10 minutos de antecedência</strong> — assim o profissional consegue te atender no horário certinho.</p>
+      </div>
 
       <p class="field-hint">Quando o link de calendário e o WhatsApp estiverem disponíveis, eles aparecerão aqui.</p>
 

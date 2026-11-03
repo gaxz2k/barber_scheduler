@@ -45,7 +45,11 @@
       </div>
     <% end %>
 
-    <%= render "shared/booking_card_header" %>
+    <%# Cabeçalho leve (não mais o cartão cheio com foto/contato/WhatsApp) —
+        Nicholas: "depois de selecionar a unidade, não precisa mais ter o
+        nome da barbearia e o whatsapp e a vitrine, ela deve ser só na
+        primeira página" — ver `shared/_booking_compact_header` pro porquê. %>
+    <%= render "shared/booking_compact_header" %>
 
     <%# Título de etapa visualmente oculto: a referência SimplesAgenda não
         tem uma barra de título de seção por etapa (o cabeçalho de marca e o
