@@ -24,12 +24,29 @@ export default class extends Controller {
     this.element.classList.add("service-list--js")
   }
 
+  // BUG achado por Nicholas ("ao selecionar últimos agendamentos ele
+  // bugs" / "ainda ficou grande"): a home tem DUAS `<section
+  // class="service-list">` na mesma página — "Últimos Agendamentos" e
+  // "Escolha um serviço" — cada uma com a sua PRÓPRIA instância deste
+  // controller (ver `appointments/_service_rows`, chamado duas vezes com
+  // `scope` diferente). `this.rowTargets` só enxerga as linhas da MESMA
+  // instância/seção, então abrir um card em "Últimos Agendamentos" e
+  // depois outro em "Escolha um serviço" deixava os DOIS abertos ao mesmo
+  // tempo — daí a tela "ficando grande", mesmo serviço reaparecendo
+  // selecionado duas vezes.
+  //
+  // `document.querySelectorAll` (não `this.rowTargets`) resolve isso
+  // fechando TODO `.service-row` da PÁGINA, não só desta seção — o
+  // comportamento de rádio passa a valer pro conjunto das duas listas
+  // juntas, que é como o cliente enxerga a tela (um serviço só sendo
+  // escolhido por vez, não um por seção).
   selectRow(event) {
     const row = event.target.closest(".service-row")
-    if (!row || !this.rowTargets.includes(row)) return
+    if (!row) return
 
-    this.rowTargets.forEach((candidate) => {
-      candidate.classList.toggle("is-selected", candidate === row)
+    document.querySelectorAll(".service-row.is-selected").forEach((candidate) => {
+      if (candidate !== row) candidate.classList.remove("is-selected")
     })
+    row.classList.add("is-selected")
   }
 }
