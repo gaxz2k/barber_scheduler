@@ -1,0 +1,40 @@
+<% content_for :title, "Seus agendamentos | #{Current.barbershop.name}" %>
+
+<main class="site-shell booking-page" id="top">
+  <div class="booking-flow">
+    <%= render "shared/booking_card_header" %>
+
+    <section class="confirmation-card">
+      <%# Mesmo ícone de "pedido recebido" do recibo único (`show.html.erb`)
+          — ver o comentário lá sobre por que o ícone é sempre neutro de
+          sucesso. Aqui ele marca "encontramos o seu telefone", que é
+          verdade para os dois (ou mais) cartões abaixo, mesmo que tenham
+          status diferentes entre si. %>
+      <div class="confirmation-card__icon" aria-hidden="true"><%= icon_tag(:calendar, size: 32) %></div>
+
+      <div class="eyebrow">Encontramos mais de um agendamento</div>
+      <h1>Seus próximos agendamentos</h1>
+      <%# A busca é só por telefone (ver o comentário em
+          `AppointmentsController#lookup`), então dois agendamentos futuros
+          cadastrados com o mesmo número aparecem juntos aqui — o servidor
+          não escolhe por você qual é "o certo". %>
+      <p>Encontramos mais de um horário marcado com este telefone. Confira qual é o seu:</p>
+
+      <%# Cada agendamento reaproveita o MESMO partial de detalhes do recibo
+          único (`_appointment_details`, ver o comentário nele) — a lista é
+          só a mesma `<dl>` repetida, uma por agendamento, e não um
+          componente visual novo. A borda superior/inferior que o CSS já
+          aplica a `.confirmation-details` (ver `booking_wizard.css`) separa
+          os cartões sem precisar de nenhuma classe nova. %>
+      <% @appointments.each do |appointment| %>
+        <%= render "appointments/appointment_details", appointment: appointment %>
+      <% end %>
+
+      <div class="confirmation-card__actions">
+        <%= link_to "Voltar para o início", root_path, class: "button button--secondary button--large" %>
+      </div>
+    </section>
+  </div>
+
+  <%= render "shared/back_to_top" %>
+</main>

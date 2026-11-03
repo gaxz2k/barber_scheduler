@@ -3,9 +3,10 @@
     banner com textura atrás do card, logo/monograma centralizado, nome,
     telefone e endereço em linhas separadas, dois botões quadrados de ação
     rápida (WhatsApp e ligar) e, meio dentro/meio fora da borda do card, o
-    botão estático de "Consultar Agendamento" (ver lacuna 5 do contexto: sem
-    link funcional, a busca de agendamento por telefone não existe no
-    backend hoje).
+    botão de "Consultar Agendamento" (a lacuna 5 do contexto original — a
+    busca de agendamento por telefone não existia no backend — foi
+    preenchida por `AppointmentsController#lookup_new`/`#lookup`; ver o
+    comentário junto do link abaixo).
 
     Vive em partial porque as três telas que abrem e fecham o fluxo —
     a home (`index.html.erb`), a etapa 1 do card único (`new.html.erb`) e o
@@ -64,9 +65,10 @@
     <% end %>
   </header>
 
-  <%# Elemento visual estático (ver lacuna 5 do contexto): a busca de
-      agendamento por telefone não existe no backend hoje, então este botão
-      não tem `href`/ação — é um `<span>`, não um link, para não prometer uma
-      navegação que não leva a lugar nenhum. %>
-  <span class="booking-card-header__consult" role="presentation">Consultar Agendamento</span>
+  <%# Agora é um link de verdade, para a tela de busca por telefone
+      (`appointment_lookup_path`, GET — mostra o formulário de telefone).
+      Era um `<span role="presentation">` porque a busca não existia no
+      backend; a classe/aparência não mudou nada, só o elemento passou a
+      navegar. %>
+  <%= link_to "Consultar Agendamento", appointment_lookup_path, class: "booking-card-header__consult" %>
 </div>

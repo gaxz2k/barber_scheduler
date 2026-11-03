@@ -1,0 +1,48 @@
+<%# As linhas de detalhe de UM agendamento — telefone mascarado, profissional,
+    serviço, início, término e status.
+
+    Extraído de `show.html.erb` para ser reaproveitado por `lookup_results`
+    (a lista de VÁRIOS agendamentos futuros, ver
+    `AppointmentsController#lookup`): sem este partial, a tela de lista
+    duplicaria a mesma `<dl>` uma vez por agendamento, e qualquer ajuste
+    futuro num campo (ou na ordem deles) teria que lembrar de mudar os dois
+    lugares. O recibo de um único agendamento (`show.html.erb`) e cada
+    cartão da lista chamam exatamente o mesmo HTML — só muda qual
+    `appointment` entra.
+
+    Recebe `appointment:` como local, e não lê `@appointment` direto: a
+    lista de `lookup_results` itera vários agendamentos do MESMO cliente, e
+    um partial que lesse a variável de instância só serviria para o
+    primeiro. %>
+<dl class="confirmation-details">
+  <%# Sem nome e telefone completos: esta mesma tela também é aberta pelo
+      link de confirmação por e-mail, que vive na caixa de entrada do
+      cliente por 48 horas — e agora também pela busca por telefone, que é
+      ainda menos protegida (não exige posse de um link, só o próprio
+      número). Os últimos dígitos bastam para o cliente se reconhecer, nos
+      dois casos. %>
+  <div>
+    <dt><%= icon_tag(:phone, size: 15) %> Telefone</dt>
+    <dd><%= appointment.client.masked_phone %></dd>
+  </div>
+  <div>
+    <dt><%= icon_tag(:user, size: 15) %> Profissional</dt>
+    <dd><%= appointment.professional.name %></dd>
+  </div>
+  <div>
+    <dt><%= icon_tag(:calendar, size: 15) %> Serviço</dt>
+    <dd><%= appointment.service.name %></dd>
+  </div>
+  <div>
+    <dt><%= icon_tag(:calendar, size: 15) %> Início</dt>
+    <dd><%= l(appointment.start_at, format: :long) %></dd>
+  </div>
+  <div>
+    <dt><%= icon_tag(:clock, size: 15) %> Término</dt>
+    <dd><%= l(appointment.end_at, format: :long) %></dd>
+  </div>
+  <div>
+    <dt>Status</dt>
+    <dd><span class="status-pill status-pill--<%= appointment.status %>"><%= appointment.status_label %></span></dd>
+  </div>
+</dl>

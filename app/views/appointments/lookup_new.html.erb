@@ -1,0 +1,76 @@
+<% content_for :title, "Consultar agendamento | #{Current.barbershop.name}" %>
+
+<main class="site-shell booking-page" id="top">
+  <%# Mesmo cabeçalho de marca do resto do fluxo de agendamento (ver o
+      comentário em `shared/_booking_card_header`) — é o mesmo partial que a
+      home, o `new.html.erb` e o `show.html.erb` já usam, sem argumento novo
+      nenhum. %>
+  <div class="booking-flow">
+    <%= render "shared/booking_card_header" %>
+
+    <%# Título de etapa visualmente oculto, no mesmo padrão de
+        `new.html.erb`: a referência SimplesAgenda não tem uma barra de
+        título de seção aqui, mas quem usa leitor de tela precisa de um
+        marco de navegação entre o cabeçalho de marca e o formulário. %>
+    <h2 class="sr-only">Consultar agendamento por telefone</h2>
+
+    <%# O erro de busca ("telefone em branco", "cadastro não encontrado",
+        "nenhum agendamento") usa a MESMA caixa `.form-alert` do formulário
+        de agendamento (`new.html.erb`) — é o mesmo papel visual, "revise o
+        que você mandou", só que para um campo em vez de vários. %>
+    <% if @lookup_error.present? %>
+      <div id="error_explanation" class="form-alert" role="alert">
+        <strong><%= @lookup_error %></strong>
+      </div>
+    <% end %>
+
+    <section class="confirmation-card">
+      <h1>Consultar agendamento</h1>
+      <p>Informe o telefone usado no agendamento para ver os detalhes.</p>
+
+      <%# `form_with url:` em vez de um helper de recurso: esta busca não é
+          CRUD de um `Appointment` (não tem `id`, não é `resource`-based), é
+          uma consulta — por isso aponta direto para a rota nomeada da busca,
+          igual ao padrão que `AppointmentsController#create` já usa para o
+          `start_at`/`profissional_id` combinados do passo fundido.
+
+          `data: { turbo: false }` é deliberado, e é o MESMO padrão que
+          `new.html.erb` usa em todo link/form de etapa (ver o comentário lá):
+          a resposta de `#lookup` quando encontra ou não encontra nada é um
+          `render` direto (recibo, lista ou formulário com erro), nunca um
+          redirect — e sem isto o Turbo Drive intercepta o POST esperando um
+          redirect 3xx (o padrão dele para formulários) ou um
+          `turbo_stream`, nenhum dos dois que este endpoint devolve, e a
+          troca de tela simplesmente não acontece. Desligar o Turbo aqui
+          devolve o comportamento de POST comum do navegador — funciona sem
+          JavaScript nenhum, a mesma regra do resto do fluxo de agendamento. %>
+      <%= form_with url: appointment_lookup_search_path, method: :post, local: true,
+                    data: { turbo: false }, class: "form-section" do |form| %>
+        <fieldset class="form-section">
+          <legend>Seu telefone</legend>
+          <%= form.label :phone, "Telefone" %>
+          <%# `telephone_field`, sem máscara de JavaScript: o formulário de
+              agendamento (`new.html.erb`, campo `client_phone`) também não
+              tem uma — só o `type="tel"` e um `placeholder` de exemplo. Não
+              existe um Stimulus controller de máscara de telefone neste
+              projeto hoje; inventar um só para este campo divergiria do
+              padrão que o resto do app já usa para o mesmo tipo de campo. %>
+          <%= form.telephone_field :phone,
+                value: @client_phone,
+                required: true,
+                autocomplete: "tel",
+                placeholder: "(19) 99999-8888" %>
+          <p class="field-hint">Os mesmos números usados para agendar, com ou sem pontuação.</p>
+        </fieldset>
+
+        <%= form.submit "Buscar agendamento", class: "button button--primary button--large" %>
+      <% end %>
+
+      <div class="confirmation-card__actions">
+        <%= link_to "Voltar para o início", root_path, class: "button button--secondary button--large" %>
+      </div>
+    </section>
+  </div>
+
+  <%= render "shared/back_to_top" %>
+</main>

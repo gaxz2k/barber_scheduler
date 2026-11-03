@@ -169,6 +169,73 @@ class AppointmentsController < ApplicationController
     render :show
   end
 
+  # Formulário de telefone (lacuna 5 do contexto original, ver o comentário na
+  # rota e no `_booking_card_header`). GET puro: só mostra o campo. É também a
+  # tela que `lookup` reabre (com `@lookup_error` preenchido) quando a busca
+  # não acha nada, para o cliente tentar outro número sem perder o lugar.
+  def lookup_new
+    @client_phone = params[:phone]
+  end
+
+  # A busca por telefone, e a decisão de qual agendamento (se algum) mostrar.
+  #
+  # O telefone sozinho basta, sem senha nem token — ver o comentário de
+  # contexto da tarefa: é o mesmo padrão do concorrente SimplesAgenda, que
+  # este redesenho usa de referência, e o risco é comparável ao do link de
+  # confirmação por e-mail que já existe (`#confirmation`): quem tem o
+  # telefone do cliente já tem, no mundo real, bem mais acesso à vida dele do
+  # que esta tela devolve. O que a tela devolve é deliberadamente pouco: os
+  # mesmos campos da página de confirmação (que já mascara o telefone do
+  # próprio cliente, `Client#masked_phone`) — nenhum dado de OUTRO cliente, e
+  # nada que o cliente já não visse no e-mail de confirmação original.
+  #
+  # Prioridade no agendamento FUTURO, e não no mais recente qualquer: quem
+  # clica em "Consultar Agendamento" quase sempre quer confirmar "eu já
+  # marquei, para quando é", e isso é sempre um compromisso que ainda não
+  # aconteceu. Com MAIS de um futuro, a escolha de qual mostrar não é do
+  # servidor — silenciosamente devolver só um deixaria o cliente sem saber do
+  # outro horário marcado — por isso a lista em `lookup_results`, em vez da
+  # tela de recibo única. Só na ausência de qualquer agendamento futuro é que
+  # o passado entra, como consolo: dizer "nada encontrado" para quem tem um
+  # corte de duas semanas atrás no histórico confundiria "não há nada
+  # marcado para a frente" com "você nunca agendou aqui", que não é a mesma
+  # coisa. `canceled` fica fora dos dois lados: um agendamento cancelado não é
+  # um compromisso para confirmar nem um atendimento para lembrar.
+  def lookup
+    @client_phone = lookup_params[:phone].to_s.strip
+
+    if @client_phone.blank?
+      @lookup_error = "Informe um telefone para buscar."
+      render :lookup_new, status: :unprocessable_content
+      return
+    end
+
+    client = find_client_by_phone(@client_phone)
+
+    if client.nil?
+      @lookup_error = "Não encontramos nenhum cadastro com esse telefone."
+      render :lookup_new, status: :unprocessable_content
+      return
+    end
+
+    upcoming = client.appointments
+                      .where(status: [ :pending, :confirmed ])
+                      .where(start_at: Time.current..)
+                      .order(:start_at)
+                      .to_a
+
+    case upcoming.size
+    when 0
+      render_past_appointment_or_not_found(client)
+    when 1
+      @appointment = upcoming.first
+      render :show
+    else
+      @appointments = upcoming
+      render :lookup_results
+    end
+  end
+
   helper_method :confirmation_eyebrow, :confirmation_title, :confirmation_message
   # A unidade precisa ser legível pela view para o formulário mandar o `create`
   # para a URL certa. O método estava declarado como helper desde o commit que
@@ -280,6 +347,59 @@ class AppointmentsController < ApplicationController
     return "Seu horário está reservado. Guarde os detalhes abaixo para a sua chegada." if @appointment.confirmed?
 
     "Seu horário foi enviado para verificação pela equipe. O status aparece abaixo e pode ser atualizado pela barbearia."
+  end
+
+  # O consolo de `#lookup` quando não há nada futuro: o agendamento passado
+  # mais recente, se existir algum que não foi cancelado. Separado de
+  # `#lookup` só porque o método principal já tinha três desfechos antes
+  # deste (telefone em branco, cliente não encontrado, um/vários futuros) — um
+  # quarto `if` ali dentro passaria de "decide o que mostrar" para "decide
+  # tudo", que é o tipo de método que ninguém lê até o fim de uma vez.
+  def render_past_appointment_or_not_found(client)
+    past_appointment = client.appointments
+                              .where.not(status: :canceled)
+                              .where(start_at: ...Time.current)
+                              .order(start_at: :desc)
+                              .first
+
+    if past_appointment
+      @appointment = past_appointment
+      render :show
+    else
+      @lookup_error = "Não encontramos nenhum agendamento para esse telefone."
+      render :lookup_new, status: :unprocessable_content
+    end
+  end
+
+  # O cliente dentro do tenant atual cujo telefone bate com o telefone
+  # digitado, comparando só os dígitos.
+  #
+  # `clients.phone` não é normalizado na gravação — o formulário de
+  # agendamento aceita o que o cliente digitar (`(19) 99999-8888`, só
+  # números, com ou sem o nono dígito) — então comparar a coluna crua contra
+  # o parâmetro cru deixaria passar só quem digitasse exatamente a mesma
+  # pontuação de quando agendou. `regexp_replace` tira tudo que não é dígito
+  # dos dois lados antes de comparar, no banco: a tabela de clientes de uma
+  # barbearia pequena não justifica trazer todo mundo para o Ruby só para
+  # normalizar.
+  #
+  # Sem índice funcional sobre essa expressão — a tabela de clientes de uma
+  # barbearia é pequena (é o cadastro de UMA loja, não uma base global), e um
+  # índice a mais é custo de escrita pago em toda consulta futura por um
+  # ganho que só apareceria em um volume que este produto não tem hoje.
+  #
+  # `Client` já aplica `apply_tenant_scope` (ver `TenantScoped`), então esta
+  # busca nunca atravessa barbearia — é o mesmo motivo pelo qual nenhuma
+  # query deste método precisa repetir `where(barbershop: ...)` à mão.
+  def find_client_by_phone(phone)
+    digits = phone.to_s.gsub(/\D/, "")
+    return nil if digits.blank?
+
+    Client.where("regexp_replace(phone, '\\D', '', 'g') = ?", digits).first
+  end
+
+  def lookup_params
+    params.permit(:phone)
   end
 
   # A unidade vem da URL e é sempre do tenant em `Current` — o slug é

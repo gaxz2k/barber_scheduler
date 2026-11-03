@@ -23,35 +23,11 @@
       <h1><%= confirmation_title %></h1>
       <p><%= confirmation_message %></p>
 
-      <dl class="confirmation-details">
-        <%# Sem nome e telefone completos: a página é aberta por um link que vive no
-            e-mail do cliente por 48 horas, e quem tiver o link vê tudo. Os últimos
-            dígitos do telefone bastam para o cliente se reconhecer. %>
-        <div>
-          <dt><%= icon_tag(:phone, size: 15) %> Telefone</dt>
-          <dd><%= @appointment.client.masked_phone %></dd>
-        </div>
-        <div>
-          <dt><%= icon_tag(:user, size: 15) %> Profissional</dt>
-          <dd><%= @appointment.professional.name %></dd>
-        </div>
-        <div>
-          <dt><%= icon_tag(:calendar, size: 15) %> Serviço</dt>
-          <dd><%= @appointment.service.name %></dd>
-        </div>
-        <div>
-          <dt><%= icon_tag(:calendar, size: 15) %> Início</dt>
-          <dd><%= l(@appointment.start_at, format: :long) %></dd>
-        </div>
-        <div>
-          <dt><%= icon_tag(:clock, size: 15) %> Término</dt>
-          <dd><%= l(@appointment.end_at, format: :long) %></dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd><span class="status-pill status-pill--<%= @appointment.status %>"><%= @appointment.status_label %></span></dd>
-        </div>
-      </dl>
+      <%# As linhas de detalhe vivem em `_appointment_details`, reaproveitado
+          por `lookup_results` (ver `AppointmentsController#lookup`) para a
+          lista de vários agendamentos futuros — ver o comentário no
+          partial. %>
+      <%= render "appointments/appointment_details", appointment: @appointment %>
 
       <p class="field-hint">Quando o link de calendário e o WhatsApp estiverem disponíveis, eles aparecerão aqui.</p>
 

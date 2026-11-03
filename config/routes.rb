@@ -60,6 +60,26 @@ Rails.application.routes.draw do
 
   get "appointments/confirmation/:token", to: "appointments#confirmation", as: :appointment_confirmation
 
+  # Consulta de agendamento por telefone (preenche a lacuna 5 do contexto da
+  # tarefa de redesenho do cabeçalho: o botão "Consultar Agendamento" era só
+  # visual porque esta busca não existia no backend).
+  #
+  # Duas rotas, GET e POST, porque é um formulário de busca de verdade, igual
+  # a qualquer outro formulário do projeto: GET mostra o campo de telefone (e
+  # é também o que `lookup` reabre quando a busca não encontra nada, para o
+  # cliente tentar outro número sem perder a tela), POST processa a tentativa.
+  #
+  # Fica fora de qualquer `scope`/`namespace` de unidade ou de admin, ao lado
+  # da confirmação por token: a busca não depende de qual unidade o cliente
+  # tentou agendar, só da barbearia (`Current.barbershop`, resolvida pelo
+  # `around_action` do `ApplicationController` do mesmo jeito que qualquer
+  # outra rota pública) e do telefone digitado. Funciona sem mudança nenhuma
+  # tanto pelo subdomínio real quanto pelo desvio `/t/:slug` — o desvio só
+  # grava o cookie de tenant na primeira navegação; a partir daí toda rota
+  # comum, esta inclusive, já lê `Current.barbershop` pelo cookie.
+  get "agendamento/consultar", to: "appointments#lookup_new", as: :appointment_lookup
+  post "agendamento/consultar", to: "appointments#lookup", as: :appointment_lookup_search
+
   # A unidade é escolhida na URL, e não em campo de formulário: a escolha
   # sobrevive à troca de unidade depois, e o link de confirmação aponta para
   # a mesma unidade. A unidade é o mesmo tenant com `slug` próprio, então a
