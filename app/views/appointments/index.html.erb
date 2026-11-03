@@ -32,6 +32,18 @@
            atalho "ir para a foto X" de propósito — isso reabriria a mesma
            discussão de anterior/próximo que este componente já decidiu não
            ter. %>
+  <%# Vitrine completa (galeria + cartão cheio da barbearia) só na
+      PRIMEIRA tela, sem unidade ainda escolhida — Nicholas: "depois de
+      selecionar a unidade, não precisa mais ter o nome da barbearia e o
+      whatsapp e a vitrine, ela deve ser só na primeira página". Esta
+      `index.html.erb` também é reaberta com `unidade_slug` na URL (ver
+      `unidade_path`, usado pelo alternador de unidade e pela lista
+      "Escolha onde quer ser atendido" logo abaixo) — nesses casos o
+      cliente já passou da "vitrine", está em pleno meio da escolha de
+      serviço, então o bloco inteiro abaixo (carrossel OU estado vazio +
+      cabeçalho cheio) fica de fora; o cabeçalho compacto mais abaixo
+      assume o lugar dele. %>
+  <% if barbershop_unit.blank? %>
   <% if @barbershop_photos.any? %>
     <%# Opção A aprovada por Nicholas no protótipo de descoberta (avatar
         sobreposto, padrão Airbnb/Instagram/Google Business — ver
@@ -119,6 +131,7 @@
       <span>Estamos preparando um tour do espaço da <%= Current.barbershop.name %>.</span>
     </div>
   <% end %>
+  <% end %>
 
   <%# A partir daqui a home é a ETAPA 1 do mesmo fluxo que `new.html.erb`
       usa para as etapas seguintes. A home continua sendo uma URL própria
@@ -140,8 +153,15 @@
         bloco acima. Sem foto nenhuma, não existe borda de foto pra o avatar
         furar, então ele volta pro formato normal, sem sobreposição, bem
         aqui no topo do fluxo — o mesmo formato que `new.html.erb` e
-        `show.html.erb` sempre mostraram. %>
-    <% unless @barbershop_photos.any? %>
+        `show.html.erb` sempre mostraram.
+
+        Com `unidade_slug` na URL (unidade já escolhida), nem o cabeçalho
+        cheio nem a vitrine de fotos fazem sentido mais — ver o comentário
+        lá em cima. Entra o cabeçalho compacto, igual ao resto do fluxo
+        depois da escolha de unidade. %>
+    <% if barbershop_unit.present? %>
+      <%= render "shared/booking_compact_header" %>
+    <% elsif @barbershop_photos.blank? %>
       <%= render "shared/booking_card_header" %>
     <% end %>
 
