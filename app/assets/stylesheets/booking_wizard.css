@@ -725,8 +725,17 @@ body:has(.booking-page) {
 .booking-card-header-banner {
   position: absolute;
   top: 0;
-  right: 0;
-  left: 0;
+  /* Antes `right:0; left:0` — a largura batia com o `.booking-card-header-shell`
+     (que respira 1rem além do container via margem negativa), não com o
+     card branco por cima (que tem `margin: 0 1rem`, 1rem mais estreito que
+     o shell). Resultado: a textura escura sobrava 1rem pra cada lado,
+     visível como uma "borda" de cor crua ao redor do card — não existe no
+     protótipo aprovado (`cliente-agendar.html`), que não tem textura
+     nenhuma atrás do cabeçalho. Alinhando a largura do banner com a do
+     card (mesmos 1rem de inset) pra ele ficar escondido atrás do card
+     inteiro, como o comentário abaixo sempre descreveu a intenção de ser. */
+  right: 1rem;
+  left: 1rem;
   height: 9.5rem;
   background:
     radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.35) 0, rgba(255, 255, 255, 0.35) 1.5px, transparent 1.5px),

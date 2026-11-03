@@ -89,6 +89,14 @@
   font-size: var(--dt-text-sm);
 }
 
+/* Logo real: mesma caixa quadrada do monograma de texto, mas sem o fundo
+ * sólido (a própria imagem preenche) e com `object-fit` pra não distorcer
+ * logos que não sejam perfeitamente 1:1. */
+.admin-brand__mark--image {
+  background: none;
+  object-fit: cover;
+}
+
 .admin-brand__name {
   overflow: hidden;
   font-family: var(--dt-font-display);

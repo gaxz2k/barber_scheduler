@@ -32,7 +32,17 @@
       <aside class="admin-sidebar" data-controller="nav-toggle">
         <div class="admin-sidebar__head">
           <%= link_to admin_root_path, class: "admin-brand" do %>
-            <span class="admin-brand__mark" aria-hidden="true"><%= Current.barbershop.monograma %></span>
+            <%# O lado cliente (`_booking_card_header.html.erb`) já checa se há logo
+                de verdade antes de cair pro monograma de texto — aqui faltava a
+                mesma checagem, então o painel sempre mostrava as iniciais ("BS")
+                mesmo com uma logo real cadastrada. Replicando a mesma regra pra
+                dono e cliente verem a MESMA marca, não duas diferentes. %>
+            <% if Current.barbershop.logo.attached? %>
+              <%= image_tag Current.barbershop.logo, class: "admin-brand__mark admin-brand__mark--image",
+                            alt: "", "aria-hidden": "true" %>
+            <% else %>
+              <span class="admin-brand__mark" aria-hidden="true"><%= Current.barbershop.monograma %></span>
+            <% end %>
             <span class="admin-brand__name"><%= Current.barbershop.name %></span>
           <% end %>
 
