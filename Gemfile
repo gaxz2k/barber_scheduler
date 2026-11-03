@@ -18,7 +18,7 @@ gem "jbuilder"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
 # Use Redis for Rails.cache and Sidekiq for Active Job.
-gem "redis", "~> 5.4"
+gem "redis", "~> 6.0"
 gem "connection_pool"
 gem "sidekiq", "~> 8.0"
 # Solid Cable remains the Action Cable adapter for production cable storage.
