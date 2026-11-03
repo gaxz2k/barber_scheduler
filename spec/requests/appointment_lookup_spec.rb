@@ -162,4 +162,123 @@ RSpec.describe "AppointmentsController#lookup_new / #lookup", type: :request do
       expect(response.body).not_to include('role="presentation">Consultar Agendamento')
     end
   end
+
+  # Limite de tentativas de `POST /agendamento/consultar` (ver o comentário
+  # das constantes `LOOKUP_*` e dos métodos `lookup_rate_limited?` /
+  # `register_lookup_attempt!` em `AppointmentsController`).
+  #
+  # `Rails.cache` é `:null_store` no ambiente de teste (ver
+  # `config/environments/test.rb`) — de propósito, para nenhum outro spec
+  # da suíte vazar estado de cache de um exemplo para o seguinte sem
+  # perceber. A trava de tentativas só existe de verdade com um cache que
+  # GUARDA o que escreve, então troca-se `Rails.cache` por uma
+  # `ActiveSupport::Cache::MemoryStore` nova só durante este `describe` —
+  # e só aqui — restaurando o `:null_store` no fim. `MemoryStore`, e não
+  # `MockRedis.new` dentro de um `RedisCacheStore`: o controller fala com
+  # `Rails.cache` (a interface do `ActiveSupport::Cache::Store`, qualquer
+  # adapter), nunca com Redis bruto — diferente de `AvailableSlots::Cache`,
+  # que fala direto com `Rails.application.config.x.redis` e por isso o spec
+  # dele (`spec/services/available_slots/cache_spec.rb`) troca o Redis, não
+  # o `Rails.cache`. Trocar o adapter errado aqui testaria um cache que o
+  # controller nunca usa.
+  describe "POST /agendamento/consultar — limite de tentativas" do
+    include ActiveSupport::Testing::TimeHelpers
+
+    around do |example|
+      original_cache = Rails.cache
+      Rails.cache = ActiveSupport::Cache::MemoryStore.new
+      example.run
+    ensure
+      Rails.cache = original_cache
+    end
+
+    def lookup!(phone: "11900000000")
+      post appointment_lookup_search_path, params: { phone: phone }
+    end
+
+    it "allows the three attempts normally configured as the limit" do
+      3.times do
+        lookup!
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("Não encontramos nenhum cadastro")
+      end
+    end
+
+    it "warns on the last attempt still allowed, before blocking" do
+      2.times { lookup! }
+      lookup!
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("última tentativa")
+    end
+
+    it "blocks the 4th attempt within the window with a friendly message, not a crash" do
+      3.times { lookup! }
+
+      lookup!
+
+      expect(response).to have_http_status(:too_many_requests)
+      expect(response.body).to include("Muitas tentativas")
+      expect(response.body).to include("Tente novamente em alguns minutos")
+      # A tela continua sendo a mesma de busca — não um 500 nem uma página de
+      # erro genérica do Rack: o cliente ainda vê o cabeçalho e o formulário.
+      expect(response.body).to include("Consultar agendamento")
+    end
+
+    it "does not count a successful lookup toward the failure budget" do
+      appointment = book!(start_at: 3.days.from_now.change(hour: 10, min: 0))
+
+      4.times do
+        post appointment_lookup_search_path, params: { phone: "19999998888" }
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include(appointment.status_label)
+      end
+    end
+
+    it "resets the counter once the rate-limit window elapses" do
+      3.times { lookup! }
+      lookup!
+      expect(response).to have_http_status(:too_many_requests)
+
+      travel_to(16.minutes.from_now) do
+        lookup!
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("Não encontramos nenhum cadastro")
+      end
+    end
+
+    it "tracks two different IPs independently" do
+      3.times { lookup! }
+      lookup!
+      expect(response).to have_http_status(:too_many_requests)
+
+      # Mesmo telefone, mesmo tenant, IP diferente — simulado via o cabeçalho
+      # que `request.remote_ip` honra (`REMOTE_ADDR`). Only a different IP
+      # should still have its own, untouched budget of 3 attempts.
+      post appointment_lookup_search_path, params: { phone: "11900000000" }, env: { "REMOTE_ADDR" => "203.0.113.9" }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("Não encontramos nenhum cadastro")
+    end
+
+    it "scopes the rate limit per tenant, so one barbershop never blocks another's customers" do
+      3.times { lookup! }
+      lookup!
+      expect(response).to have_http_status(:too_many_requests)
+
+      # Mesmo IP (o `host!` do request spec não muda o IP simulado), outra
+      # barbearia: a trava é por `Current.barbershop.id` + IP, então o
+      # bloqueio de uma não pode vazar para a outra, igual ao spec já
+      # existente de isolamento de dados (\"never finds a client that
+      # belongs to a different barbershop\").
+      host! tenant_host(other_barbershop)
+      lookup!
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("Não encontramos nenhum cadastro")
+    end
+  end
 end
