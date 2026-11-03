@@ -855,25 +855,17 @@ body:has(.booking-page) {
   transform: translateY(-1px);
 }
 
-/* Elemento visual estático (ver a lacuna 5 do contexto): meio dentro, meio
- * fora da borda inferior do cartão — por isso a margem negativa que o puxa
- * pra cima por cima da borda, e o `z-index` para ficar acima da sombra do
- * cartão. É um `<span role="presentation">`, não um link: a busca de
- * agendamento por telefone não existe no backend hoje. */
+/* Até pouco atrás era um elemento decorativo/estático posicionado FORA do
+ * card, com margem negativa "furando" a borda inferior (ver o comentário no
+ * partial pra mais contexto). Virou link de verdade e passou a morar dentro
+ * do próprio `.booking-card-header`, como a última linha — sem mais
+ * sobreposição/flutuação, só um botão secundário normal do sistema
+ * (`.button--secondary` cuida de fundo/sombra/cor; aqui só o que é
+ * específico deste botão: largura cheia e respiro extra em cima pra separar
+ * visualmente da fileira de ícones de WhatsApp/ligar). */
 .booking-card-header__consult {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 62%;
-  margin: -1.1rem auto 0;
-  border-radius: var(--dt-radius-md);
-  background: var(--ref-consult-bg);
-  box-shadow: var(--dt-shadow-card);
-  color: var(--ref-consult-ink);
-  font-size: 1.05rem;
-  font-weight: var(--dt-weight-bold);
-  text-align: center;
-  padding: 0.85rem 0.75rem;
+  width: 100%;
+  margin-top: 0.4rem;
 }
 
 /* === Vitrine da home: carrossel + cartão de perfil como UM bloco só =========

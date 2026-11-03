@@ -63,12 +63,18 @@
         <% end %>
       </div>
     <% end %>
-  </header>
 
-  <%# Agora é um link de verdade, para a tela de busca por telefone
-      (`appointment_lookup_path`, GET — mostra o formulário de telefone).
-      Era um `<span role="presentation">` porque a busca não existia no
-      backend; a classe/aparência não mudou nada, só o elemento passou a
-      navegar. %>
-  <%= link_to "Consultar Agendamento", appointment_lookup_path, class: "booking-card-header__consult" %>
+    <%# Antes vivia FORA do <header>, com margem negativa puxando pra cima por
+        cima da borda inferior do card ("meio dentro, meio fora" — pensado
+        pra um elemento decorativo/estático, ver a lacuna 5 do contexto
+        original). Virou link de verdade (`appointment_lookup_path`) e, meio
+        flutuando entre o card branco e o próximo bloco da página, ficou com
+        cara de elemento quebrado/solto — Nicholas: "a div do consultar
+        agendamento e o branco está meio ruim". Agora mora dentro do próprio
+        card, como última linha, com o sistema de botão padrão do projeto
+        (`.button--secondary`, mesma família usada no resto do fluxo) —
+        continua claramente uma ação separada de WhatsApp/ligar, mas sem o
+        efeito visual de peça solta. %>
+    <%= link_to "Consultar Agendamento", appointment_lookup_path, class: "button button--secondary booking-card-header__consult" %>
+  </header>
 </div>
